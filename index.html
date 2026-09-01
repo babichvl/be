@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FitCoach</title>
+  <title>GymBro</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -23,7 +23,7 @@
 
   <main class="content">
 
-    <!-- Главная -->
+    <!-- ===== ГЛАВНАЯ: приветствие + календарь ===== -->
     <section class="screen" id="screen-home">
       <div class="greeting card">
         <div class="avatar">
@@ -39,7 +39,7 @@
         </div>
         <div class="greeting__text">
           <span class="greeting__hello">HELLO</span>
-          <span class="greeting__name" id="user-name">Загрузка...</span>
+          <span class="greeting__name" id="user-name">Тренер</span>
         </div>
       </div>
 
@@ -53,7 +53,7 @@
       </div>
     </section>
 
-    <!-- Расписание -->
+    <!-- ===== РАСПИСАНИЕ: календарь + список тренировок ===== -->
     <section class="screen" id="screen-schedule">
       <div class="calendar-strip card">
         <div class="calendar-strip__header">
@@ -96,26 +96,20 @@
       </div>
     </section>
 
-    <!-- Клиенты -->
+    <!-- ===== КЛИЕНТЫ ===== -->
     <section class="screen" id="screen-clients">
       <p class="placeholder-text">Клиенты — скоро</p>
     </section>
 
-    <!-- Программы -->
+    <!-- ===== ПРОГРАММЫ ===== -->
     <section class="screen" id="screen-programs">
       <p class="placeholder-text">Программы — скоро</p>
     </section>
 
   </main>
 
+  <!-- Порядок кнопок: Расписание | Клиенты | + | Программы | Главная -->
   <nav class="bottomnav">
-    <button class="bottomnav__item" data-tab="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
-      <span class="bottomnav__label">Главная</span>
-    </button>
 
     <button class="bottomnav__item" data-tab="schedule">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -123,13 +117,6 @@
         <path d="M16 2v4M8 2v4M3 10h18"/>
       </svg>
       <span class="bottomnav__label">Расписание</span>
-    </button>
-
-    <button class="bottomnav__fab" id="fab-btn" aria-label="Добавить">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
     </button>
 
     <button class="bottomnav__item" data-tab="clients">
@@ -141,6 +128,13 @@
       <span class="bottomnav__label">Клиенты</span>
     </button>
 
+    <button class="bottomnav__fab" id="fab-btn" aria-label="Добавить">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+
     <button class="bottomnav__item" data-tab="programs">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M4 19V6a2 2 0 0 1 2-2h13"/>
@@ -150,6 +144,15 @@
       </svg>
       <span class="bottomnav__label">Программы</span>
     </button>
+
+    <button class="bottomnav__item" data-tab="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
+        <path d="M9 21V12h6v9"/>
+      </svg>
+      <span class="bottomnav__label">Главная</span>
+    </button>
+
   </nav>
 
   <script src="app.js"></script>
