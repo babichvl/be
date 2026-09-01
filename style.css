@@ -1,356 +1,367 @@
-/* ═══════════════ Tokens ═══════════════ */
+/* ─── Токены цветов ─────────────────────────────── */
 :root {
-  /* Neutral ramp */
-  --c-bg:         hsl(0 0% 99%);
-  --c-surface:    hsl(0 0% 100%);
-  --c-border:     hsl(220 14% 93%);
-  --c-muted:      hsl(220 10% 60%);
-  --c-body:       hsl(220 15% 18%);
+  /* Поверхности */
+  --clr-bg:             #F2F3F7;
+  --clr-surface:        #FFFFFF;
+  --clr-surface-raised: #FFFFFF;
+  --clr-border:         rgba(0, 0, 0, 0.06);
 
-  /* Accent – pink */
-  --c-accent:     hsl(340 85% 65%);
-  --c-accent-dim: hsl(340 80% 95%);
+  /* Текст */
+  --clr-text:           #1C1C2E;
+  --clr-text-muted:     #9898B2;
+  --clr-text-label:     #AAAABB;
 
-  /* Selected day – soft periwinkle */
-  --c-sel:        hsl(242 60% 65%);
-  --c-sel-light:  hsl(242 60% 94%);
+  /* Акценты */
+  --clr-accent-a:       #7B9CF4;   /* градиент активного дня — начало */
+  --clr-accent-b:       #A07CF5;   /* градиент активного дня — конец  */
+  --clr-fab-a:          #F06FB0;   /* FAB — начало */
+  --clr-fab-b:          #F8A0CC;   /* FAB — конец  */
+  --clr-nav-active:     #F06FB0;   /* иконка активной вкладки */
+  --clr-dot:            #F06FB0;   /* индикатор на иконке */
 
-  /* Status */
-  --s-pending-bg:   hsl(0 0% 94%);
-  --s-pending-text: hsl(220 12% 45%);
-  --s-confirmed-bg: hsl(44 95% 88%);
-  --s-confirmed-text: hsl(38 80% 35%);
-  --s-completed-bg: hsl(145 55% 85%);
-  --s-completed-text: hsl(145 55% 28%);
-  --s-cancelled-bg: hsl(0 72% 90%);
-  --s-cancelled-text: hsl(0 60% 38%);
+  /* Аватар */
+  --clr-avatar-bg:      #EDE8FA;
 
-  /* Spacing / radius */
-  --r-sm:  8px;
-  --r-md: 14px;
-  --r-lg: 24px;
+  /* Скругления (два-три значения, больше не нужно) */
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  22px;
 
-  /* Type scale */
-  --fs-xs:  11px;
-  --fs-sm:  13px;
-  --fs-md:  15px;
-  --fs-lg:  18px;
-  --fs-xl:  22px;
+  /* Тени */
+  --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.06);
+  --shadow-nav:  0 -1px 0 var(--clr-border), 0 -4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-fab:  0 6px 20px rgba(240, 111, 176, 0.45);
+  --shadow-menu: 0 8px 28px rgba(0, 0, 0, 0.12);
+
+  /* Ритм отступов (кратно 4px) */
+  --sp-4:  4px;
+  --sp-8:  8px;
+  --sp-12: 12px;
+  --sp-16: 16px;
+  --sp-20: 20px;
+  --sp-24: 24px;
+
+  /* Высоты фиксированных полос */
+  --topbar-h: 56px;
+  --nav-h:    72px;
 }
 
-/* ═══════════════ Reset / Base ═══════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Тёмная тема — отдельный набор токенов, не инверсия */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --clr-bg:             #12121E;
+    --clr-surface:        #1E1E2E;
+    --clr-surface-raised: #27273A;
+    --clr-border:         rgba(255, 255, 255, 0.07);
+    --clr-text:           #ECECF4;
+    --clr-text-muted:     #686882;
+    --clr-text-label:     #505068;
+    --clr-avatar-bg:      #2C2048;
+    --clr-accent-a:       #8AABFF;
+    --clr-accent-b:       #B08AFF;
+    --shadow-card:        0 2px 14px rgba(0, 0, 0, 0.30);
+    --shadow-nav:         0 -1px 0 var(--clr-border);
+  }
+}
 
-html, body {
-  height: 100%;
-  background: var(--c-bg);
-  color: var(--c-body);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: var(--fs-md);
-  line-height: 1.5;
+/* ─── Сброс ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button { background: none; border: none; cursor: pointer; font: inherit; color: inherit; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  min-height: 100dvh;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
-input, select { font: inherit; color: inherit; }
-a { color: var(--c-sel); }
-
-/* ═══════════════ Layout ═══════════════ */
-.app {
+/* ─── Шапка ─────────────────────────────────────── */
+.topbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--topbar-h);
+  background: var(--clr-surface);
   display: flex;
-  flex-direction: column;
-  height: 100dvh;
-  position: relative;
-  overflow: hidden;
+  align-items: center;
+  padding: 0 var(--sp-16);
+  border-bottom: 1px solid var(--clr-border);
+  z-index: 100;
 }
-
-.tab {
-  display: none;
+.topbar__spacer { width: 36px; }
+.topbar__title {
   flex: 1;
-  flex-direction: column;
-  overflow: hidden;
-}
-.tab.active { display: flex; }
-
-/* ═══════════════ Page header ═══════════════ */
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px 8px;
-  flex-shrink: 0;
-}
-
-.page-title {
-  font-size: var(--fs-xl);
+  text-align: center;
+  font-size: 17px;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
 }
-
-.view-switcher {
-  display: flex;
-  background: var(--c-border);
-  border-radius: 10px;
-  padding: 2px;
-  gap: 2px;
-}
-
-.view-btn {
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 8px;
-  color: var(--c-muted);
-  transition: background 140ms, color 140ms;
-}
-.view-btn.active {
-  background: var(--c-surface);
-  color: var(--c-body);
-  box-shadow: 0 1px 3px hsl(0 0% 0% / .08);
-}
-
-/* ═══════════════ Date navigation ═══════════════ */
-.date-nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 4px 20px;
-  flex-shrink: 0;
-}
-
-.nav-arrow {
-  width: 28px; height: 28px;
-  border-radius: 50%;
+.topbar__menu-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--clr-bg);
   font-size: 22px;
-  line-height: 28px;
-  text-align: center;
-  color: var(--c-muted);
-  background: var(--c-border);
-  transition: background 140ms;
-}
-.nav-arrow:hover { background: hsl(220 14% 88%); }
-
-.period-label {
-  flex: 1;
-  text-align: center;
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  color: var(--c-body);
-}
-
-/* ═══════════════ Week strip ═══════════════ */
-.week-strip {
+  line-height: 1;
   display: flex;
-  overflow-x: auto;
-  gap: 4px;
-  padding: 8px 16px 4px;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  flex-shrink: 0;
-}
-.week-strip::-webkit-scrollbar { display: none; }
-
-.strip-day {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  min-width: 44px;
-  padding: 6px 4px;
+  justify-content: center;
+  transition: background 120ms ease, transform 120ms ease;
+}
+.topbar__menu-btn:hover  { background: var(--clr-border); }
+.topbar__menu-btn:active { transform: scale(0.90); }
+
+/* ─── Дропдаун ──────────────────────────────────── */
+.dropdown {
+  position: fixed;
+  top: calc(var(--topbar-h) + var(--sp-8));
+  right: var(--sp-16);
+  min-width: 160px;
+  background: var(--clr-surface-raised);
+  border: 1px solid var(--clr-border);
   border-radius: var(--r-md);
-  scroll-snap-align: center;
-  transition: background 140ms;
+  box-shadow: var(--shadow-menu);
+  overflow: hidden;
+  z-index: 200;
+  animation: slide-down 150ms ease;
 }
-.strip-day:hover { background: var(--c-border); }
-
-.strip-day.active {
-  background: var(--c-sel);
-  color: white;
-}
-.strip-day.today:not(.active) .strip-num {
-  color: var(--c-accent);
-  font-weight: 700;
-}
-
-.strip-name {
-  font-size: var(--fs-xs);
-  font-weight: 500;
-  opacity: .75;
-  text-transform: uppercase;
-  letter-spacing: .4px;
-}
-.strip-num {
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  margin-top: 2px;
-}
-
-/* ═══════════════ Calendar body ═══════════════ */
-.calendar-body {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-}
-
-/* Day view time grid */
-.time-grid {
-  display: flex;
-  position: relative;
-  min-height: 100%;
-}
-
-.time-col {
-  width: 72px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--c-border);
-}
-
-.time-slot {
-  height: 68px;
-  border-bottom: 1px solid var(--c-border);
-  display: flex;
-  align-items: flex-start;
-  padding-top: 4px;
-  padding-right: 8px;
-  cursor: pointer;
+.dropdown__item {
+  display: block;
+  width: 100%;
+  padding: 14px var(--sp-16);
+  text-align: left;
+  font-size: 15px;
+  color: var(--clr-text);
   transition: background 100ms;
 }
-.time-slot:hover { background: var(--c-accent-dim); }
+.dropdown__item:hover { background: var(--clr-bg); }
+.dropdown__item + .dropdown__item { border-top: 1px solid var(--clr-border); }
 
-.time-label {
-  font-size: var(--fs-xs);
-  color: var(--c-muted);
-  padding-left: 8px;
-  white-space: nowrap;
-}
-
-.events-col {
-  flex: 1;
-  position: relative;
-  /* match time-slot borders */
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent 67px,
-    var(--c-border) 67px,
-    var(--c-border) 68px
-  );
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0);    }
 }
 
-/* Session card (day view) */
-.session-card {
-  position: absolute;
-  left: 8px; right: 8px;
-  border-radius: var(--r-sm);
-  padding: 6px 10px;
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform 120ms, box-shadow 120ms;
-  border-left: 3px solid transparent;
-}
-.session-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px hsl(0 0% 0% / .1);
-}
-.session-card:focus-visible { outline: 2px solid var(--c-sel); outline-offset: 2px; }
-
-.card-name {
-  display: block;
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.card-meta {
-  font-size: var(--fs-xs);
-  opacity: .75;
+/* ─── Контент ───────────────────────────────────── */
+.content {
+  padding-top: var(--topbar-h);
+  padding-bottom: calc(var(--nav-h) + var(--sp-8));
+  min-height: 100dvh;
 }
 
-/* Status colors */
-.status-pending   { background: var(--s-pending-bg);   color: var(--s-pending-text);   border-left-color: var(--s-pending-text);   }
-.status-confirmed { background: var(--s-confirmed-bg); color: var(--s-confirmed-text); border-left-color: var(--s-confirmed-text); }
-.status-completed { background: var(--s-completed-bg); color: var(--s-completed-text); border-left-color: var(--s-completed-text); }
-.status-cancelled { background: var(--s-cancelled-bg); color: var(--s-cancelled-text); border-left-color: var(--s-cancelled-text); opacity: .7; }
+/* ─── Экраны ────────────────────────────────────── */
+.screen { display: none; padding: var(--sp-16); }
+.screen.active { display: block; animation: fade-in 180ms ease; }
 
-/* Week view */
-.week-grid {
-  display: flex;
-  height: max(100%, 600px);
-}
-.time-col-sm {
-  width: 52px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--c-border);
-}
-.wtime-slot {
-  height: calc(100% / 8);
-  border-bottom: 1px solid var(--c-border);
-  display: flex;
-  align-items: flex-start;
-  padding-top: 4px;
-}
-.week-cols {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-}
-.week-day-col {
-  position: relative;
-  border-right: 1px solid var(--c-border);
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent calc(100%/8 - 1px),
-    var(--c-border) calc(100%/8 - 1px),
-    var(--c-border) calc(100%/8)
-  );
-}
-.week-day-col.today { background-color: hsl(242 60% 98%); }
-
-.week-card {
-  position: absolute;
-  left: 2px; right: 2px;
-  border-radius: 6px;
-  padding: 2px 4px;
-  font-size: 10px;
-  overflow: hidden;
-  cursor: pointer;
-}
-.card-name-sm {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 
-/* Month view */
-.month-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background: var(--c-border);
-  padding: 8px 8px 0;
-}
-.month-head {
+.placeholder-text {
   text-align: center;
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  color: var(--c-muted);
-  padding: 4px 0;
-  background: var(--c-bg);
+  color: var(--clr-text-muted);
+  font-size: 15px;
+  margin-top: 60px;
 }
-.month-cell {
-  background: var(--c-surface);
-  min-height: 56px;
-  padding: 6px 4px 4px;
-  cursor: pointer;
+
+/* ─── Карточка ──────────────────────────────────── */
+.card {
+  background: var(--clr-surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--sp-12);
+}
+
+/* ─── Приветствие ───────────────────────────────── */
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-16);
+  padding: var(--sp-16) var(--sp-20);
+}
+.avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--clr-avatar-bg);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.avatar svg { width: 52px; height: 52px; }
+
+.greeting__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.greeting__hello {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--clr-text-muted);
+}
+.greeting__name {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+/* ─── Полоска календаря ─────────────────────────── */
+.calendar-strip { padding: var(--sp-16) var(--sp-16) var(--sp-20); }
+
+.calendar-strip__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-16);
+  margin-bottom: var(--sp-12);
+}
+.calendar-strip__arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 22px;
+  color: var(--clr-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background 120ms;
+}
+.calendar-strip__arrow:hover { background: var(--clr-bg); }
+
+.calendar-strip__month {
+  min-width: 110px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.calendar-strip__days {
+  display: flex;
+  gap: var(--sp-8);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 4px 2px;
+}
+.calendar-strip__days::-webkit-scrollbar { display: none; }
+
+/* День */
+.cal-day {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-4);
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--clr-bg);
+  min-width: 52px;
+  scroll-snap-align: center;
+  transition: background 150ms, transform 150ms;
+  cursor: pointer;
 }
-.month-cell.empty { cursor: default; }
-.month-cell:hover:not(.empty) { background: var(--c-sel-light); }
-.month-cell.s
+.cal-day:hover:not(.active) { background: var(--clr-border); }
+
+.cal-day__name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--clr-text-muted);
+}
+.cal-day__num {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--clr-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Активный день */
+.cal-day.active {
+  background: linear-gradient(150deg, var(--clr-accent-a), var(--clr-accent-b));
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(123, 156, 244, 0.40);
+}
+.cal-day.active .cal-day__name,
+.cal-day.active .cal-day__num { color: #ffffff; }
+
+/* ─── Нижняя навигация ──────────────────────────── */
+.bottomnav {
+  position: fixed;
+  inset: auto 0 0 0;
+  height: var(--nav-h);
+  background: var(--clr-surface);
+  box-shadow: var(--shadow-nav);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 var(--sp-8);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 100;
+}
+
+.bottomnav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: var(--sp-8) 0;
+  min-height: 44px;
+  color: var(--clr-text-muted);
+  border-radius: var(--r-sm);
+  transition: color 150ms;
+}
+.bottomnav__item.active { color: var(--clr-nav-active); }
+.bottomnav__item:hover:not(.active) { color: var(--clr-text); }
+
+.nav-icon { width: 22px; height: 22px; }
+.nav-icon-wrap { position: relative; display: inline-flex; }
+
+/* Точка-индикатор на иконке Клиентов */
+.nav-dot {
+  position: absolute;
+  top: -1px;
+  right: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--clr-dot);
+  border: 2px solid var(--clr-surface);
+}
+
+.bottomnav__label {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* FAB */
+.bottomnav__fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--clr-fab-a), var(--clr-fab-b));
+  box-shadow: var(--shadow-fab);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.bottomnav__fab:hover  { transform: scale(1.07); }
+.bottomnav__fab:active { transform: scale(0.93); box-shadow: 0 3px 10px rgba(240, 111, 176, 0.30); }
+.bottomnav__fab svg { width: 24px; height: 24px; }
+
+/* ─── Фокус ─────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--clr-accent-a);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
