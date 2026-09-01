@@ -1,3 +1,33 @@
+// ─── Supabase ─────────────────────────────────────
+const SUPABASE_URL = ''https://qhvtapqlyajkikgfacdo.supabase.co'';      // публичный URL
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';     // только публичный ключ!
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const tg  = window.Telegram?.WebApp;
+const initData = tg?.initData || '';
+
+// ─── Загрузка профиля ───────────────────────────
+async function loadUser() {
+  const nameEl = document.getElementById('user-name');
+  if (!tg?.initData) { nameEl.textContent = 'Гость'; return; }
+
+  try {
+    // Валидируем initData через бэкенд / бота
+    // Для MVP: декодируем initData и берём имя из Telegram
+    const params = new URLSearchParams(initData);
+    const userJson = params.get('user');
+    if (userJson) {
+      const u = JSON.parse(userJson);
+      if (nameEl) nameEl.textContent = u.first_name || 'Гость';
+    }
+  } catch (e) {
+    console.warn('Не удалось получить пользователя', e);
+  }
+}
+loadUser();
+
+// Telegram шапка + тёмная тема
+if (tg) { tg.expand(); tg.setHeaderColor('#FFFFFF'); }
 var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.expand(); }
 
