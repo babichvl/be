@@ -23,7 +23,7 @@
 
   <main class="content">
 
-    <!-- ===== ГЛАВНАЯ: приветствие + календарь ===== -->
+    <!-- ===== ГЛАВНАЯ ===== -->
     <section class="screen" id="screen-home">
       <div class="greeting card">
         <div class="avatar">
@@ -53,7 +53,7 @@
       </div>
     </section>
 
-    <!-- ===== РАСПИСАНИЕ: календарь + список тренировок ===== -->
+    <!-- ===== РАСПИСАНИЕ ===== -->
     <section class="screen" id="screen-schedule">
       <div class="calendar-strip card">
         <div class="calendar-strip__header">
@@ -64,35 +64,9 @@
         <div class="calendar-strip__days" id="cal-days-s"></div>
       </div>
 
-      <div class="schedule-list">
-        <div class="schedule-row">
-          <div class="schedule-time">09:00</div>
-          <div class="schedule-card card schedule-card--blue">
-            <span class="schedule-card__title">Силовая тренировка</span>
-            <span class="schedule-card__sub">Иван Петров · 60 мин</span>
-          </div>
-        </div>
-        <div class="schedule-row">
-          <div class="schedule-time">11:30</div>
-          <div class="schedule-card card schedule-card--pink">
-            <span class="schedule-card__title">Кардио + растяжка</span>
-            <span class="schedule-card__sub">Мария Соколова · 45 мин</span>
-          </div>
-        </div>
-        <div class="schedule-row">
-          <div class="schedule-time">14:00</div>
-          <div class="schedule-card card schedule-card--green">
-            <span class="schedule-card__title">Функциональный тренинг</span>
-            <span class="schedule-card__sub">Алексей Громов · 60 мин</span>
-          </div>
-        </div>
-        <div class="schedule-row">
-          <div class="schedule-time">16:30</div>
-          <div class="schedule-card card schedule-card--purple">
-            <span class="schedule-card__title">Онлайн-тренировка</span>
-            <span class="schedule-card__sub">Дарья Новикова · 30 мин</span>
-          </div>
-        </div>
+      <!-- тренировки рендерятся сюда динамически -->
+      <div class="schedule-list" id="schedule-list">
+        <p class="placeholder-text">Выберите день</p>
       </div>
     </section>
 
@@ -108,7 +82,6 @@
 
   </main>
 
-   <!-- Главная | Расписание | + | Клиенты | Программы -->
   <nav class="bottomnav">
 
     <button class="bottomnav__item" data-tab="home">
