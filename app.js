@@ -1,42 +1,37 @@
-// ─── Supabase ─────────────────────────────────────
-const SUPABASE_URL = ''https://qhvtapqlyajkikgfacdo.supabase.co'';      // публичный URL
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';     // только публичный ключ!
+// ─── Telegram ──────────────────────────────────────
+var tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.expand(); }
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const tg  = window.Telegram?.WebApp;
-const initData = tg?.initData || '';
+// ─── Supabase (только публичный anon key) ──────────
+var SUPABASE_URL      = ''https://qhvtapqlyajkikgfacdo.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ─── Загрузка профиля ───────────────────────────
-async function loadUser() {
-  const nameEl = document.getElementById('user-name');
-  if (!tg?.initData) { nameEl.textContent = 'Гость'; return; }
-
+// ─── Имя пользователя из Telegram initData ─────────
+function loadUser() {
+  var nameEl = document.getElementById('user-name');
+  if (!nameEl) return;
   try {
-    // Валидируем initData через бэкенд / бота
-    // Для MVP: декодируем initData и берём имя из Telegram
-    const params = new URLSearchParams(initData);
-    const userJson = params.get('user');
+    var params   = new URLSearchParams(tg && tg.initData ? tg.initData : '');
+    var userJson = params.get('user');
     if (userJson) {
-      const u = JSON.parse(userJson);
-      if (nameEl) nameEl.textContent = u.first_name || 'Гость';
+      var u = JSON.parse(userJson);
+      nameEl.textContent = u.first_name || 'Тренер';
+    } else {
+      nameEl.textContent = 'Тренер';
     }
   } catch (e) {
-    console.warn('Не удалось получить пользователя', e);
+    nameEl.textContent = 'Тренер';
   }
 }
 loadUser();
 
-// Telegram шапка + тёмная тема
-if (tg) { tg.expand(); tg.setHeaderColor('#FFFFFF'); }
-var tg = window.Telegram && window.Telegram.WebApp;
-if (tg) { tg.expand(); }
-
 // ─── Вкладки ───────────────────────────────────────
 var TAB_TITLES = {
-  home:      'Главная',
-  schedule:  'Расписание',
-  clients:   'Клиенты',
-  programs:  'Программы'
+  home:     'Главная',
+  schedule: 'Расписание',
+  clients:  'Клиенты',
+  programs: 'Программы'
 };
 
 var navItems  = document.querySelectorAll('.bottomnav__item[data-tab]');
@@ -50,7 +45,7 @@ function switchTab(tabId) {
   screens.forEach(function(s) {
     s.classList.toggle('active', s.id === 'screen-' + tabId);
   });
-  pageTitle.textContent = TAB_TITLES[tabId] || 'Главная';
+  if (pageTitle) pageTitle.textContent = TAB_TITLES[tabId] || 'Главная';
 }
 
 navItems.forEach(function(btn) {
