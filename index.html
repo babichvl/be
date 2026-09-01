@@ -108,8 +108,16 @@
 
   </main>
 
-  <!-- Порядок кнопок: Расписание | Клиенты | + | Программы | Главная -->
+   <!-- Главная | Расписание | + | Клиенты | Программы -->
   <nav class="bottomnav">
+
+    <button class="bottomnav__item" data-tab="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
+        <path d="M9 21V12h6v9"/>
+      </svg>
+      <span class="bottomnav__label">Главная</span>
+    </button>
 
     <button class="bottomnav__item" data-tab="schedule">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -117,6 +125,13 @@
         <path d="M16 2v4M8 2v4M3 10h18"/>
       </svg>
       <span class="bottomnav__label">Расписание</span>
+    </button>
+
+    <button class="bottomnav__fab" id="fab-btn" aria-label="Добавить">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
     </button>
 
     <button class="bottomnav__item" data-tab="clients">
@@ -128,13 +143,6 @@
       <span class="bottomnav__label">Клиенты</span>
     </button>
 
-    <button class="bottomnav__fab" id="fab-btn" aria-label="Добавить">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-    </button>
-
     <button class="bottomnav__item" data-tab="programs">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M4 19V6a2 2 0 0 1 2-2h13"/>
@@ -143,14 +151,6 @@
         <line x1="9" y1="16" x2="13" y2="16"/>
       </svg>
       <span class="bottomnav__label">Программы</span>
-    </button>
-
-    <button class="bottomnav__item" data-tab="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
-      <span class="bottomnav__label">Главная</span>
     </button>
 
   </nav>
