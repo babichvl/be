@@ -1,152 +1,210 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FitnessPro</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FitnessPro</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="app-container">
-        <header class="header">
-            <button class="menu-btn" id="menuBtn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="5" cy="5" r="1" fill="currentColor" stroke="none"/>
-                    <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none"/>
-                    <circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/>
-                    <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>
-                </svg>
-            </button>
-            <div class="profile-avatar" id="profileAvatar">
-                <div class="avatar-inner"></div>
-                <div class="avatar-status"></div>
-            </div>
-        </header>
 
-        <main class="main-content">
-            <!-- Общая -->
-            <div class="tab-content active" id="tabOverview">
-                <h1 class="page-title">Общая</h1>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📊</div>
-                        <div class="stat-value">12</div>
-                        <div class="stat-label">Тренировок</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-value">8</div>
-                        <div class="stat-label">Клиентов</div>
-                    </div>
-                </div>
-                <div class="section-card">
-                    <h3 class="section-title">Сегодня</h3>
-                    <p class="empty-state">Нет запланированных тренировок</p>
-                </div>
-            </div>
+  <!-- ───── Tabs ───── -->
+  <div class="app">
 
-            <!-- Расписание -->
-            <div class="tab-content" id="tabSchedule">
-                <h1 class="page-title">Расписание</h1>
-                <div class="calendar-strip">
-                    <div class="date-item">
-                        <div class="date-number">18</div>
-                        <div class="date-day">Пн</div>
-                    </div>
-                    <div class="date-item">
-                        <div class="date-number">20</div>
-                        <div class="date-day">Ср</div>
-                    </div>
-                    <div class="date-item active">
-                        <div class="date-number">24</div>
-                        <div class="date-day">Вс</div>
-                        <div class="date-indicator">🔔</div>
-                    </div>
-                    <div class="date-item">
-                        <div class="date-number">26</div>
-                        <div class="date-day">Вт</div>
-                    </div>
-                    <div class="date-item">
-                        <div class="date-number">30</div>
-                        <div class="date-day">Сб</div>
-                    </div>
-                </div>
-                <div class="section-card">
-                    <p class="empty-state">Выберите дату</p>
-                </div>
-            </div>
+    <!-- Schedule Tab -->
+    <section class="tab active" id="tab-schedule">
+      <header class="page-header">
+        <h1 class="page-title">Расписание</h1>
+        <div class="view-switcher">
+          <button class="view-btn active" data-view="day">День</button>
+          <button class="view-btn" data-view="week">Неделя</button>
+          <button class="view-btn" data-view="month">Месяц</button>
+        </div>
+      </header>
 
-            <!-- Клиенты -->
-            <div class="tab-content" id="tabClients">
-                <h1 class="page-title">Клиенты</h1>
-                <div class="search-bar">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                    </svg>
-                    <input type="text" placeholder="Поиск клиента...">
-                </div>
-                <div class="section-card">
-                    <p class="empty-state">Список клиентов пуст</p>
-                </div>
-            </div>
+      <!-- Date navigation -->
+      <div class="date-nav">
+        <button class="nav-arrow" id="prev-period">&#8249;</button>
+        <span class="period-label" id="period-label"></span>
+        <button class="nav-arrow" id="next-period">&#8250;</button>
+      </div>
 
-            <!-- Программы -->
-            <div class="tab-content" id="tabPrograms">
-                <h1 class="page-title">Программы</h1>
-                <div class="section-card">
-                    <p class="empty-state">Нет созданных программ</p>
-                </div>
-            </div>
-        </main>
+      <!-- Week strip (day/week views) -->
+      <div class="week-strip" id="week-strip"></div>
 
-        <nav class="bottom-nav">
-            <button class="nav-btn active" data-tab="tabOverview">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7" rx="2"></rect>
-                    <rect x="14" y="3" width="7" height="7" rx="2"></rect>
-                    <rect x="3" y="14" width="7" height="7" rx="2"></rect>
-                    <rect x="14" y="14" width="7" height="7" rx="2"></rect>
-                </svg>
-                <span>Общая</span>
-            </button>
-            <button class="nav-btn" data-tab="tabSchedule">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                    <line x1="9" y1="4" x2="9" y2="10"></line>
-                    <line x1="15" y1="4" x2="15" y2="10"></line>
-                </svg>
-                <span>Расписание</span>
-            </button>
-            <button class="add-btn" id="addBtn">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-            </button>
-            <button class="nav-btn" data-tab="tabClients">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                <span>Клиенты</span>
-            </button>
-            <button class="nav-btn" data-tab="tabPrograms">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="12" y1="18" x2="12" y2="12"></line>
-                    <line x1="9" y1="15" x2="15" y2="15"></line>
-                </svg>
-                <span>Программы</span>
-            </button>
-        </nav>
+      <!-- Calendar body -->
+      <div class="calendar-body" id="calendar-body"></div>
+    </section>
+
+    <!-- Clients Tab (stub) -->
+    <section class="tab" id="tab-clients">
+      <header class="page-header"><h1 class="page-title">Клиенты</h1></header>
+      <p class="stub-text">Скоро</p>
+    </section>
+
+    <!-- Programs Tab (stub) -->
+    <section class="tab" id="tab-programs">
+      <header class="page-header"><h1 class="page-title">Программы</h1></header>
+      <p class="stub-text">Скоро</p>
+    </section>
+
+    <!-- Home Tab (stub) -->
+    <section class="tab" id="tab-home">
+      <header class="page-header"><h1 class="page-title">Главная</h1></header>
+      <p class="stub-text">Скоро</p>
+    </section>
+
+    <!-- FAB -->
+    <button class="fab" id="fab-add" aria-label="Добавить тренировку">+</button>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="schedule" aria-label="Расписание">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="1.8"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="1.8"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span>Расписание</span>
+      </button>
+      <button class="nav-item" data-tab="clients" aria-label="Клиенты">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+        <span>Клиенты</span>
+      </button>
+      <button class="nav-item" data-tab="programs" aria-label="Программы">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>
+        <span>Программы</span>
+      </button>
+      <button class="nav-item" data-tab="home" aria-label="Главная">
+        <svg viewBox="0 0 24 24"><path d="M3 12L12 3l9 9" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M5 10v10a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V10" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>
+        <span>Главная</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ───── Modal: Add / Edit session ───── -->
+  <div class="modal-overlay" id="modal-add" role="dialog" aria-modal="true" aria-label="Новая тренировка">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title" id="modal-add-title">Новая тренировка</h2>
+
+      <form id="form-session" novalidate>
+        <input type="hidden" id="f-session-id" />
+
+        <div class="field">
+          <label for="f-client">Клиент</label>
+          <select id="f-client" required>
+            <option value="">— выберите клиента —</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-type">Тип</label>
+          <select id="f-type">
+            <option value="personal">Персональная</option>
+            <option value="group">Групповая</option>
+            <option value="online">Онлайн</option>
+            <option value="intro">Вводная</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-date">Дата</label>
+          <input type="date" id="f-date" required />
+        </div>
+
+        <div class="field row">
+          <div class="field-half">
+            <label for="f-time">Время начала</label>
+            <input type="time" id="f-time" required />
+          </div>
+          <div class="field-half">
+            <label for="f-duration">Длительность (мин)</label>
+            <input type="number" id="f-duration" value="60" min="15" max="480" />
+          </div>
+        </div>
+
+        <div class="field" id="field-online-link" style="display:none">
+          <label for="f-link">Ссылка на встречу</label>
+          <input type="url" id="f-link" placeholder="https://meet.jit.si/..." />
+          <small class="field-hint">Оставьте пустым — сгенерируется автоматически</small>
+        </div>
+
+        <div class="field">
+          <label for="f-cost">Стоимость (₽, необязательно)</label>
+          <input type="number" id="f-cost" min="0" placeholder="0" />
+        </div>
+
+        <div class="field">
+          <label for="f-repeat">Повторение</label>
+          <select id="f-repeat">
+            <option value="none">Без повторения</option>
+            <option value="daily">Ежедневно (30 дней)</option>
+            <option value="weekly">Еженедельно (4 недели)</option>
+            <option value="custom">По дням недели</option>
+          </select>
+        </div>
+
+        <div class="field" id="field-days" style="display:none">
+          <label>Дни недели</label>
+          <div class="day-chips">
+            <label class="day-chip"><input type="checkbox" value="0" /><span>Пн</span></label>
+            <label class="day-chip"><input type="checkbox" value="1" /><span>Вт</span></label>
+            <label class="day-chip"><input type="checkbox" value="2" /><span>Ср</span></label>
+            <label class="day-chip"><input type="checkbox" value="3" /><span>Чт</span></label>
+            <label class="day-chip"><input type="checkbox" value="4" /><span>Пт</span></label>
+            <label class="day-chip"><input type="checkbox" value="5" /><span>Сб</span></label>
+            <label class="day-chip"><input type="checkbox" value="6" /><span>Вс</span></label>
+          </div>
+        </div>
+
+        <div class="conflict-warning" id="conflict-warning" style="display:none">
+          ⚠️ В это время уже есть другая тренировка. Проверьте расписание.
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="btn-cancel-add">Отмена</button>
+          <button type="submit" class="btn-primary" id="btn-save-session">Сохранить</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <script src="app.js"></script>
+  <!-- ───── Modal: Session detail ───── -->
+  <div class="modal-overlay" id="modal-detail" role="dialog" aria-modal="true" aria-label="Тренировка">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="detail-header">
+        <span class="detail-status-badge" id="d-status-badge"></span>
+        <h2 class="modal-title" id="d-title"></h2>
+      </div>
+      <div class="detail-row"><span class="detail-label">Клиент</span><span id="d-client"></span></div>
+      <div class="detail-row"><span class="detail-label">Тип</span><span id="d-type"></span></div>
+      <div class="detail-row"><span class="detail-label">Дата и время</span><span id="d-datetime"></span></div>
+      <div class="detail-row"><span class="detail-label">Длительность</span><span id="d-duration"></span></div>
+      <div class="detail-row" id="d-row-link" style="display:none">
+        <span class="detail-label">Ссылка</span>
+        <a id="d-link" href="#" target="_blank" rel="noopener">Открыть встречу</a>
+      </div>
+      <div class="detail-row" id="d-row-cost" style="display:none">
+        <span class="detail-label">Стоимость</span><span id="d-cost"></span>
+      </div>
+
+      <div class="detail-actions" id="detail-actions"></div>
+
+      <!-- Reschedule sub-form -->
+      <div id="reschedule-form" style="display:none" class="reschedule-form">
+        <div class="field row">
+          <div class="field-half"><label for="rs-date">Новая дата</label><input type="date" id="rs-date" /></div>
+          <div class="field-half"><label for="rs-time">Время</label><input type="time" id="rs-time" /></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="btn-rs-cancel">Отмена</button>
+          <button type="button" class="btn-primary" id="btn-rs-save">Сохранить</button>
+        </div>
+      </div>
+
+      <button class="btn-ghost full-width" id="btn-close-detail">Закрыть</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
 </body>
 </html>
