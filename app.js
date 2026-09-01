@@ -1,39 +1,42 @@
-// Инициализация Telegram Web App
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.expand(); tg.enableClosingConfirmation(); }
+// Telegram Web App
+var tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.expand(); }
 
-// ─── Переключение вкладок ──────────────────────────
-const navItems  = document.querySelectorAll('.bottomnav__item[data-tab]');
-const screens   = document.querySelectorAll('.screen');
-const pageTitle = document.getElementById('page-title');
+// Скрипт находится в конце <body> — DOM уже готов, обёртки не нужны
 
-const TAB_TITLES = {
+// ─── Вкладки ───────────────────────────────────────
+var TAB_TITLES = {
   home:     'Главная',
   schedule: 'Расписание',
   clients:  'Клиенты',
-  workouts: 'Тренировки',
+  workouts: 'Тренировки'
 };
 
+var navItems  = document.querySelectorAll('.bottomnav__item[data-tab]');
+var screens   = document.querySelectorAll('.screen');
+var pageTitle = document.getElementById('page-title');
+
 function switchTab(tabId) {
-  navItems.forEach(btn =>
-    btn.classList.toggle('active', btn.dataset.tab === tabId)
-  );
-  screens.forEach(s =>
-    s.classList.toggle('active', s.id === 'screen-' + tabId)
-  );
+  for (var i = 0; i < navItems.length; i++) {
+    navItems[i].classList.toggle('active', navItems[i].dataset.tab === tabId);
+  }
+  for (var j = 0; j < screens.length; j++) {
+    screens[j].classList.toggle('active', screens[j].id === 'screen-' + tabId);
+  }
   pageTitle.textContent = TAB_TITLES[tabId] || 'Главная';
 }
 
-navItems.forEach(btn =>
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab))
-);
+for (var k = 0; k < navItems.length; k++) {
+  navItems[k].addEventListener('click', (function(id) {
+    return function() { switchTab(id); };
+  })(navItems[k].dataset.tab));
+}
 
-// Начальное состояние — Главная
-switchTab('home');
+switchTab('home'); // начальное состояние
 
-// ─── Меню (три точки) ──────────────────────────────
-const menuBtn  = document.getElementById('menu-btn');
-const dropdown = document.getElementById('dropdown');
+// ─── Три точки — дропдаун ──────────────────────────
+var menuBtn  = document.getElementById('menu-btn');
+var dropdown = document.getElementById('dropdown');
 
 menuBtn.addEventListener('click', function(e) {
   e.stopPropagation();
@@ -48,64 +51,61 @@ document.getElementById('fab-btn').addEventListener('click', function() {
   alert('Добавить — в разработке');
 });
 
-// ─── Полоска календаря ─────────────────────────────
-var DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-var MONTH_NAMES = ['January','February','March','April','May','June',
-                   'July','August','September','October','November','December'];
+// ─── Календарь ─────────────────────────────────────
+var DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var MONTHS = ['January','February','March','April','May','June',
+              'July','August','September','October','November','December'];
 
 function buildCalendar(daysId, monthId) {
-  var calDays  = document.getElementById(daysId);
-  var calMonth = document.getElementById(monthId);
+  var wrap  = document.getElementById(daysId);
+  var label = document.getElementById(monthId);
 
-  if (!calDays || !calMonth) {
-    console.warn('Calendar elements not found:', daysId, monthId);
+  // Проверка — элементы должны быть в DOM
+  if (!wrap || !label) {
+    console.error('buildCalendar: не найдены элементы', daysId, monthId);
     return;
   }
 
   var today = new Date();
-  calMonth.textContent = MONTH_NAMES[today.getMonth()] + ' ' + today.getFullYear();
-  calDays.innerHTML = '';
+  label.textContent = MONTHS[today.getMonth()] + ' ' + today.getFullYear();
 
-  for (var offset = -3; offset <= 3; offset++) {
-    var d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
-    var isToday = (offset === 0);
+  // Очищаем и строим 7 дней: -3 … сегодня … +3
+  wrap.innerHTML = '';
+  for (var d = -3; d <= 3; d++) {
+    var date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + d);
+    var chip = document.createElement('div');
+    chip.className = 'cal-day' + (d === 0 ? ' active' : '');
 
-    var el = document.createElement('div');
-    el.className = 'cal-day' + (isToday ? ' active' : '');
+    var nameSpan = document.createElement('span');
+    nameSpan.className = 'cal-day__name';
+    nameSpan.textContent = DAYS[date.getDay()];
 
-    var nameEl = document.createElement('span');
-    nameEl.className = 'cal-day__name';
-    nameEl.textContent = DAY_NAMES[d.getDay()];
+    var numSpan = document.createElement('span');
+    numSpan.className = 'cal-day__num';
+    numSpan.textContent = date.getDate();
 
-    var numEl = document.createElement('span');
-    numEl.className = 'cal-day__num';
-    numEl.textContent = d.getDate();
+    chip.appendChild(nameSpan);
+    chip.appendChild(numSpan);
 
-    el.appendChild(nameEl);
-    el.appendChild(numEl);
+    // Клик — меняет активный день
+    chip.addEventListener('click', function(el) {
+      return function() {
+        var all = wrap.querySelectorAll('.cal-day');
+        for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+        el.classList.add('active');
+      };
+    }(chip));
 
-    // Клик — переключить активный день
-    (function(elem) {
-      elem.addEventListener('click', function() {
-        calDays.querySelectorAll('.cal-day').forEach(function(c) {
-          c.classList.remove('active');
-        });
-        elem.classList.add('active');
-      });
-    })(el);
-
-    calDays.appendChild(el);
+    wrap.appendChild(chip);
   }
 
-  // Прокрутить активный день в центр
+  // Прокрутить активный в центр
   setTimeout(function() {
-    var active = calDays.querySelector('.cal-day.active');
-    if (active) {
-      active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
-  }, 50);
+    var active = wrap.querySelector('.cal-day.active');
+    if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }, 60);
 }
 
-// Строим оба календаря (Главная и Расписание)
-buildCalendar('cal-days',   'cal-month');
-buildCalendar('cal-days-s', 'cal-month-s');
+// Строим оба календаря
+buildCalendar('cal-days',   'cal-month');    // вкладка Главная
+buildCalendar('cal-days-s', 'cal-month-s'); // вкладка Расписание
