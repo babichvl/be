@@ -423,3 +423,359 @@ body {
         padding: var(--spacing-md);
     }
 }
+/* ═══════════════ Tokens ═══════════════ */
+:root {
+  /* Neutral ramp */
+  --c-bg:         hsl(0 0% 99%);
+  --c-surface:    hsl(0 0% 100%);
+  --c-border:     hsl(220 14% 93%);
+  --c-muted:      hsl(220 10% 60%);
+  --c-body:       hsl(220 15% 18%);
+
+  /* Accent – pink */
+  --c-accent:     hsl(340 85% 65%);
+  --c-accent-dim: hsl(340 80% 95%);
+
+  /* Selected day – soft periwinkle */
+  --c-sel:        hsl(242 60% 65%);
+  --c-sel-light:  hsl(242 60% 94%);
+
+  /* Status */
+  --s-pending-bg:   hsl(0 0% 94%);
+  --s-pending-text: hsl(220 12% 45%);
+  --s-confirmed-bg: hsl(44 95% 88%);
+  --s-confirmed-text: hsl(38 80% 35%);
+  --s-completed-bg: hsl(145 55% 85%);
+  --s-completed-text: hsl(145 55% 28%);
+  --s-cancelled-bg: hsl(0 72% 90%);
+  --s-cancelled-text: hsl(0 60% 38%);
+
+  /* Spacing / radius */
+  --r-sm:  8px;
+  --r-md: 14px;
+  --r-lg: 24px;
+
+  /* Type scale */
+  --fs-xs:  11px;
+  --fs-sm:  13px;
+  --fs-md:  15px;
+  --fs-lg:  18px;
+  --fs-xl:  22px;
+}
+
+/* ═══════════════ Reset / Base ═══════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--c-bg);
+  color: var(--c-body);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+input, select { font: inherit; color: inherit; }
+a { color: var(--c-sel); }
+
+/* ═══════════════ Layout ═══════════════ */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+}
+
+.tab {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+.tab.active { display: flex; }
+
+/* ═══════════════ Page header ═══════════════ */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 8px;
+  flex-shrink: 0;
+}
+
+.page-title {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.view-switcher {
+  display: flex;
+  background: var(--c-border);
+  border-radius: 10px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.view-btn {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  color: var(--c-muted);
+  transition: background 140ms, color 140ms;
+}
+.view-btn.active {
+  background: var(--c-surface);
+  color: var(--c-body);
+  box-shadow: 0 1px 3px hsl(0 0% 0% / .08);
+}
+
+/* ═══════════════ Date navigation ═══════════════ */
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 20px;
+  flex-shrink: 0;
+}
+
+.nav-arrow {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 28px;
+  text-align: center;
+  color: var(--c-muted);
+  background: var(--c-border);
+  transition: background 140ms;
+}
+.nav-arrow:hover { background: hsl(220 14% 88%); }
+
+.period-label {
+  flex: 1;
+  text-align: center;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-body);
+}
+
+/* ═══════════════ Week strip ═══════════════ */
+.week-strip {
+  display: flex;
+  overflow-x: auto;
+  gap: 4px;
+  padding: 8px 16px 4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.week-strip::-webkit-scrollbar { display: none; }
+
+.strip-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+  padding: 6px 4px;
+  border-radius: var(--r-md);
+  scroll-snap-align: center;
+  transition: background 140ms;
+}
+.strip-day:hover { background: var(--c-border); }
+
+.strip-day.active {
+  background: var(--c-sel);
+  color: white;
+}
+.strip-day.today:not(.active) .strip-num {
+  color: var(--c-accent);
+  font-weight: 700;
+}
+
+.strip-name {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  opacity: .75;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.strip-num {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* ═══════════════ Calendar body ═══════════════ */
+.calendar-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+
+/* Day view time grid */
+.time-grid {
+  display: flex;
+  position: relative;
+  min-height: 100%;
+}
+
+.time-col {
+  width: 72px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--c-border);
+}
+
+.time-slot {
+  height: 68px;
+  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 4px;
+  padding-right: 8px;
+  cursor: pointer;
+  transition: background 100ms;
+}
+.time-slot:hover { background: var(--c-accent-dim); }
+
+.time-label {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  padding-left: 8px;
+  white-space: nowrap;
+}
+
+.events-col {
+  flex: 1;
+  position: relative;
+  /* match time-slot borders */
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 67px,
+    var(--c-border) 67px,
+    var(--c-border) 68px
+  );
+}
+
+/* Session card (day view) */
+.session-card {
+  position: absolute;
+  left: 8px; right: 8px;
+  border-radius: var(--r-sm);
+  padding: 6px 10px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 120ms, box-shadow 120ms;
+  border-left: 3px solid transparent;
+}
+.session-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(0 0% 0% / .1);
+}
+.session-card:focus-visible { outline: 2px solid var(--c-sel); outline-offset: 2px; }
+
+.card-name {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-meta {
+  font-size: var(--fs-xs);
+  opacity: .75;
+}
+
+/* Status colors */
+.status-pending   { background: var(--s-pending-bg);   color: var(--s-pending-text);   border-left-color: var(--s-pending-text);   }
+.status-confirmed { background: var(--s-confirmed-bg); color: var(--s-confirmed-text); border-left-color: var(--s-confirmed-text); }
+.status-completed { background: var(--s-completed-bg); color: var(--s-completed-text); border-left-color: var(--s-completed-text); }
+.status-cancelled { background: var(--s-cancelled-bg); color: var(--s-cancelled-text); border-left-color: var(--s-cancelled-text); opacity: .7; }
+
+/* Week view */
+.week-grid {
+  display: flex;
+  height: max(100%, 600px);
+}
+.time-col-sm {
+  width: 52px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--c-border);
+}
+.wtime-slot {
+  height: calc(100% / 8);
+  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+.week-cols {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.week-day-col {
+  position: relative;
+  border-right: 1px solid var(--c-border);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(100%/8 - 1px),
+    var(--c-border) calc(100%/8 - 1px),
+    var(--c-border) calc(100%/8)
+  );
+}
+.week-day-col.today { background-color: hsl(242 60% 98%); }
+
+.week-card {
+  position: absolute;
+  left: 2px; right: 2px;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 10px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.card-name-sm {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Month view */
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--c-border);
+  padding: 8px 8px 0;
+}
+.month-head {
+  text-align: center;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-muted);
+  padding: 4px 0;
+  background: var(--c-bg);
+}
+.month-cell {
+  background: var(--c-surface);
+  min-height: 56px;
+  padding: 6px 4px 4px;
+  cursor: pointer;
+  transition: background 120ms;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.month-cell.empty { cursor: default; }
+.month-cell:hover:not(.empty) { background: var(--c-sel-light); }
+.month-cell.s
