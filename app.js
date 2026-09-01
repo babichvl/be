@@ -1,15 +1,12 @@
-// Telegram Web App
 var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.expand(); }
 
-// Скрипт находится в конце <body> — DOM уже готов, обёртки не нужны
-
 // ─── Вкладки ───────────────────────────────────────
 var TAB_TITLES = {
-  home:     'Главная',
-  schedule: 'Расписание',
-  clients:  'Клиенты',
-  workouts: 'Тренировки'
+  home:      'Главная',
+  schedule:  'Расписание',
+  clients:   'Клиенты',
+  programs:  'Программы'
 };
 
 var navItems  = document.querySelectorAll('.bottomnav__item[data-tab]');
@@ -17,24 +14,24 @@ var screens   = document.querySelectorAll('.screen');
 var pageTitle = document.getElementById('page-title');
 
 function switchTab(tabId) {
-  for (var i = 0; i < navItems.length; i++) {
-    navItems[i].classList.toggle('active', navItems[i].dataset.tab === tabId);
-  }
-  for (var j = 0; j < screens.length; j++) {
-    screens[j].classList.toggle('active', screens[j].id === 'screen-' + tabId);
-  }
+  navItems.forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+  screens.forEach(function(s) {
+    s.classList.toggle('active', s.id === 'screen-' + tabId);
+  });
   pageTitle.textContent = TAB_TITLES[tabId] || 'Главная';
 }
 
-for (var k = 0; k < navItems.length; k++) {
-  navItems[k].addEventListener('click', (function(id) {
-    return function() { switchTab(id); };
-  })(navItems[k].dataset.tab));
-}
+navItems.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    switchTab(btn.dataset.tab);
+  });
+});
 
-switchTab('home'); // начальное состояние
+switchTab('home');
 
-// ─── Три точки — дропдаун ──────────────────────────
+// ─── Меню ──────────────────────────────────────────
 var menuBtn  = document.getElementById('menu-btn');
 var dropdown = document.getElementById('dropdown');
 
@@ -59,39 +56,33 @@ var MONTHS = ['January','February','March','April','May','June',
 function buildCalendar(daysId, monthId) {
   var wrap  = document.getElementById(daysId);
   var label = document.getElementById(monthId);
-
-  // Проверка — элементы должны быть в DOM
-  if (!wrap || !label) {
-    console.error('buildCalendar: не найдены элементы', daysId, monthId);
-    return;
-  }
+  if (!wrap || !label) return;
 
   var today = new Date();
   label.textContent = MONTHS[today.getMonth()] + ' ' + today.getFullYear();
-
-  // Очищаем и строим 7 дней: -3 … сегодня … +3
   wrap.innerHTML = '';
-  for (var d = -3; d <= 3; d++) {
-    var date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + d);
+
+  for (var i = -3; i <= 3; i++) {
+    var date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
     var chip = document.createElement('div');
-    chip.className = 'cal-day' + (d === 0 ? ' active' : '');
+    chip.className = 'cal-day' + (i === 0 ? ' active' : '');
 
-    var nameSpan = document.createElement('span');
-    nameSpan.className = 'cal-day__name';
-    nameSpan.textContent = DAYS[date.getDay()];
+    var nameEl = document.createElement('span');
+    nameEl.className = 'cal-day__name';
+    nameEl.textContent = DAYS[date.getDay()];
 
-    var numSpan = document.createElement('span');
-    numSpan.className = 'cal-day__num';
-    numSpan.textContent = date.getDate();
+    var numEl = document.createElement('span');
+    numEl.className = 'cal-day__num';
+    numEl.textContent = date.getDate();
 
-    chip.appendChild(nameSpan);
-    chip.appendChild(numSpan);
+    chip.appendChild(nameEl);
+    chip.appendChild(numEl);
 
-    // Клик — меняет активный день
     chip.addEventListener('click', function(el) {
       return function() {
-        var all = wrap.querySelectorAll('.cal-day');
-        for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+        wrap.querySelectorAll('.cal-day').forEach(function(c) {
+          c.classList.remove('active');
+        });
         el.classList.add('active');
       };
     }(chip));
@@ -99,13 +90,9 @@ function buildCalendar(daysId, monthId) {
     wrap.appendChild(chip);
   }
 
-  // Прокрутить активный в центр
-  setTimeout(function() {
-    var active = wrap.querySelector('.cal-day.active');
-    if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
-  }, 60);
+  var active = wrap.querySelector('.cal-day.active');
+  if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
-// Строим оба календаря
-buildCalendar('cal-days',   'cal-month');    // вкладка Главная
-buildCalendar('cal-days-s', 'cal-month-s'); // вкладка Расписание
+buildCalendar('cal-days',   'cal-month');
+buildCalendar('cal-days-s', 'cal-month-s');
