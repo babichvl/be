@@ -21,7 +21,7 @@ function loadUser() {
       trainerTgId = u.id || null;
     } else {
       if (nameEl) nameEl.textContent = 'Тренер';
-      trainerTgId = 111111; // фоллбэк для теста в браузере
+      trainerTgId = 111111; // фоллбэк для теста
     }
   } catch (e) {
     if (nameEl) nameEl.textContent = 'Тренер';
@@ -32,9 +32,9 @@ loadUser();
 
 // ─── Вкладки ───────────────────────────────────────
 var TAB_TITLES = { home:'Главная', schedule:'Расписание', clients:'Клиенты', programs:'Программы' };
-var navItems   = document.querySelectorAll('.bottomnav__item[data-tab]');
-var screens    = document.querySelectorAll('.screen');
-var pageTitle  = document.getElementById('page-title');
+var navItems  = document.querySelectorAll('.bottomnav__item[data-tab]');
+var screens   = document.querySelectorAll('.screen');
+var pageTitle = document.getElementById('page-title');
 
 function switchTab(tabId) {
   navItems.forEach(function(btn) {
@@ -89,6 +89,8 @@ async function loadWorkouts(dateStr, tgId) {
     return;
   }
 
+  console.log('[workouts] запрос: trainer_tg_id=' + tgId + ', workout_date=' + dateStr);
+
   var result = await sb
     .from('workouts')
     .select('title, client_name, workout_date, start_time, duration')
@@ -97,10 +99,12 @@ async function loadWorkouts(dateStr, tgId) {
     .order('start_time');
 
   if (result.error) {
-    console.error('Supabase error:', result.error);
+    console.error('[workouts] ошибка:', result.error);
     listEl.innerHTML = '<p class="placeholder-text">Ошибка: ' + result.error.message + '</p>';
     return;
   }
+
+  console.log('[workouts] получено:', result.data);
 
   var rows = result.data;
   if (!rows || rows.length === 0) {
@@ -111,7 +115,7 @@ async function loadWorkouts(dateStr, tgId) {
   listEl.innerHTML = rows.map(function(w, i) {
     var time  = w.start_time ? w.start_time.slice(0, 5) : '--:--';
     var color = CARD_COLORS[i % CARD_COLORS.length];
-    var name  = w.client_name || w.title || 'Клиент';
+    var name  = w.client_name || 'Клиент';
     var title = w.title || 'Тренировка';
     return (
       '<div class="schedule-row">' +
@@ -130,27 +134,22 @@ var DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var MONTHS = ['January','February','March','April','May','June',
               'July','August','September','October','November','December'];
 
-// строим каждый календарь с отдельным смещением месяца
 function buildCalendar(daysId, monthId, onSelect, state) {
   var wrap  = document.getElementById(daysId);
   var label = document.getElementById(monthId);
   if (!wrap || !label) return;
 
-  // state.offset — сдвиг месяцев от сегодня
   var ref = new Date(today.getFullYear(), today.getMonth() + state.offset, 1);
   label.textContent = MONTHS[ref.getMonth()] + ' ' + ref.getFullYear();
   wrap.innerHTML = '';
 
-  // показываем дни текущего месяца
   var daysInMonth = new Date(ref.getFullYear(), ref.getMonth() + 1, 0).getDate();
   for (var d = 1; d <= daysInMonth; d++) {
     var date = new Date(ref.getFullYear(), ref.getMonth(), d);
     var iso  = dateToISO(date);
-    var isToday = iso === dateToISO(today);
-    var isSelected = iso === selectedScheduleDate;
 
     var chip = document.createElement('div');
-    chip.className    = 'cal-day' + (isSelected ? ' active' : '');
+    chip.className    = 'cal-day' + (iso === selectedScheduleDate ? ' active' : '');
     chip.dataset.date = iso;
 
     var nameEl = document.createElement('span');
@@ -175,16 +174,24 @@ function buildCalendar(daysId, monthId, onSelect, state) {
     wrap.appendChild(chip);
   }
 
-  // скроллим к активному или первому дню текущего месяца
   var active = wrap.querySelector('.cal-day.active') || wrap.querySelector('.cal-day');
   if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
-// инициализация главного календаря (только визуал)
+// ─── Главная: календарь + стрелки ──────────────────
 var homeCalState = { offset: 0 };
-buildCalendar('cal-days', 'cal-month', null, homeCalState);
 
-// инициализация календаря расписания (с навигацией и загрузкой тренировок)
+function rebuildHomeCalendar() {
+  buildCalendar('cal-days', 'cal-month', null, homeCalState);
+}
+rebuildHomeCalendar();
+
+document.querySelector('#screen-home .calendar-strip__arrow:first-child')
+  .addEventListener('click', function() { homeCalState.offset--; rebuildHomeCalendar(); });
+document.querySelector('#screen-home .calendar-strip__arrow:last-child')
+  .addEventListener('click', function() { homeCalState.offset++; rebuildHomeCalendar(); });
+
+// ─── Расписание: календарь + стрелки ───────────────
 var schedCalState = { offset: 0 };
 
 function rebuildScheduleCalendar() {
@@ -193,18 +200,9 @@ function rebuildScheduleCalendar() {
     loadWorkouts(dateISO, trainerTgId);
   }, schedCalState);
 }
-
 rebuildScheduleCalendar();
 
-// стрелки расписания
 document.querySelector('#screen-schedule .calendar-strip__arrow:first-child')
-  .addEventListener('click', function() {
-    schedCalState.offset--;
-    rebuildScheduleCalendar();
-  });
-
+  .addEventListener('click', function() { schedCalState.offset--; rebuildScheduleCalendar(); });
 document.querySelector('#screen-schedule .calendar-strip__arrow:last-child')
-  .addEventListener('click', function() {
-    schedCalState.offset++;
-    rebuildScheduleCalendar();
-  });
+  .addEventListener('click', function() { schedCalState.offset++; rebuildScheduleCalendar(); });
