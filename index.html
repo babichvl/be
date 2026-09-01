@@ -1,126 +1,94 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FitCoach</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
+// Инициализация Telegram Web App
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.expand(); tg.enableClosingConfirmation(); }
 
-  <!-- Фиксированная шапка -->
-  <header class="topbar">
-    <div class="topbar__spacer"></div>
-    <h1 class="topbar__title" id="page-title">Home</h1>
-    <button class="topbar__menu-btn" id="menu-btn" aria-label="Меню">⋮</button>
-  </header>
+document.addEventListener('DOMContentLoaded', () => {
 
-  <!-- Дропдаун меню -->
-  <div class="dropdown" id="dropdown" hidden>
-    <button class="dropdown__item">Профиль</button>
-    <button class="dropdown__item">Настройки</button>
-  </div>
+  // ─── Переключение вкладок ──────────────────────
+  const navItems  = document.querySelectorAll('.bottomnav__item[data-tab]');
+  const screens   = document.querySelectorAll('.screen');
+  const pageTitle = document.getElementById('page-title');
 
-  <!-- Контент -->
-  <main class="content">
+  const TAB_TITLES = {
+    home:     'Home',
+    schedule: 'Расписание',
+    clients:  'Клиенты',
+    workouts: 'Тренировки',
+  };
 
-    <!-- Экран: Главная -->
-    <section class="screen active" id="screen-home">
-      <div class="greeting card">
-        <div class="avatar" aria-label="Аватар">
-          <!-- Иллюстрированный аватар-заглушка -->
-          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <circle cx="40" cy="80" r="26" fill="#C9B8F0"/>
-            <circle cx="40" cy="30" r="16" fill="#F5C9A0"/>
-            <ellipse cx="40" cy="28" rx="14" ry="9" fill="#7B4F2E"/>
-            <circle cx="40" cy="31" r="13" fill="#F5C9A0"/>
-            <circle cx="35" cy="31" r="1.5" fill="#5A3A1A"/>
-            <circle cx="45" cy="31" r="1.5" fill="#5A3A1A"/>
-            <path d="M36 37 Q40 41 44 37" stroke="#D4826A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="greeting__text">
-          <span class="greeting__hello">HELLO</span>
-          <span class="greeting__name">Babich Vlad</span>
-        </div>
-      </div>
+  function switchTab(tabId) {
+    navItems.forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.tab === tabId)
+    );
+    screens.forEach(s =>
+      s.classList.toggle('active', s.id === 'screen-' + tabId)
+    );
+    if (pageTitle) pageTitle.textContent = TAB_TITLES[tabId] ?? 'Home';
+  }
 
-      <div class="calendar-strip card">
-        <div class="calendar-strip__header">
-          <button class="calendar-strip__arrow" id="cal-prev" aria-label="Предыдущий месяц">‹</button>
-          <span class="calendar-strip__month" id="cal-month"></span>
-          <button class="calendar-strip__arrow" id="cal-next" aria-label="Следующий месяц">›</button>
-        </div>
-        <div class="calendar-strip__days" id="cal-days" role="list"></div>
-      </div>
-    </section>
+  navItems.forEach(btn =>
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab))
+  );
 
-    <!-- Экран: Расписание -->
-    <section class="screen" id="screen-schedule">
-      <p class="placeholder-text">Расписание — скоро</p>
-    </section>
+  // Установить начальное состояние явно
+  switchTab('home');
 
-    <!-- Экран: Клиенты -->
-    <section class="screen" id="screen-clients">
-      <p class="placeholder-text">Клиенты — скоро</p>
-    </section>
+  // ─── Меню (три точки) ─────────────────────────
+  const menuBtn  = document.getElementById('menu-btn');
+  const dropdown = document.getElementById('dropdown');
 
-    <!-- Экран: Тренировки -->
-    <section class="screen" id="screen-workouts">
-      <p class="placeholder-text">Тренировки — скоро</p>
-    </section>
+  menuBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    dropdown.hidden = !dropdown.hidden;
+  });
+  document.addEventListener('click', () => { dropdown.hidden = true; });
 
-  </main>
+  // ─── FAB ──────────────────────────────────────
+  document.getElementById('fab-btn').addEventListener('click', () => {
+    alert('Добавить — в разработке');
+  });
 
-  <!-- Нижняя навигация -->
-  <nav class="bottomnav" aria-label="Навигация">
-    <button class="bottomnav__item" data-tab="schedule" aria-label="Расписание">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-        <path d="M16 2v4M8 2v4M3 10h18"/>
-      </svg>
-      <span class="bottomnav__label">Расписание</span>
-    </button>
+  // ─── Полоска календаря ────────────────────────
+  const DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTH_NAMES = ['January','February','March','April','May','June',
+                       'July','August','September','October','November','December'];
 
-    <button class="bottomnav__item" data-tab="clients" aria-label="Клиенты">
-      <span class="nav-icon-wrap">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
-          <circle cx="18" cy="8" r="3"/>
-          <path d="M21 21v-1.5a3 3 0 0 0-2-2.83"/>
-        </svg>
-        <span class="nav-dot" aria-hidden="true"></span>
-      </span>
-      <span class="bottomnav__label">Клиенты</span>
-    </button>
+  function buildCalendar(dayContainerId, monthId) {
+    const today    = new Date();
+    const calDays  = document.getElementById(dayContainerId);
+    const calMonth = document.getElementById(monthId);
+    if (!calDays || !calMonth) return;
 
-    <!-- FAB по центру -->
-    <button class="bottomnav__fab" id="fab-btn" aria-label="Добавить">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" aria-hidden="true">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-    </button>
+    calMonth.textContent = MONTH_NAMES[today.getMonth()] + ' ' + today.getFullYear();
+    calDays.innerHTML = '';
 
-    <button class="bottomnav__item" data-tab="workouts" aria-label="Тренировки">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-        <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-      </svg>
-      <span class="bottomnav__label">Тренировки</span>
-    </button>
+    for (let offset = -3; offset <= 3; offset++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + offset);
+      const el = document.createElement('div');
+      el.className = 'cal-day' + (offset === 0 ? ' active' : '');
+      el.setAttribute('role', 'listitem');
+      el.setAttribute('aria-label',
+        DAY_NAMES[d.getDay()] + ' ' + d.getDate() + (offset === 0 ? ', сегодня' : ''));
+      el.innerHTML =
+        '<span class="cal-day__name">' + DAY_NAMES[d.getDay()] + '</span>' +
+        '<span class="cal-day__num">'  + d.getDate() + '</span>';
 
-    <button class="bottomnav__item active" data-tab="home" aria-label="Главная">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
-      <span class="bottomnav__label">Главная</span>
-    </button>
-  </nav>
+      // Клик по дню — переключение активного
+      el.addEventListener('click', () => {
+        calDays.querySelectorAll('.cal-day').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+      });
+      calDays.appendChild(el);
+    }
 
-  <script src="app.js"></script>
-</body>
-</html>
+    requestAnimationFrame(() => {
+      const active = calDays.querySelector('.cal-day.active');
+      active?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    });
+  }
+
+  buildCalendar('cal-days',   'cal-month');
+  buildCalendar('cal-days-s', 'cal-month-s');
+
+});
