@@ -29,6 +29,7 @@ function loadUser() {
   }
 }
 loadUser();
+alert('TG ID: ' + trainerTgId); // временно — удалим после проверки
 
 // ─── Вкладки ───────────────────────────────────────
 var TAB_TITLES = { home:'Главная', schedule:'Расписание', clients:'Клиенты', programs:'Программы' };
