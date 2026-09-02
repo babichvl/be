@@ -136,12 +136,9 @@ var homeExpanded = false;
 
 function updateDateButton() {
   var d = new Date(selectedHomeDate + 'T00:00:00');
-  var t = dateToISO(new Date());
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   
-  var text = (selectedHomeDate === t) 
-    ? 'Today, ' + d.getDate() + ' ' + months[d.getMonth()]
-    : d.getDate() + ' ' + months[d.getMonth()];
+  var text = d.getDate() + ' ' + months[d.getMonth()];
   
   var btn = document.getElementById('date-toggle-text');
   if (btn) btn.textContent = text;
