@@ -154,22 +154,24 @@ body {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 14px 24px;
-  margin: 0 var(--sp-16) var(--sp-16);
-  width: calc(100% - 32px);
+  padding: 16px 24px;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: var(--sp-16);
+  width: 100%;
   border: none;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--surface-1);
   color: var(--text);
   font-size: 16px;
   font-weight: 500;
   border-radius: 16px;
   cursor: pointer;
   transition: background 0.2s;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .date-toggle:active {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface-2);
 }
 
 .date-toggle svg {
