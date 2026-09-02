@@ -206,34 +206,29 @@ body {
 .home-cal-day {
   flex-shrink: 0;                    /* Не сжимать элемент */
   scroll-snap-align: center;         /* Привязка к центру контейнера */
-  scroll-snap-stop: always;          /* Остановка на каждом элементе (не пролетает) */
-  min-width: 64px;                   /* Ширина неактивного дня */
-  height: 85px;                      /* Высота неактивного дня */
+  scroll-snap-stop: always;          /* Остановка на каждом элементе */
+  min-width: 64px;                   /* Одинаковая ширина для всех */
+  height: 115px;                     /* Одинаковая высота для всех (как у активного) */
   display: flex;
   flex-direction: column;            /* Вертикальное расположение */
   align-items: center;
   justify-content: flex-start;       /* Контент прижат к верху */
-  padding-top: 12px;
+  padding-top: 12px;                 /* Одинаковый отступ для всех */
   gap: 1px;
-  background: var(--surface-1);
-  border-radius: 20px;
+  background: var(--surface-1);      /* Белый фон у неактивных */
+  border-radius: 22px;               /* Одинаковое скругление для всех */
   border: 2px solid var(--border);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация (ease-out) */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  color: var(--text-primary);        /* Тёмный текст у неактивных */
 }
 
-/* Активный день (центральный) */
+/* Активный день (центральный) — прозрачный, текст белый */
 .home-cal-day.active {
-  min-width: 64px;                   /* Ширина активного дня */
-  height: 115px;                     /* Высота активного дня (выше) */
-  background: transparent; /* Градиент */
-  color: white;
-  /*transform: translateY(8px);*/        /* Смещение вниз для эффекта выделения */
-  border-radius: 22px;
-  padding-top: 12px;
-  align-self: flex-start;
-  border: none;
+  background: transparent;           /* Полностью прозрачный фон */
+  color: white;                      /* Белый текст (видно на фиолетовой рамке) */
+  border: none;                      /* Без границы */
 }
 
 /* Число дня */
@@ -241,10 +236,6 @@ body {
   font-size: 26px;
   font-weight: 700;
   transition: font-size 0.3s;
-}
-
-.home-cal-day.active .home-cal-day__num {
-  font-size: 26px;
 }
 
 /* Название дня недели */
@@ -259,9 +250,9 @@ body {
   opacity: 0.85;                     /* Ярче у активного дня */
 }
 
-/* Иконка уведомления (только у активного дня) */
+/* Иконка уведомления — теперь только в рамке */
 .home-cal-day__icon {
-  display: none !important;          /* Иконки на днях больше не нужны */
+  display: none !important;          /* Скрыты у всех дней */
 }
 
 .home-cal-day.active .home-cal-day__icon {
