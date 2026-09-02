@@ -227,12 +227,13 @@ body {
 .home-cal-day.active {
   min-width: 64px;                   /* Ширина активного дня */
   height: 115px;                     /* Высота активного дня (выше) */
-  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент */
+  background: transparent; /* Градиент */
   color: white;
   /*transform: translateY(8px);*/        /* Смещение вниз для эффекта выделения */
   border-radius: 22px;
   padding-top: 12px;
   align-self: flex-start;
+  border: none;
 }
 
 /* Число дня */
@@ -260,13 +261,7 @@ body {
 
 /* Иконка уведомления (только у активного дня) */
 .home-cal-day__icon {
-  position: absolute;
-  bottom: 12px;                      /* Прижата к низу */
-  width: 22px;
-  height: 22px;
-  display: none;                     /* Скрыта по умолчанию */
-  opacity: 0.9;
-  order: 3;
+  display: none !important;          /* Иконки на днях больше не нужны */
 }
 
 .home-cal-day.active .home-cal-day__icon {
