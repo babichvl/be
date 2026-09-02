@@ -181,17 +181,17 @@ body {
   border: 2px solid var(--border);                   /* Без обводки */
   transform: translateY(8px);        /* Смещение вниз */
   border-radius: 25px;               /* Больше скругление */
-  padding-top: 12px;                 /* Тот же отступ сверху */
+  padding-top: 0px;                 /* Тот же отступ сверху */
 }
 
 .home-cal-day__num {
-  font-size: 28px;                   /* Размер числа неактивного дня */
-  font-weight: 600;
+  font-size: 26px;                   /* Размер числа неактивного дня */
+  font-weight: 700;
   transition: font-size 0.3s;
 }
 
 .home-cal-day.active .home-cal-day__num {
-  font-size: 32px;                   /* Размер числа активного дня (чуть крупнее) */
+  font-size: 26px;                   /* Размер числа активного дня (чуть крупнее) */
 }
 
 .home-cal-day__name {
