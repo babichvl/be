@@ -128,9 +128,13 @@ function buildCalendar(daysId, monthId, onSelect, state) {
 
 // ─── Главная: календарь + стрелки ──────────────────
 var homeCalState = { offset: 0 };
+var selectedHomeDate = dateToISO(today);
 
 function rebuildHomeCalendar() {
-  buildCalendar('cal-days', 'cal-month', null, homeCalState);
+  buildCalendar('cal-days', 'cal-month', function(dateISO) {
+    selectedHomeDate = dateISO;
+    if (window.WorkoutsStore) WorkoutsStore.refresh();
+  }, homeCalState);
 }
 rebuildHomeCalendar();
 
