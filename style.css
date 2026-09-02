@@ -176,7 +176,7 @@ body {
 .home-cal-day.active {
   min-width: 64px;                   /* Ширина активного дня (шире) */
   height: 115px;                     /* Высота активного дня (выше) */
-  /*background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);*/ /* Градиент активного */
+  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент активного */
   color: white;
   border: 2px solid var(--border);                   /* Без обводки */
   transform: translateY(8px);        /* Смещение вниз */
