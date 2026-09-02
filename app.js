@@ -152,11 +152,7 @@ document.getElementById('date-toggle').addEventListener('click', function() {
   homeExpanded = !homeExpanded;
   var expand = document.getElementById('home-expand');
   if (expand) {
-    if (homeExpanded) {
-      expand.classList.add('expanded');
-    } else {
-      expand.classList.remove('expanded');
-    }
+    expand.style.display = homeExpanded ? 'block' : 'none';
   }
 });
 
