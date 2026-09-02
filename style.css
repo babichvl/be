@@ -158,11 +158,12 @@ body {
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  padding: var(--sp-12) calc(50vw - 32px); /* Паддинг для центрирования первого/последнего дня */
+  padding: var(--sp-12) calc(50vw - 32px); /* Центрирование первого/последнего дня */
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  scroll-padding: 0 calc(50vw - 32px);     /* ← ДОБАВЬ: отступ для snap */
 }
 
 .home-calendar__days::-webkit-scrollbar {
@@ -174,23 +175,24 @@ body {
    ======================================== */
 .home-cal-day {
   flex-shrink: 0;
-  scroll-snap-align: center;
+  scroll-snap-align: center;               /* Центрирование каждого дня */
   scroll-snap-stop: always;
   min-width: 64px;
-  height: 85px;                      /* Неактивные дни — маленькие */
+  max-width: 64px;                         /* ← ДОБАВЬ: фиксированная ширина */
+  height: 85px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   padding-top: 12px;
   gap: 1px;
-  background: var(--surface-1);      /* Белый фон */
+  background: var(--surface-1);
   border-radius: 20px;
   border: 2px solid var(--border);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  color: var(--text-primary);        /* Тёмный текст */
+  color: var(--text-primary);
 }
 
 /* Активный день — фиолетовый градиент, увеличенный */
