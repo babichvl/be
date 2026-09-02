@@ -76,7 +76,6 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-16);
-  padding-top: max(60px, calc(env(safe-area-inset-top) + 40px)); /* Увеличен отступ под системные кнопки */
 }
 
 .home-header__menu {
