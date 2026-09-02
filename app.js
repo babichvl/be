@@ -44,6 +44,12 @@ function switchTab(tabId) {
     s.classList.toggle('active', s.id === 'screen-' + tabId);
   });
   if (pageTitle) pageTitle.textContent = TAB_TITLES[tabId] || 'Главная';
+  
+  // Скрываем topbar на главной
+  var topbar = document.querySelector('.topbar');
+  if (topbar) {
+    topbar.style.display = (tabId === 'home') ? 'none' : 'flex';
+  }
 }
 
 navItems.forEach(function(btn) {
