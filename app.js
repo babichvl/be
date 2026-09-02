@@ -137,32 +137,66 @@ function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
   if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
-// ─── Главная: кнопка раскрытия ─────────────────────
+// ─── Главная: горизонтальный календарь ─────────────
 var homeExpanded = false;
 
-function updateDateButton() {
-  var btn = document.getElementById('date-toggle-text');
-  if (btn) btn.textContent = formatDateForButton(selectedHomeDate);
+function buildHomeCalendar() {
+  var wrap = document.getElementById('home-cal-days');
+  if (!wrap) return;
+  
+  wrap.innerHTML = '';
+  
+  var startDate = new Date(today);
+  startDate.setDate(today.getDate() - 2);
+  
+  for (var i = 0; i < 5; i++) {
+    var d = new Date(startDate);
+    d.setDate(startDate.getDate() + i);
+    var iso = dateToISO(d);
+    
+    var chip = document.createElement('div');
+    chip.className = 'home-cal-day' + (iso === selectedHomeDate ? ' active' : '');
+    chip.dataset.date = iso;
+    
+    var numEl = document.createElement('span');
+    numEl.className = 'home-cal-day__num';
+    numEl.textContent = d.getDate();
+    
+    var nameEl = document.createElement('span');
+    nameEl.className = 'home-cal-day__name';
+    nameEl.textContent = DAYS[d.getDay()];
+    
+    var icon = document.createElement('div');
+    icon.className = 'home-cal-day__icon';
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+    
+    chip.appendChild(numEl);
+    chip.appendChild(nameEl);
+    chip.appendChild(icon);
+    
+    chip.addEventListener('click', (function(isoDate) {
+      return function() {
+        selectedHomeDate = isoDate;
+        buildHomeCalendar();
+        
+        homeExpanded = true;
+        var expand = document.getElementById('home-expand');
+        if (expand) expand.classList.add('expanded');
+        
+        rebuildHomeCalendar();
+        renderHomeWorkouts();
+      };
+    })(iso));
+    
+    wrap.appendChild(chip);
+  }
 }
 
-// Скрываем по умолчанию
+buildHomeCalendar();
+
+// Скрываем детальный календарь по умолчанию
 var expandEl = document.getElementById('home-expand');
 if (expandEl) expandEl.classList.remove('expanded');
-
-document.getElementById('date-toggle').addEventListener('click', function() {
-  homeExpanded = !homeExpanded;
-  var expand = document.getElementById('home-expand');
-  if (expand) {
-    if (homeExpanded) {
-      expand.classList.add('expanded');
-    } else {
-      expand.classList.remove('expanded');
-    }
-  }
-  console.log('[app] home expanded:', homeExpanded);
-});
-
-updateDateButton();
 
 // ─── Главная: календарь + стрелки ──────────────────
 var homeCalState = { offset: 0 };
