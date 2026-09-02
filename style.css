@@ -32,63 +32,11 @@ body {
   padding-top: env(safe-area-inset-top);
 }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--sp-12) var(--sp-16);
-  background: var(--surface-1);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
+
 
 #screen-home .topbar,
 .screen.active#screen-home ~ .topbar {
   display: none;
-}
-
-.topbar__spacer {
-  width: 40px;
-}
-
-.topbar__title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.topbar__menu-btn {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--text);
-}
-
-.dropdown {
-  position: absolute;
-  top: 56px;
-  right: var(--sp-16);
-  background: var(--surface-1);
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  z-index: 20;
-}
-
-.dropdown__item {
-  display: block;
-  width: 100%;
-  padding: var(--sp-12) var(--sp-20);
-  border: none;
-  background: transparent;
-  text-align: left;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s;
 }
 
 .dropdown__item:active {
