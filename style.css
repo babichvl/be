@@ -179,9 +179,10 @@ body {
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент активного */
   color: white;
   border: 2px solid var(--border);                   /* Без обводки */
-  /*transform: translateY(8px);*/        /* Смещение вниз */
+  transform: translateY(8px);       /* Смещение вниз */
   border-radius: 12px;               /* Больше скругление */
-  padding-top: 0px;                 /* Тот же отступ сверху */
+  padding-top: 12px;                 /* Тот же отступ сверху */
+  align-self: flex-start;
 }
 
 .home-cal-day__num {
