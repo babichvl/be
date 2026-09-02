@@ -144,7 +144,7 @@ body {
   display: flex;
   gap: 20px;                         /* Расстояние между днями */
   overflow-x: auto;                  /* Горизонтальная прокрутка */
-  padding: var(--sp-12) 0;
+  padding: var(--sp-12) 24px; 
   scrollbar-width: none;             /* Скрыть скроллбар */
   scroll-snap-type: x mandatory;    /* Привязка при свайпе */
 }
