@@ -397,4 +397,61 @@ body {
   justify-content: space-around;
   padding: var(--sp-12) var(--sp-16);
   padding-bottom: max(var(--sp-12), env(safe-area-inset-bottom)); /* Отступ для iOS */
-  background: rgba(255
+  background: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон */
+  backdrop-filter: blur(20px);       /* Размытие фона */
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+
+.bottomnav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  color: var(--text-secondary);      /* Серый по умолчанию */
+  transition: all 0.2s;
+}
+
+.bottomnav__item.active {
+  color: var(--accent);              /* Фиолетовый если активна */
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.bottomnav__label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ===== FAB кнопка "+" ===== */
+.bottomnav__fab {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент */
+  border: none;
+  border-radius: 50%;                /* Круглая кнопка */
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(91, 91, 255, 0.4); /* Яркая тень */
+  transition: all 0.2s;
+  margin: 0 var(--sp-8);
+  transform: translateY(-8px);       /* Поднята над меню */
+}
+
+.bottomnav__fab:active {
+  transform: translateY(-8px) scale(0.95); /* Анимация при клике */
+}
+
+.bottomnav__fab svg {
+  width: 28px;
+  height: 28px;
+}
