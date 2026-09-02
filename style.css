@@ -166,7 +166,7 @@ body {
   padding-top: 12px;                 /* Отступ сверху */
   gap: 1px;
   background: var(--surface-1);
-  border-radius: 25px;
+  border-radius: 30px;
   border: 2px solid var(--border);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация */
@@ -180,7 +180,7 @@ body {
   color: white;
   border: 2px solid var(--border);                   /* Без обводки */
   transform: translateY(8px);        /* Смещение вниз */
-  border-radius: 25px;               /* Больше скругление */
+  border-radius: 30px;               /* Больше скругление */
   padding-top: 0px;                 /* Тот же отступ сверху */
 }
 
