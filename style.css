@@ -164,7 +164,7 @@ body {
   align-items: center;
   justify-content: flex-start;       /* Всё прижато к верху */
   padding-top: 12px;                 /* Отступ сверху */
-  gap: 2px;
+  gap: 1px;
   background: var(--surface-1);
   border-radius: 25px;
   border: 2px solid var(--border);
