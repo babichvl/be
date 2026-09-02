@@ -11,7 +11,6 @@ var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 var trainerTgId = null;
 
 function loadUser() {
-  var nameEl = document.getElementById('user-name');
   var urlId = new URLSearchParams(window.location.search).get('tg_id');
   
   try {
@@ -19,14 +18,11 @@ function loadUser() {
     var userJson = params.get('user');
     if (userJson) {
       var u = JSON.parse(userJson);
-      if (nameEl) nameEl.textContent = u.first_name || 'Тренер';
       trainerTgId = u.id || null;
     } else {
-      if (nameEl) nameEl.textContent = 'Тренер';
       trainerTgId = urlId ? Number(urlId) : null;
     }
   } catch (e) {
-    if (nameEl) nameEl.textContent = 'Тренер';
     trainerTgId = urlId ? Number(urlId) : null;
   }
   
@@ -73,12 +69,6 @@ document.getElementById('fab-btn').addEventListener('click', function() {
 var CARD_COLORS = ['blue','pink','green','purple'];
 var today = new Date();
 var selectedHomeDate = dateToISO(today);
-// ─── Форматирование даты для кнопки ────────────────
-function formatDateForButton(dateISO) {
-  var d = new Date(dateISO + 'T00:00:00');
-  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  return d.getDate() + ' ' + months[d.getMonth()];
-}
 var selectedScheduleDate = dateToISO(today);
 
 function dateToISO(date) {
@@ -168,7 +158,7 @@ function buildHomeCalendar() {
     
     var icon = document.createElement('div');
     icon.className = 'home-cal-day__icon';
-    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
     
     chip.appendChild(numEl);
     chip.appendChild(nameEl);
@@ -198,13 +188,13 @@ buildHomeCalendar();
 var expandEl = document.getElementById('home-expand');
 if (expandEl) expandEl.classList.remove('expanded');
 
-// ─── Главная: календарь + стрелки ──────────────────
+// ─── Главная: детальный календарь + стрелки ────────
 var homeCalState = { offset: 0 };
 
 function rebuildHomeCalendar() {
   buildCalendar('cal-days', 'cal-month', function(dateISO) {
     selectedHomeDate = dateISO;
-    updateDateButton();
+    buildHomeCalendar();
     renderHomeWorkouts();
   }, homeCalState, selectedHomeDate);
 }
@@ -231,7 +221,7 @@ document.querySelector('#screen-schedule .calendar-strip__arrow:first-child')
 document.querySelector('#screen-schedule .calendar-strip__arrow:last-child')
   .addEventListener('click', function() { schedCalState.offset++; rebuildScheduleCalendar(); });
 
-// ─── Рендер тренировок (одинаковый для обоих) ─────
+// ─── Рендер тренировок ─────────────────────────────
 var allWorkouts = [];
 
 function renderHomeWorkouts() {
@@ -257,7 +247,7 @@ function renderHomeWorkouts() {
     return (
       '<div class="schedule-row">' +
         '<div class="schedule-time">' + time + '</div>' +
-        '<div class="schedule-card card schedule-card--' + color + '">' +
+        '<div class="schedule-card schedule-card--' + color + '">' +
           '<span class="schedule-card__title">' + title + '</span>' +
           '<span class="schedule-card__sub">' + name + ' · ' + (w.duration || 60) + ' мин</span>' +
         '</div>' +
@@ -289,7 +279,7 @@ function renderScheduleWorkouts() {
     return (
       '<div class="schedule-row">' +
         '<div class="schedule-time">' + time + '</div>' +
-        '<div class="schedule-card card schedule-card--' + color + '">' +
+        '<div class="schedule-card schedule-card--' + color + '">' +
           '<span class="schedule-card__title">' + title + '</span>' +
           '<span class="schedule-card__sub">' + name + ' · ' + (w.duration || 60) + ' мин</span>' +
         '</div>' +
