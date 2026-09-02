@@ -1,394 +1,383 @@
-/* ─── Цветовые токены ───────────────────────────── */
 :root {
-  --bg:             #F2F3F7;
-  --surface:        #FFFFFF;
-  --surface-raised: #FFFFFF;
-  --border:         rgba(0,0,0,0.07);
-  --text:           #1C1C2E;
-  --text-muted:     #9898B2;
-  --avatar-bg:      #EDE8FA;
-
-  /* Акценты */
-  --accent-a:       #7B9CF4;   /* градиент активного дня */
-  --accent-b:       #A07CF5;
-  --fab-a:          #F06FB0;   /* FAB и активная вкладка */
-  --fab-b:          #F8A0CC;
-  --nav-active:     #F06FB0;
-  --dot:            #F06FB0;
-
-  /* Цвета карточек расписания */
-  --sched-blue:     #7B9CF4;
-  --sched-pink:     #F06FB0;
-  --sched-green:    #5DCEA0;
-  --sched-purple:   #A07CF5;
-
-  /* Скругления */
-  --r-sm: 10px;
-  --r-md: 16px;
-  --r-lg: 22px;
-
-  /* Тени */
-  --shadow-card: 0 2px 16px rgba(0,0,0,0.06);
-  --shadow-nav:  0 -1px 0 rgba(0,0,0,0.07), 0 -4px 16px rgba(0,0,0,0.04);
-  --shadow-fab:  0 6px 20px rgba(240,111,176,0.45);
-  --shadow-menu: 0 8px 28px rgba(0,0,0,0.12);
-
-  /* Отступы (шаг 4px) */
-  --sp-4: 4px; --sp-8: 8px; --sp-12: 12px;
-  --sp-16: 16px; --sp-20: 20px;
-
-  --topbar-h: 56px;
-  --nav-h:    72px;
+  --sp-4:  4px;
+  --sp-8:  8px;
+  --sp-12: 12px;
+  --sp-16: 16px;
+  --sp-20: 20px;
+  --sp-24: 24px;
+  
+  --surface-0: #F5F5F7;
+  --surface-1: #FFFFFF;
+  --surface-2: #FAFAFA;
+  
+  --text:       #1C1C1E;
+  --text-muted: #8E8E93;
+  --accent:     #FF2D55;
+  
+  --nav-height: 72px;
 }
 
-/* Тёмная тема */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:             #12121E;
-    --surface:        #1E1E2E;
-    --surface-raised: #27273A;
-    --border:         rgba(255,255,255,0.08);
-    --text:           #ECECF4;
-    --text-muted:     #686882;
-    --avatar-bg:      #2C2048;
-    --shadow-card:    0 2px 16px rgba(0,0,0,0.32);
-    --shadow-nav:     0 -1px 0 rgba(255,255,255,0.06);
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-
-/* ─── Сброс ─────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-button { background: none; border: none; cursor: pointer; font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--surface-0);
   color: var(--text);
-  min-height: 100dvh;
   overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
+  padding-bottom: var(--nav-height);
 }
 
-/* ─── Шапка ─────────────────────────────────────── */
 .topbar {
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: var(--topbar-h);
-  background: var(--surface);
-  display: flex;
-  align-items: center;
-  padding: 0 var(--sp-16);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-}
-.topbar__spacer  { width: 36px; flex-shrink: 0; }
-.topbar__title   { flex: 1; text-align: center; font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
-.topbar__menu-btn {
-  width: 36px; height: 36px; flex-shrink: 0;
-  border-radius: var(--r-sm);
-  background: var(--bg);
-  font-size: 22px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 120ms, transform 120ms;
-}
-.topbar__menu-btn:hover  { background: var(--border); }
-.topbar__menu-btn:active { transform: scale(0.88); }
-
-/* ─── Дропдаун ──────────────────────────────────── */
-.dropdown {
-  position: fixed;
-  top: calc(var(--topbar-h) + 8px);
-  right: var(--sp-16);
-  min-width: 160px;
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  box-shadow: var(--shadow-menu);
-  overflow: hidden;
-  z-index: 200;
-  animation: slide-down 140ms ease;
-}
-.dropdown__item {
-  display: block; width: 100%;
-  padding: 14px var(--sp-16);
-  text-align: left; font-size: 15px;
-  transition: background 100ms;
-}
-.dropdown__item:hover { background: var(--bg); }
-.dropdown__item + .dropdown__item { border-top: 1px solid var(--border); }
-@keyframes slide-down {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ─── Контент ───────────────────────────────────── */
-.content {
-  padding-top: var(--topbar-h);
-  padding-bottom: calc(var(--nav-h) + 8px);
-  min-height: 100dvh;
-}
-
-/* ─── Экраны ────────────────────────────────────── */
-.screen { display: none; padding: var(--sp-16); }
-.screen.active { display: block; animation: fade-in 180ms ease; }
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.placeholder-text {
-  text-align: center; color: var(--text-muted);
-  font-size: 15px; margin-top: 60px;
-}
-
-/* ─── Базовая карточка ──────────────────────────── */
-.card {
-  background: var(--surface);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-card);
-  margin-bottom: var(--sp-12);
-}
-
-/* ─── Приветствие ───────────────────────────────── */
-.greeting {
-  display: flex; align-items: center;
-  gap: var(--sp-16); padding: var(--sp-16) var(--sp-20);
-}
-.avatar {
-  width: 56px; height: 56px; flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--avatar-bg);
-  overflow: hidden;
-  display: flex; align-items: flex-end; justify-content: center;
-}
-.avatar svg { width: 48px; height: 48px; }
-.greeting__text  { display: flex; flex-direction: column; gap: 2px; }
-.greeting__hello { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); }
-.greeting__name  { font-size: 19px; font-weight: 700; }
-
-/* ─── Полоска календаря ─────────────────────────── */
-.calendar-strip { padding: var(--sp-12) var(--sp-16) var(--sp-16); }
-
-.calendar-strip__header {
-  display: flex; align-items: center;
-  justify-content: center; gap: var(--sp-12);
-  margin-bottom: var(--sp-12);
-}
-.calendar-strip__arrow {
-  width: 32px; height: 32px; border-radius: 50%;
-  font-size: 22px; color: var(--text-muted);
-  display: flex; align-items: center; justify-content: center;
-  transition: background 100ms;
-}
-.calendar-strip__arrow:hover { background: var(--bg); }
-.calendar-strip__month {
-  min-width: 120px; text-align: center;
-  font-size: 14px; font-weight: 600; color: var(--text);
-}
-
-.calendar-strip__days {
-  display: flex;
-  gap: var(--sp-8);
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 4px 0 6px;
-  scroll-snap-type: x mandatory;
-}
-.calendar-strip__days::-webkit-scrollbar { display: none; }
-
-/* День */
-.cal-day {
-  flex-shrink: 0;
-  min-width: 50px;
-  display: flex; flex-direction: column;
-  align-items: center; gap: var(--sp-4);
-  padding: 10px 8px;
-  border-radius: var(--r-md);
-  background: var(--bg);
-  scroll-snap-align: center;
-  cursor: pointer;
-  transition: background 140ms, transform 140ms, box-shadow 140ms;
-}
-.cal-day:hover:not(.active) { background: var(--border); }
-.cal-day__name { font-size: 11px; font-weight: 500; color: var(--text-muted); }
-.cal-day__num  { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
-
-/* Активный день */
-.cal-day.active {
-  background: linear-gradient(150deg, var(--accent-a), var(--accent-b));
-  transform: scale(1.08);
-  box-shadow: 0 4px 14px rgba(123,156,244,0.40);
-}
-.cal-day.active .cal-day__name,
-.cal-day.active .cal-day__num { color: #fff; }
-
-/* ─── Расписание — список ────────────────────────── */
-.schedule-list { display: flex; flex-direction: column; gap: 8px; }
-
-.schedule-row  { display: flex; align-items: flex-start; gap: var(--sp-12); }
-.schedule-time {
-  flex-shrink: 0; width: 42px;
-  padding-top: 13px;
-  font-size: 12px; font-weight: 600;
-  color: var(--text-muted);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.schedule-card {
-  flex: 1; margin-bottom: 0;
-  padding: 12px var(--sp-16);
-  border-radius: var(--r-md);
-  border-left: 4px solid transparent;
-  display: flex; flex-direction: column; gap: 3px;
-  transition: transform 120ms;
-}
-.schedule-card:active { transform: scale(0.98); }
-.schedule-card__title { font-size: 14px; font-weight: 700; }
-.schedule-card__sub   { font-size: 12px; color: var(--text-muted); }
-
-.schedule-card--blue   { border-left-color: var(--sched-blue); }
-.schedule-card--pink   { border-left-color: var(--sched-pink); }
-.schedule-card--green  { border-left-color: var(--sched-green); }
-.schedule-card--purple { border-left-color: var(--sched-purple); }
-
-/* ─── Нижняя навигация ──────────────────────────── */
-.bottomnav {
-  position: fixed; inset: auto 0 0 0;
-  height: var(--nav-h);
-  background: var(--surface);
-  box-shadow: var(--shadow-nav);
-  display: flex; align-items: center; justify-content: space-around;
-  padding: 0 var(--sp-8);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  z-index: 100;
-}
-
-.bottomnav__item {
-  flex: 1; min-height: 44px;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 3px;
-  padding: var(--sp-8) 0;
-  color: var(--text-muted);
-  border-radius: var(--r-sm);
-  transition: color 150ms;
-}
-.bottomnav__item.active          { color: var(--nav-active); }
-.bottomnav__item:hover:not(.active) { color: var(--text); }
-
-.nav-icon       { width: 22px; height: 22px; }
-.nav-icon-wrap  { position: relative; display: inline-flex; }
-.nav-dot {
-  position: absolute; top: -1px; right: -3px;
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--dot);
-  border: 2px solid var(--surface);
-}
-.bottomnav__label { font-size: 10px; font-weight: 500; }
-
-/* FAB */
-.bottomnav__fab {
-  width: 56px; height: 56px; flex-shrink: 0;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--fab-a), var(--fab-b));
-  box-shadow: var(--shadow-fab);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 12px;
-  transition: transform 150ms, box-shadow 150ms;
-}
-.bottomnav__fab:hover  { transform: scale(1.07); }
-.bottomnav__fab:active { transform: scale(0.92); box-shadow: 0 3px 10px rgba(240,111,176,0.30); }
-.bottomnav__fab svg    { width: 24px; height: 24px; }
-
-/* ─── Фокус (a11y) ──────────────────────────────── */
-:focus-visible {
-  outline: 2px solid var(--accent-a);
-  outline-offset: 2px;
-  border-radius: var(--r-sm);
-}
-/* Заголовок секции */
-.section-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  padding: var(--sp-16) var(--sp-16) var(--sp-12);
-  margin: 0;
-}
-
-/* Список тренировок на главной */
-#home-workouts-list {
-  padding: 0 var(--sp-16) var(--sp-16);
-}
-
-/* Пустое состояние */
-.empty-workouts {
-  text-align: center;
-  padding: 24px 12px;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-/* Компактная карточка тренировки */
-.workout-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-.workout-item:last-child {
-  border-bottom: none;
-}
-
-.workout-time {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  min-width: 48px;
-}
-
-.workout-info {
-  flex: 1;
-}
-
-.workout-client {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.workout-meta {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-/* Кнопка раскрытия даты */
-.date-toggle {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  margin: 0 var(--sp-16) var(--sp-12);
-  border: none;
+  padding: var(--sp-12) var(--sp-16);
   background: var(--surface-1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.topbar__spacer {
+  width: 40px;
+}
+
+.topbar__title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.topbar__menu-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.dropdown {
+  position: absolute;
+  top: 56px;
+  right: var(--sp-16);
+  background: var(--surface-1);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 20;
+}
+
+.dropdown__item {
+  display: block;
+  width: 100%;
+  padding: var(--sp-12) var(--sp-20);
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown__item:active {
+  background: var(--surface-2);
+}
+
+.content {
+  padding: var(--sp-16);
+}
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+.card {
+  background: var(--surface-1);
+  border-radius: 16px;
+  padding: var(--sp-16);
+  margin-bottom: var(--sp-12);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-16);
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar svg {
+  width: 100%;
+  height: 100%;
+}
+
+.greeting__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.greeting__hello {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.greeting__name {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.date-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  margin: 0 auto var(--sp-16);
+  max-width: 200px;
+  border: none;
+  background: rgba(255, 255, 255, 0.6);
   color: var(--text);
   font-size: 15px;
   font-weight: 500;
   border-radius: 999px;
   cursor: pointer;
   transition: background 0.2s;
+  backdrop-filter: blur(10px);
 }
 
 .date-toggle:active {
-  background: var(--surface-2);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .date-toggle svg {
   color: var(--text-muted);
 }
 
-/* Контейнер с календарём и списком (скрыт по умолчанию) */
 .home-expand {
-  margin-top: var(--sp-12);
+  display: none;
 }
+
 .home-expand.expanded {
-  max-height: 2000px;
+  display: block;
+}
+
+.calendar-strip__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-16);
+}
+
+.calendar-strip__month {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.calendar-strip__arrow {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.calendar-strip__days {
+  display: flex;
+  gap: var(--sp-8);
+  overflow-x: auto;
+  padding-bottom: var(--sp-8);
+  scrollbar-width: none;
+}
+
+.calendar-strip__days::-webkit-scrollbar {
+  display: none;
+}
+
+.cal-day {
+  min-width: 56px;
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--surface-2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cal-day.active {
+  background: #5B5BFF;
+  color: white;
+}
+
+.cal-day__name {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.cal-day__num {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+.schedule-row {
+  display: flex;
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+.schedule-time {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  min-width: 48px;
+}
+
+.schedule-card {
+  flex: 1;
+  padding: var(--sp-16);
+  border-left: 4px solid;
+}
+
+.schedule-card--blue {
+  border-color: #5B5BFF;
+  background: linear-gradient(135deg, rgba(91, 91, 255, 0.08) 0%, rgba(91, 91, 255, 0.02) 100%);
+}
+
+.schedule-card--pink {
+  border-color: #FF2D55;
+  background: linear-gradient(135deg, rgba(255, 45, 85, 0.08) 0%, rgba(255, 45, 85, 0.02) 100%);
+}
+
+.schedule-card--green {
+  border-color: #34C759;
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.08) 0%, rgba(52, 199, 89, 0.02) 100%);
+}
+
+.schedule-card--purple {
+  border-color: #AF52DE;
+  background: linear-gradient(135deg, rgba(175, 82, 222, 0.08) 0%, rgba(175, 82, 222, 0.02) 100%);
+}
+
+.schedule-card__title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.schedule-card__sub {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.placeholder-text {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 15px;
+  padding: var(--sp-24);
+}
+
+.empty-workouts {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 15px;
+  padding: var(--sp-24);
+}
+
+.bottomnav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background: var(--surface-1);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 var(--sp-8);
+  z-index: 10;
+}
+
+.bottomnav__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--sp-8);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.bottomnav__item.active {
+  color: var(--accent);
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.bottomnav__label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.bottomnav__fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF2D55 0%, #FF6584 100%);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255, 45, 85, 0.3);
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottomnav__fab:active {
+  transform: scale(0.95);
 }
