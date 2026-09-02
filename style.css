@@ -158,11 +158,12 @@ body {
   flex-shrink: 0;                    /* Не сжимать */
   scroll-snap-align: center;         /* Привязка к центру */
   min-width: 64px;                   /* Ширина неактивного дня (узкий) */
-  height: 85px;                     /* Высота неактивного дня (высокий, вертикальный) */
+  height: 85px;                      /* Высота неактивного дня (высокий, вертикальный) */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;       /* Всё прижато к верху */
+  padding-top: 12px;                 /* Отступ сверху */
   gap: 2px;
   background: var(--surface-1);
   border-radius: 22px;
@@ -173,24 +174,48 @@ body {
 }
 
 .home-cal-day.active {
-  min-width: 64px;                   /* Ширина активного дня (шире) */
-  height: 120px;                     /* Высота активного дня (выше) */
+  min-width: 80px;                   /* Ширина активного дня (шире) */
+  height: 115px;                     /* Высота активного дня (выше) */
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент активного */
   color: white;
-  box-shadow: none;  /* Яркая тень */
+  border: none;                      /* Без обводки */
+  box-shadow: var(--shadow-active);  /* Яркая тень */
   transform: translateY(8px);        /* Смещение вниз */
-  border-radius: 22px;               /* Больше скругление */
+  border-radius: 28px;               /* Больше скругление */
+  padding-top: 12px;                 /* Тот же отступ сверху */
 }
 
 .home-cal-day__num {
-  font-size: 26px;                   /* Размер числа неактивного дня */
+  font-size: 28px;                   /* Размер числа неактивного дня */
   font-weight: 600;
   transition: font-size 0.3s;
-  order: 1;                          /* Число сначала */
 }
 
 .home-cal-day.active .home-cal-day__num {
-  font-size: 36px;                   /* Размер числа активного дня (крупнее) */
+  font-size: 32px;                   /* Размер числа активного дня (чуть крупнее) */
+}
+
+.home-cal-day__name {
+  font-size: 13px;                   /* Размер названия дня недели */
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+.home-cal-day.active .home-cal-day__name {
+  opacity: 0.85;                     /* Больше непрозрачность у активного */
+}
+
+.home-cal-day__icon {
+  position: absolute;
+  bottom: 10px;                      /* Иконка в самом низу */
+  width: 20px;
+  height: 20px;
+  display: none;                     /* Скрыта по умолчанию */
+  opacity: 0.9;
+}
+
+.home-cal-day.active .home-cal-day__icon {
+  display: block;                    /* Показать иконку только у активного дня */
 }
 
 .home-cal-day__name {
