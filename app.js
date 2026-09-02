@@ -180,34 +180,7 @@ buildHomeCalendar();
 var expandEl = document.getElementById('home-expand');
 if (expandEl) expandEl.classList.remove('expanded');
 
-// ─── Главная: детальный календарь + стрелки ────────
-var homeCalState = { offset: 0 };
 
-function rebuildHomeCalendar() {
-  buildCalendar('cal-days', 'cal-month', function(dateISO) {
-    selectedHomeDate = dateISO;
-    buildHomeCalendar();
-    renderHomeWorkouts();
-  }, homeCalState, selectedHomeDate);
-}
-rebuildHomeCalendar();
-
-var homeArrowLeft = document.getElementById('home-arrow-left');
-var homeArrowRight = document.getElementById('home-arrow-right');
-
-if (homeArrowLeft) {
-  homeArrowLeft.addEventListener('click', function() { 
-    homeCalState.offset--; 
-    rebuildHomeCalendar(); 
-  });
-}
-
-if (homeArrowRight) {
-  homeArrowRight.addEventListener('click', function() { 
-    homeCalState.offset++; 
-    rebuildHomeCalendar(); 
-  });
-}
 
 // ─── Расписание: календарь + стрелки ───────────────
 var schedCalState = { offset: 0 };
