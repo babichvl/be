@@ -356,7 +356,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: var(--shadow-sm);
 }
 
 .schedule-card--blue {
