@@ -1,14 +1,7 @@
 // ─── Telegram ──────────────────────────────────────
 var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.expand(); tg.setHeaderColor('#F5F5F7'); }
-// Устанавливаем отступ для системных кнопок
-  setTimeout(function() {
-    var header = document.querySelector('.home-header');
-    if (header) {
-      header.style.paddingTop = '80px';
-    }
-  }, 100);
-}
+
 
 // ─── Supabase ──────────────────────────────────────
 var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
