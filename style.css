@@ -139,29 +139,38 @@ body {
 
 .home-cal-day {
   min-width: 72px;
-  height: 100px;
+  height: 88px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--surface-1);
-  border-radius: 24px;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   position: relative;
 }
 
 .home-cal-day.active {
+  min-width: 80px;
+  height: 120px;
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);
   color: white;
-  box-shadow: 0 8px 24px rgba(91, 91, 255, 0.3);
+  box-shadow: 0 12px 32px rgba(91, 91, 255, 0.35);
+  transform: translateY(8px);
+  border-radius: 28px;
 }
 
 .home-cal-day__num {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 600;
+  transition: font-size 0.3s;
+}
+
+.home-cal-day.active .home-cal-day__num {
+  font-size: 32px;
 }
 
 .home-cal-day__name {
@@ -170,18 +179,22 @@ body {
   opacity: 0.6;
 }
 
+.home-cal-day.active .home-cal-day__name {
+  opacity: 0.85;
+}
+
 .home-cal-day__icon {
   position: absolute;
-  bottom: 12px;
-  width: 20px;
-  height: 20px;
+  bottom: 14px;
+  width: 24px;
+  height: 24px;
   display: none;
+  opacity: 0.9;
 }
 
 .home-cal-day.active .home-cal-day__icon {
   display: block;
 }
-
 .home-expand {
   display: none;
 }
