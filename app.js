@@ -73,6 +73,12 @@ document.getElementById('fab-btn').addEventListener('click', function() {
 var CARD_COLORS = ['blue','pink','green','purple'];
 var today = new Date();
 var selectedHomeDate = dateToISO(today);
+// ─── Форматирование даты для кнопки ────────────────
+function formatDateForButton(dateISO) {
+  var d = new Date(dateISO + 'T00:00:00');
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return d.getDate() + ' ' + months[d.getMonth()];
+}
 var selectedScheduleDate = dateToISO(today);
 
 function dateToISO(date) {
@@ -135,13 +141,8 @@ function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
 var homeExpanded = false;
 
 function updateDateButton() {
-  var d = new Date(selectedHomeDate + 'T00:00:00');
-  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  
-  var text = d.getDate() + ' ' + months[d.getMonth()];
-  
   var btn = document.getElementById('date-toggle-text');
-  if (btn) btn.textContent = text;
+  if (btn) btn.textContent = formatDateForButton(selectedHomeDate);
 }
 
 // Скрываем по умолчанию
