@@ -82,15 +82,6 @@ function dateToISO(date) {
   return y + '-' + m + '-' + d;
 }
 
-function formatDateButton(dateISO) {
-  var t = dateToISO(new Date());
-  var d = new Date(dateISO + 'T00:00:00');
-  if (dateISO === t) return 'Today';
-  
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return d.getDate() + ' ' + months[d.getMonth()];
-}
-
 // ─── Календарь ─────────────────────────────────────
 var DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var MONTHS = ['January','February','March','April','May','June',
@@ -144,16 +135,29 @@ function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
 var homeExpanded = false;
 
 function updateDateButton() {
+  var d = new Date(selectedHomeDate + 'T00:00:00');
+  var t = dateToISO(new Date());
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  
+  var text = (selectedHomeDate === t) 
+    ? 'Today, ' + d.getDate() + ' ' + months[d.getMonth()]
+    : d.getDate() + ' ' + months[d.getMonth()];
+  
   var btn = document.getElementById('date-toggle-text');
-  if (btn) btn.textContent = formatDateButton(selectedHomeDate);
+  if (btn) btn.textContent = text;
 }
 
 document.getElementById('date-toggle').addEventListener('click', function() {
   homeExpanded = !homeExpanded;
   var expand = document.getElementById('home-expand');
   if (expand) {
-    expand.style.display = homeExpanded ? 'block' : 'none';
+    if (homeExpanded) {
+      expand.classList.add('expanded');
+    } else {
+      expand.classList.remove('expanded');
+    }
   }
+  console.log('[app] home expanded:', homeExpanded);
 });
 
 updateDateButton();
