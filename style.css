@@ -217,20 +217,8 @@ body {
   display: block;                    /* Показать иконку только у активного дня */
 }
 
-/* ===== Раскрываемая секция (список тренировок) ===== */
-.home-expand {
-  max-height: 0;                     /* Скрыта по умолчанию */
-  overflow: hidden;
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Плавное раскрытие */
-  padding: 0 var(--sp-16);
-}
 
-.home-expand.expanded {
-  max-height: 2000px;                /* Раскрыта */
-  opacity: 1;
-  padding: var(--sp-16);
-}
+
 
 /* ===== Заголовок экрана Расписание ===== */
 .schedule-header {
