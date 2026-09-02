@@ -180,7 +180,7 @@ body {
   color: white;
   border: 2px solid var(--border);                   /* Без обводки */
   transform: translateY(8px);        /* Смещение вниз */
-  border-radius: 30px;               /* Больше скругление */
+  border-radius: 40px;               /* Больше скругление */
   padding-top: 0px;                 /* Тот же отступ сверху */
 }
 
