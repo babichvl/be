@@ -166,7 +166,7 @@ body {
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент как у активного */
   border-radius: 22px;
   pointer-events: none;              /* Не блокирует клики */
-  z-index: 10;                        /* Поверх дней */
+  z-index: 5;                        /* Поверх дней */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -177,12 +177,7 @@ body {
 
 /* Иконка внутри рамки (внизу) */
 .home-calendar__focus-frame .home-cal-day__icon {
-  position: absolute;
-  bottom: 12px;
-  width: 22px;
-  height: 22px;
-  display: block;                    /* Всегда видна */
-  opacity: 0.9;
+  display: none;
 }
 
 .home-calendar__days {
@@ -221,18 +216,18 @@ body {
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация 0.4s */
   position: relative;
-z-index: 1; 
+  z-index: 5; 
   color: var(--text-primary);        /* Тёмный текст у неактивных */
 }
 
 /* Активный день (центральный) — больше и прозрачный */
 .home-cal-day.active {
   min-width: 64px;                   /* Та же ширина */
-  height: 115px;                     /* Высота активного дня (больше) */
-  background: transparent;           /* Полностью прозрачный фон */
-  color: white;                      /* Белый текст (видно на фиолетовой рамке) */
-  border: none;                      /* Без границы */
-  border-radius: 22px;               /* Больше скругление */
+  height: 115px !important;
+  background: transparent !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 22px !important;
 }
 
 /* Число дня */
