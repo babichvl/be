@@ -104,7 +104,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-16);
-  padding-top: max(80px, env(safe-area-inset-top)); /* Отступ под выемку iPhone */
+  padding-top: max(100px, env(safe-area-inset-top)); /* Отступ под выемку iPhone */
 }
 
 .home-header__title {
@@ -151,7 +151,7 @@ body {
    ======================================== */
 .home-calendar {
   padding: var(--sp-16);
-  padding-top: 20;
+  padding-top: 10;
 }
 
 .home-calendar__days {
