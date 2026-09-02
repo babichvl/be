@@ -146,7 +146,7 @@ body {
   overflow-x: auto;                  /* Горизонтальная прокрутка */
   padding: var(--sp-12) 0;
   scrollbar-width: none;             /* Скрыть скроллбар */
-  /*scroll-snap-type: x mandatory;     /* Привязка при свайпе */
+  /*scroll-snap-type: x mandatory;*/    /* Привязка при свайпе */
 }
 
 .home-calendar__days::-webkit-scrollbar {
@@ -156,7 +156,7 @@ body {
 /* ===== Дни календаря (главная) ===== */
 .home-cal-day {
   flex-shrink: 0;                    /* Не сжимать */
-  /*scroll-snap-align: center;         /* Привязка к центру */
+  /*scroll-snap-align: center;*/         /* Привязка к центру */
   min-width: 64px;                   /* Ширина неактивного дня (узкий) */
   height: 85px;                      /* Высота неактивного дня (высокий, вертикальный) */
   display: flex;
@@ -166,7 +166,7 @@ body {
   padding-top: 12px;                 /* Отступ сверху */
   gap: 2px;
   background: var(--surface-1);
-  border-radius: 22px;
+  border-radius: 25px;
   border: 2px solid var(--border);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация */
@@ -176,11 +176,11 @@ body {
 .home-cal-day.active {
   min-width: 64px;                   /* Ширина активного дня (шире) */
   height: 115px;                     /* Высота активного дня (выше) */
-  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент активного */
+  /*background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);*/ /* Градиент активного */
   color: white;
   border: 2px solid var(--border);                   /* Без обводки */
   transform: translateY(8px);        /* Смещение вниз */
-  border-radius: 28px;               /* Больше скругление */
+  border-radius: 25px;               /* Больше скругление */
   padding-top: 12px;                 /* Тот же отступ сверху */
 }
 
