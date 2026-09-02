@@ -155,19 +155,34 @@ body {
   padding-top: 20;
 }
 
-/* Фиксированная рамка по центру (индикатор выбора) */
+/* Фиксированная рамка по центру (выглядит как активный день) */
 .home-calendar__focus-frame {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);  /* Центрируем */
-  width: 72px;                       /* Ширина активного дня + 8px */
-  height: 123px;                     /* Высота активного дня + 8px */
-  border: 2px solid var(--accent);   /* Фиолетовая рамка */
-  border-radius: 24px;
+  transform: translate(-50%, -50%); /* Центрируем */
+  width: 64px;                       /* Ширина активного дня */
+  height: 115px;                     /* Высота активного дня */
+  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент как у активного */
+  border-radius: 22px;
   pointer-events: none;              /* Не блокирует клики */
   z-index: 5;                        /* Поверх дней */
-  opacity: 0.3;                      /* Полупрозрачная */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 12px;
+  color: white;
+}
+
+/* Иконка внутри рамки (внизу) */
+.home-calendar__focus-frame .home-cal-day__icon {
+  position: absolute;
+  bottom: 12px;
+  width: 22px;
+  height: 22px;
+  display: block;                    /* Всегда видна */
+  opacity: 0.9;
 }
 
 .home-calendar__days {
@@ -176,7 +191,7 @@ body {
   overflow-x: auto;
   padding: var(--sp-12) calc(50vw - 32px); /* Паддинг = половина экрана минус половина дня */
   scrollbar-width: none;
-  scroll-snap-type: x mandatory;     /* Возвращаем mandatory (теперь нужен) */
+  scroll-snap-type: x mandatory;     /* Прилипание к центру */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
