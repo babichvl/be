@@ -151,9 +151,9 @@ function buildHomeCalendar() {
     nameEl.className = 'home-cal-day__name';
     nameEl.textContent = DAYS[d.getDay()];
     
-    var icon = document.createElement('div');
-    icon.className = 'home-cal-day__icon';
-    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
+var icon = document.createElement('div');
+icon.className = 'home-cal-day__icon';
+icon.innerHTML = '<svg viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2a2 2 0 0 1 2 2c1.7.3 3 1.8 3 3.5V11c0 1.3.8 2.4 2 2.8V15H5v-1.2c1.2-.4 2-1.5 2-2.8V7.5c0-1.7 1.3-3.2 3-3.5a2 2 0 0 1 2-2zm-1 17h2a1 1 0 1 1-2 0z"/></svg>';
     
     chip.appendChild(numEl);
     chip.appendChild(nameEl);
