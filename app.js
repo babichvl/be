@@ -163,8 +163,7 @@ function buildHomeCalendar() {
         var expand = document.getElementById('home-expand');
         if (expand) expand.classList.add('expanded');
         
-        rebuildHomeCalendar();
-        renderHomeWorkouts();
+renderHomeWorkouts();
       };
     })(iso));
     
