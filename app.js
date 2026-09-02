@@ -132,7 +132,7 @@ function buildHomeCalendar() {
   wrap.innerHTML = '';
   
   var startDate = new Date(today);
-  startDate.setDate(today.getDate() - 2);
+  startDate.setDate(today.getDate() - 2);  // За 2 дня до сегодня
   
   for (var i = 0; i < 5; i++) {
     var d = new Date(startDate);
@@ -140,7 +140,13 @@ function buildHomeCalendar() {
     var iso = dateToISO(d);
     
     var chip = document.createElement('div');
-    chip.className = 'home-cal-day' + (iso === selectedHomeDate ? ' active' : '');
+    chip.className = 'home-cal-day';
+    
+    // Проверяем, это сегодня или нет
+    if (iso === selectedHomeDate) {
+      chip.classList.add('active');
+    }
+    
     chip.dataset.date = iso;
     
     var numEl = document.createElement('span');
@@ -151,31 +157,40 @@ function buildHomeCalendar() {
     nameEl.className = 'home-cal-day__name';
     nameEl.textContent = DAYS[d.getDay()];
     
-var icon = document.createElement('div');
-icon.className = 'home-cal-day__icon';
-icon.innerHTML = '<svg viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2a2 2 0 0 1 2 2c1.7.3 3 1.8 3 3.5V11c0 1.3.8 2.4 2 2.8V15H5v-1.2c1.2-.4 2-1.5 2-2.8V7.5c0-1.7 1.3-3.2 3-3.5a2 2 0 0 1 2-2zm-1 17h2a1 1 0 1 1-2 0z"/></svg>';
+    var icon = document.createElement('div');
+    icon.className = 'home-cal-day__icon';
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2a2 2 0 0 1 2 2c1.7.3 3 1.8 3 3.5V11c0 1.3.8 2.4 2 2.8V15H5v-1.2c1.2-.4 2-1.5 2-2.8V7.5c0-1.7 1.3-3.2 3-3.5a2 2 0 0 1 2-2zm-1 17h2a1 1 0 1 1-2 0z"/></svg>';
     
     chip.appendChild(numEl);
     chip.appendChild(nameEl);
     chip.appendChild(icon);
     
-    chip.addEventListener('click', (function(isoDate) {
+    // Обработчик клика
+    chip.addEventListener('click', (function(isoDate, element) {
       return function() {
         selectedHomeDate = isoDate;
-        buildHomeCalendar();
         
+        // Убираем active у всех
+        wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
+          el.classList.remove('active');
+        });
+        
+        // Добавляем active к кликнутому
+        element.classList.add('active');
+        
+        // Раскрываем секцию
         homeExpanded = true;
         var expand = document.getElementById('home-expand');
         if (expand) expand.classList.add('expanded');
         
-renderHomeWorkouts();
+        renderHomeWorkouts();
       };
-    })(iso));
+    })(iso, chip));
     
     wrap.appendChild(chip);
   }
   
-  console.log('[app] home calendar built, 5 days');
+  console.log('[app] home calendar built, selected:', selectedHomeDate);
 }
 
 buildHomeCalendar();
