@@ -21,7 +21,7 @@ function loadUser() {
       trainerTgId = u.id || null;
     } else {
       if (nameEl) nameEl.textContent = 'Тренер';
-      trainerTgId = 111111; // фоллбэк для теста
+      trainerTgId = 111111;
     }
   } catch (e) {
     if (nameEl) nameEl.textContent = 'Тренер';
@@ -29,7 +29,6 @@ function loadUser() {
   }
 }
 loadUser();
-
 
 // ─── Вкладки ───────────────────────────────────────
 var TAB_TITLES = { home:'Главная', schedule:'Расписание', clients:'Клиенты', programs:'Программы' };
@@ -45,7 +44,6 @@ function switchTab(tabId) {
     s.classList.toggle('active', s.id === 'screen-' + tabId);
   });
   if (pageTitle) pageTitle.textContent = TAB_TITLES[tabId] || 'Главная';
-  if (tabId === 'schedule') loadWorkouts(selectedScheduleDate, trainerTgId);
 }
 
 navItems.forEach(function(btn) {
@@ -77,57 +75,6 @@ function dateToISO(date) {
   var m = String(date.getMonth() + 1).padStart(2, '0');
   var d = String(date.getDate()).padStart(2, '0');
   return y + '-' + m + '-' + d;
-}
-
-async function loadWorkouts(dateStr, tgId) {
-  var listEl = document.getElementById('schedule-list');
-  if (!listEl) return;
-
-  listEl.innerHTML = '<p class="placeholder-text">Загружаем...</p>';
-
-  if (!tgId) {
-    listEl.innerHTML = '<p class="placeholder-text">Нет ID тренера</p>';
-    return;
-  }
-
-  console.log('[workouts] запрос: trainer_tg_id=' + tgId + ', workout_date=' + dateStr);
-
-  var result = await sb
-    .from('workouts')
-    .select('title, client_name, workout_date, start_time, duration')
-    .eq('trainer_tg_id', tgId)
-    .eq('workout_date', dateStr)
-    .order('start_time');
-
-  if (result.error) {
-    console.error('[workouts] ошибка:', result.error);
-    listEl.innerHTML = '<p class="placeholder-text">Ошибка: ' + result.error.message + '</p>';
-    return;
-  }
-
-  console.log('[workouts] получено:', result.data);
-
-  var rows = result.data;
-  if (!rows || rows.length === 0) {
-    listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
-    return;
-  }
-
-  listEl.innerHTML = rows.map(function(w, i) {
-    var time  = w.start_time ? w.start_time.slice(0, 5) : '--:--';
-    var color = CARD_COLORS[i % CARD_COLORS.length];
-    var name  = w.client_name || 'Клиент';
-    var title = w.title || 'Тренировка';
-    return (
-      '<div class="schedule-row">' +
-        '<div class="schedule-time">' + time + '</div>' +
-        '<div class="schedule-card card schedule-card--' + color + '">' +
-          '<span class="schedule-card__title">' + title + '</span>' +
-          '<span class="schedule-card__sub">' + name + ' · ' + (w.duration || 60) + ' мин</span>' +
-        '</div>' +
-      '</div>'
-    );
-  }).join('');
 }
 
 // ─── Календарь ─────────────────────────────────────
@@ -198,7 +145,7 @@ var schedCalState = { offset: 0 };
 function rebuildScheduleCalendar() {
   buildCalendar('cal-days-s', 'cal-month-s', function(dateISO) {
     selectedScheduleDate = dateISO;
-    loadWorkouts(dateISO, trainerTgId);
+    if (window.WorkoutsStore) WorkoutsStore.refresh();
   }, schedCalState);
 }
 rebuildScheduleCalendar();
@@ -207,3 +154,86 @@ document.querySelector('#screen-schedule .calendar-strip__arrow:first-child')
   .addEventListener('click', function() { schedCalState.offset--; rebuildScheduleCalendar(); });
 document.querySelector('#screen-schedule .calendar-strip__arrow:last-child')
   .addEventListener('click', function() { schedCalState.offset++; rebuildScheduleCalendar(); });
+
+// ─── Рендер тренировок ─────────────────────────────
+
+function renderHomeWorkouts(workouts) {
+  var container = document.getElementById('home-workouts-list');
+  if (!container) return;
+
+  var upcoming = workouts.filter(function(w) {
+    var dt = new Date(w.workout_date + 'T' + w.start_time).getTime();
+    return dt >= Date.now() - 60 * 60 * 1000;
+  }).sort(function(a, b) {
+    var aTime = new Date(a.workout_date + 'T' + a.start_time).getTime();
+    var bTime = new Date(b.workout_date + 'T' + b.start_time).getTime();
+    return aTime - bTime;
+  }).slice(0, 5);
+
+  if (upcoming.length === 0) {
+    container.innerHTML = '<div class="empty-workouts">Ближайших тренировок нет</div>';
+    return;
+  }
+
+  container.innerHTML = upcoming.map(function(w) {
+    var time = w.start_time ? w.start_time.slice(0, 5) : '--:--';
+    var name = w.client_name || 'Клиент';
+    var duration = w.duration || 60;
+    var type = w.title || 'Тренировка';
+    
+    return (
+      '<div class="workout-item">' +
+        '<div class="workout-time">' + time + '</div>' +
+        '<div class="workout-info">' +
+          '<div class="workout-client">' + name + '</div>' +
+          '<div class="workout-meta">' + type + ' · ' + duration + ' мин</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+function renderScheduleWorkouts(workouts) {
+  var listEl = document.getElementById('schedule-list');
+  if (!listEl) return;
+
+  var list = workouts.filter(function(w) {
+    return w.workout_date === selectedScheduleDate;
+  }).sort(function(a, b) {
+    return (a.start_time || '').localeCompare(b.start_time || '');
+  });
+
+  if (list.length === 0) {
+    listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
+    return;
+  }
+
+  listEl.innerHTML = list.map(function(w, i) {
+    var time = w.start_time ? w.start_time.slice(0, 5) : '--:--';
+    var color = CARD_COLORS[i % CARD_COLORS.length];
+    var name = w.client_name || 'Клиент';
+    var title = w.title || 'Тренировка';
+    return (
+      '<div class="schedule-row">' +
+        '<div class="schedule-time">' + time + '</div>' +
+        '<div class="schedule-card card schedule-card--' + color + '">' +
+          '<span class="schedule-card__title">' + title + '</span>' +
+          '<span class="schedule-card__sub">' + name + ' · ' + (w.duration || 60) + ' мин</span>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+// ─── Инициализация WorkoutsStore ───────────────────
+
+if (trainerTgId && window.WorkoutsStore) {
+  WorkoutsStore.init(trainerTgId).then(function() {
+    console.log('[app] WorkoutsStore инициализирован');
+  });
+
+  WorkoutsStore.subscribe(function(workouts) {
+    renderHomeWorkouts(workouts);
+    renderScheduleWorkouts(workouts);
+  });
+}
