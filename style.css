@@ -150,23 +150,39 @@ body {
    ГОРИЗОНТАЛЬНЫЙ КАЛЕНДАРЬ (ГЛАВНАЯ)
    ======================================== */
 .home-calendar {
+  position: relative;                /* Для позиционирования рамки */
   padding: var(--sp-16);
-  padding-top: 10;
+  padding-top: 20;
+}
+
+/* Фиксированная рамка по центру (индикатор выбора) */
+.home-calendar__focus-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);  /* Центрируем */
+  width: 72px;                       /* Ширина активного дня + 8px */
+  height: 123px;                     /* Высота активного дня + 8px */
+  border: 2px solid var(--accent);   /* Фиолетовая рамка */
+  border-radius: 24px;
+  pointer-events: none;              /* Не блокирует клики */
+  z-index: 5;                        /* Поверх дней */
+  opacity: 0.3;                      /* Полупрозрачная */
 }
 
 .home-calendar__days {
   display: flex;
-  gap: 20px;                         /* Расстояние между днями */
-  overflow-x: auto;                  /* Горизонтальная прокрутка */
-  padding: var(--sp-12) 24px; 
-  scrollbar-width: none;             /* Скрыть скроллбар (Firefox) */
-  scroll-snap-type: x mandatory;     /* Привязка к элементам при свайпе */
-  scroll-behavior: smooth;           /* Плавная прокрутка */
-  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+  gap: 20px;
+  overflow-x: auto;
+  padding: var(--sp-12) calc(50vw - 32px); /* Паддинг = половина экрана минус половина дня */
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;     /* Возвращаем mandatory (теперь нужен) */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .home-calendar__days::-webkit-scrollbar {
-  display: none;                     /* Скрыть скроллбар (Chrome/Safari) */
+  display: none;
 }
 
 /* ========================================
@@ -198,7 +214,7 @@ body {
   height: 115px;                     /* Высота активного дня (выше) */
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент */
   color: white;
-  transform: translateY(8px);        /* Смещение вниз для эффекта выделения */
+  /*transform: translateY(8px);*/        /* Смещение вниз для эффекта выделения */
   border-radius: 22px;
   padding-top: 12px;
   align-self: flex-start;
