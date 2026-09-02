@@ -82,6 +82,15 @@ function dateToISO(date) {
   return y + '-' + m + '-' + d;
 }
 
+function formatDateButton(dateISO) {
+  var t = dateToISO(new Date());
+  var d = new Date(dateISO + 'T00:00:00');
+  if (dateISO === t) return 'Today';
+  
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate() + ' ' + months[d.getMonth()];
+}
+
 // ─── Календарь ─────────────────────────────────────
 var DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var MONTHS = ['January','February','March','April','May','June',
@@ -131,12 +140,35 @@ function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
   if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
+// ─── Главная: кнопка раскрытия ─────────────────────
+var homeExpanded = false;
+
+function updateDateButton() {
+  var btn = document.getElementById('date-toggle-text');
+  if (btn) btn.textContent = formatDateButton(selectedHomeDate);
+}
+
+document.getElementById('date-toggle').addEventListener('click', function() {
+  homeExpanded = !homeExpanded;
+  var expand = document.getElementById('home-expand');
+  if (expand) {
+    if (homeExpanded) {
+      expand.classList.add('expanded');
+    } else {
+      expand.classList.remove('expanded');
+    }
+  }
+});
+
+updateDateButton();
+
 // ─── Главная: календарь + стрелки ──────────────────
 var homeCalState = { offset: 0 };
 
 function rebuildHomeCalendar() {
   buildCalendar('cal-days', 'cal-month', function(dateISO) {
     selectedHomeDate = dateISO;
+    updateDateButton();
     renderHomeWorkouts();
   }, homeCalState, selectedHomeDate);
 }
