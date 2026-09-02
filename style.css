@@ -157,7 +157,7 @@ body {
 .home-cal-day {
   flex-shrink: 0;                    /* Не сжимать */
   scroll-snap-align: center;         /* Привязка к центру */
-  min-width: 54px;                   /* Ширина неактивного дня (узкий) */
+  min-width: 44px;                   /* Ширина неактивного дня (узкий) */
   height: 100px;                     /* Высота неактивного дня (высокий, вертикальный) */
   display: flex;
   flex-direction: column;
@@ -168,7 +168,6 @@ body {
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация */
-  box-shadow: none;
   position: relative;
 }
 
