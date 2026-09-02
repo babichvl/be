@@ -166,7 +166,7 @@ body {
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент как у активного */
   border-radius: 22px;
   pointer-events: none;              /* Не блокирует клики */
-  z-index: 5;                        /* Поверх дней */
+  z-index: 10;                        /* Поверх дней */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -221,6 +221,7 @@ body {
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация 0.4s */
   position: relative;
+z-index: 1; 
   color: var(--text-primary);        /* Тёмный текст у неактивных */
 }
 
