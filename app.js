@@ -206,10 +206,12 @@ function renderScheduleWorkouts(workouts) {
     return (a.start_time || '').localeCompare(b.start_time || '');
   });
 
-  if (list.length === 0) {
-    listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
-    return;
-  }
+if (list.length === 0) {
+  container.innerHTML = '<div class="empty-workouts">На этот день тренировок нет</div>';
+  return;
+}
+
+container.innerHTML = list.map(function(w) {
 
   listEl.innerHTML = list.map(function(w, i) {
     var time = w.start_time ? w.start_time.slice(0, 5) : '--:--';
