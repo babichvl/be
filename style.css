@@ -387,11 +387,8 @@ body {
 
 /* Контейнер с календарём и списком (скрыт по умолчанию) */
 .home-expand {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
+  margin-top: var(--sp-12);
 }
-
 .home-expand.expanded {
   max-height: 2000px;
 }
