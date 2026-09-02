@@ -33,7 +33,7 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden; 
+  overflow-x: hidden;
 }
 
 /* ===== Основной контейнер ===== */
@@ -75,7 +75,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-16);
-  padding-top: 50px;
+  padding-top: max(24px, env(safe-area-inset-top)); /* Отступ под выемку + системные кнопки */
 }
 
 .home-header__menu {
