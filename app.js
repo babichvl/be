@@ -144,6 +144,10 @@ function updateDateButton() {
   if (btn) btn.textContent = text;
 }
 
+// Скрываем по умолчанию
+var expandEl = document.getElementById('home-expand');
+if (expandEl) expandEl.classList.remove('expanded');
+
 document.getElementById('date-toggle').addEventListener('click', function() {
   homeExpanded = !homeExpanded;
   var expand = document.getElementById('home-expand');
