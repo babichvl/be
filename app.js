@@ -208,8 +208,8 @@ buildHomeCalendar();
   if (!wrap) return;
   
   var lastCenterDay = null;
-  var snapTimeout;
-  var rafId = null;
+  var snapTimeout = null;
+  var renderTimeout = null;
   
   function updateActiveDay() {
     if (!wrap) return;
@@ -242,29 +242,24 @@ buildHomeCalendar();
       closestDay.classList.add('active');
       selectedHomeDate = closestDay.dataset.date;
       
-      // Обновляем UI без задержки
+      // Обновляем UI мгновенно
       homeExpanded = true;
       var expand = document.getElementById('home-expand');
       if (expand) expand.classList.add('expanded');
       
-      // Отложенное обновление списка тренировок (чтобы не тормозить скролл)
-      if (snapTimeout) clearTimeout(snapTimeout);
-      snapTimeout = setTimeout(function() {
+      // Debounce рендера тренировок
+      if (renderTimeout) clearTimeout(renderTimeout);
+      renderTimeout = setTimeout(function() {
         renderHomeWorkouts();
-      }, 50);
+      }, 100);
     }
   }
   
   function onScroll() {
-    if (rafId) cancelAnimationFrame(rafId);
+    updateActiveDay();
     
-    rafId = requestAnimationFrame(function() {
-      updateActiveDay();
-      rafId = null;
-    });
-    
-    // Центрируем после остановки
-    clearTimeout(snapTimeout);
+    // Центрируем после остановки (отдельный таймер)
+    if (snapTimeout) clearTimeout(snapTimeout);
     snapTimeout = setTimeout(function() {
       var activeDay = wrap.querySelector('.home-cal-day.active');
       if (activeDay) {
@@ -274,7 +269,7 @@ buildHomeCalendar();
           behavior: 'smooth' 
         });
       }
-    }, 80);
+    }, 150);
   }
   
   wrap.addEventListener('scroll', onScroll, { passive: true });
@@ -318,11 +313,18 @@ function renderHomeWorkouts() {
   var listEl = document.getElementById('home-list');
   if (!listEl) return;
 
+  console.log('[renderHomeWorkouts] selectedHomeDate:', selectedHomeDate);
+  console.log('[renderHomeWorkouts] allWorkouts:', allWorkouts.map(function(w) {
+    return w.workout_date;
+  }));
+
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedHomeDate;
   }).sort(function(a,b) {
     return (a.start_time || '').localeCompare(b.start_time || '');
   });
+
+  console.log('[renderHomeWorkouts] filtered:', list.length);
 
   if (list.length === 0) {
     listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
