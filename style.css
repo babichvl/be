@@ -29,6 +29,7 @@ body {
   color: var(--text);
   overflow-x: hidden;
   padding-bottom: var(--nav-height);
+  padding-top: env(safe-area-inset-top);
 }
 
 .topbar {
@@ -90,7 +91,7 @@ body {
 }
 
 .content {
-  padding: var(--sp-16);
+  padding-top: var(--sp-8);
 }
 
 .screen {
@@ -105,88 +106,139 @@ body {
   background: var(--surface-1);
   border-radius: 16px;
   padding: var(--sp-16);
-  margin-bottom: var(--sp-12);
+  margin: 0 var(--sp-16) var(--sp-12);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.greeting {
+/* Главная: шапка */
+.home-header {
   display: flex;
   align-items: center;
-  gap: var(--sp-16);
+  justify-content: space-between;
+  padding: var(--sp-12) var(--sp-16);
+  margin-bottom: var(--sp-20);
+  padding-top: calc(env(safe-area-inset-top) + var(--sp-12));
 }
 
-.avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #E0C3FC 0%, #8EC5FC 100%);
+.home-header__menu {
+  width: 52px;
+  height: 52px;
+  border: none;
+  background: var(--surface-1);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.home-header__title {
+  font-size: 18px;
+  font-weight: 600;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.home-header__avatar {
+  position: relative;
+  width: 52px;
+  height: 52px;
+}
+
+.home-header__avatar-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #A8C0FF 0%, #3F5EFB 100%);
   overflow: hidden;
 }
 
-.avatar svg {
-  width: 100%;
-  height: 100%;
+.home-header__status {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background: #5B5BFF;
+  border: 2px solid var(--surface-0);
+  border-radius: 50%;
 }
 
-.greeting__text {
+/* Главная: календарь */
+.home-calendar {
+  padding: 0 var(--sp-16);
+  margin-bottom: var(--sp-20);
+}
+
+.home-calendar__days {
+  display: flex;
+  gap: var(--sp-12);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.home-calendar__days::-webkit-scrollbar {
+  display: none;
+}
+
+.home-cal-day {
+  min-width: 72px;
+  height: 100px;
   display: flex;
   flex-direction: column;
-}
-
-.greeting__hello {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
-}
-
-.greeting__name {
-  font-size: 20px;
-  font-weight: 600;
-  margin-top: 2px;
-}
-
-.date-toggle {
-  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 16px 24px;
-  margin-left: 0;
-  margin-right: 0;
-  margin-bottom: var(--sp-16);
-  width: 100%;
-  border: none;
+  gap: 8px;
   background: var(--surface-1);
-  color: var(--text);
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 16px;
+  border-radius: 24px;
   cursor: pointer;
-  transition: background 0.2s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
 }
 
-.date-toggle:active {
-  background: var(--surface-2);
+.home-cal-day.active {
+  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(91, 91, 255, 0.3);
 }
 
-.date-toggle svg {
-  color: var(--text-muted);
-  flex-shrink: 0;
+.home-cal-day__num {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.home-cal-day__name {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+.home-cal-day__icon {
+  position: absolute;
+  bottom: 12px;
+  width: 20px;
+  height: 20px;
+  display: none;
+}
+
+.home-cal-day.active .home-cal-day__icon {
+  display: block;
 }
 
 .home-expand {
   display: none;
+  padding: 0 var(--sp-16);
 }
 
 .home-expand.expanded {
   display: block;
 }
 
+/* Календарь (расписание и детальный) */
 .calendar-strip__header {
   display: flex;
   align-items: center;
@@ -252,6 +304,7 @@ body {
   font-weight: 600;
 }
 
+/* Список тренировок */
 .schedule-list {
   display: flex;
   flex-direction: column;
@@ -275,6 +328,8 @@ body {
   flex: 1;
   padding: var(--sp-16);
   border-left: 4px solid;
+  background: var(--surface-1);
+  border-radius: 12px;
 }
 
 .schedule-card--blue {
@@ -317,13 +372,7 @@ body {
   padding: var(--sp-24);
 }
 
-.empty-workouts {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 15px;
-  padding: var(--sp-24);
-}
-
+/* Нижняя навигация */
 .bottomnav {
   position: fixed;
   bottom: 0;
@@ -336,6 +385,7 @@ body {
   align-items: center;
   justify-content: space-around;
   padding: 0 var(--sp-8);
+  padding-bottom: env(safe-area-inset-bottom);
   z-index: 10;
 }
 
