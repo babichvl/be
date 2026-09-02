@@ -1,30 +1,49 @@
+/* ========================================
+   ПЕРЕМЕННЫЕ (ТОКЕНЫ ДИЗАЙНА)
+   ======================================== */
 :root {
+  /* Цвета поверхностей */
   --surface-0: #F5F5F7;              /* Фон страницы */
   --surface-1: #FFFFFF;              /* Фон карточек */
   --surface-2: #FAFAFA;              /* Фон вторичных элементов */
+  
+  /* Цвета текста */
   --text-primary: #1C1C1E;           /* Основной текст */
   --text-secondary: #8E8E93;         /* Второстепенный текст */
+  
+  /* Акцентные цвета */
   --accent: #7B7BFF;                 /* Акцентный цвет (фиолетовый) */
   --accent-hover: #6B6BEF;           /* Акцент при наведении */
+  
+  /* Границы */
   --border: rgba(0, 0, 0, 0.06);     /* Цвет границ */
+  
+  /* Тени */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);        /* Малая тень */
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);       /* Средняя тень */
   --shadow-active: 0 12px 32px rgba(91, 91, 255, 0.35); /* Тень активного элемента */
-  --sp-8: 8px;                       /* Отступ 8px */
-  --sp-12: 12px;                     /* Отступ 12px */
-  --sp-16: 16px;                     /* Отступ 16px */
-  --sp-20: 20px;                     /* Отступ 20px */
-  --sp-24: 24px;                     /* Отступ 24px */
-  --radius-sm: 12px;                 /* Малый радиус скругления */
-  --radius-md: 16px;                 /* Средний радиус скругления */
-  --radius-lg: 20px;                 /* Большой радиус скругления */
+  
+  /* Отступы */
+  --sp-8: 8px;
+  --sp-12: 12px;
+  --sp-16: 16px;
+  --sp-20: 20px;
+  --sp-24: 24px;
+  
+  /* Радиусы скругления */
+  --radius-sm: 12px;                 /* Малый радиус */
+  --radius-md: 16px;                 /* Средний радиус */
+  --radius-lg: 20px;                 /* Большой радиус */
   --radius-full: 999px;              /* Полное скругление (круг) */
 }
 
+/* ========================================
+   БАЗОВЫЕ СТИЛИ
+   ======================================== */
 * {
   margin: 0;
   padding: 25;
-  box-sizing: border-box;
+  box-sizing: border-box;            /* Включаем padding/border в размеры */
 }
 
 body {
@@ -32,17 +51,21 @@ body {
   background: var(--surface-0);
   color: var(--text-primary);
   line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased; /* Сглаживание шрифтов на macOS */
+  overflow-x: hidden;                /* Запрещаем горизонтальную прокрутку */
 }
 
-/* ===== Основной контейнер ===== */
+/* ========================================
+   ОСНОВНОЙ КОНТЕЙНЕР
+   ======================================== */
 .content {
   padding-bottom: 90px;              /* Отступ для нижнего меню */
-  min-height: 100vh;
+  min-height: 100vh;                 /* Минимум на весь экран */
 }
 
-/* ===== Экраны (вкладки) ===== */
+/* ========================================
+   ЭКРАНЫ (ВКЛАДКИ)
+   ======================================== */
 .screen {
   display: none;                     /* Скрыт по умолчанию */
   padding: var(--sp-16);
@@ -52,7 +75,9 @@ body {
   display: block;                    /* Показать активный экран */
 }
 
-/* ===== Заглушка "загружаем" ===== */
+/* ========================================
+   ЗАГЛУШКА "ЗАГРУЖАЕМ"
+   ======================================== */
 .placeholder-text {
   text-align: center;
   color: var(--text-secondary);
@@ -60,7 +85,9 @@ body {
   font-size: 15px;
 }
 
-/* ===== Базовая карточка ===== */
+/* ========================================
+   БАЗОВАЯ КАРТОЧКА
+   ======================================== */
 .card {
   background: var(--surface-1);
   border-radius: var(--radius-md);
@@ -68,21 +95,22 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* ===== Шапка главной (меню, заголовок, аватар) ===== */
+/* ========================================
+   ШАПКА ГЛАВНОЙ (МЕНЮ, ЗАГОЛОВОК, АВАТАР)
+   ======================================== */
 .home-header {
   position: relative;                /* Для абсолютного позиционирования заголовка */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-16);
-  padding-top: max(80px, env(safe-area-inset-top)); /* Отступ под выемку + системные кнопки */
+  padding-top: max(80px, env(safe-area-inset-top)); /* Отступ под выемку iPhone */
 }
-
 
 .home-header__title {
   position: absolute;                /* Абсолютное позиционирование */
   left: 50%;                         /* По центру */
-  transform: translateX(-50%);       /* Центрирование */
+  transform: translateX(-50%);       /* Центрирование через transform */
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
@@ -101,7 +129,7 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 25%;                /* Круглый аватар */
-  background: linear-gradient(115deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент */
+  background: linear-gradient(115deg, #7B7BFF 0%, #5B5BFF 100%);
   box-shadow: var(--shadow-sm);
   padding-top: 20;
 }
@@ -118,7 +146,9 @@ body {
   padding-top: 20;
 }
 
-/* ===== Горизонтальный календарь (главная) ===== */
+/* ========================================
+   ГОРИЗОНТАЛЬНЫЙ КАЛЕНДАРЬ (ГЛАВНАЯ)
+   ======================================== */
 .home-calendar {
   padding: var(--sp-16);
   padding-top: 20;
@@ -129,107 +159,92 @@ body {
   gap: 20px;                         /* Расстояние между днями */
   overflow-x: auto;                  /* Горизонтальная прокрутка */
   padding: var(--sp-12) 24px; 
-  scrollbar-width: none;             /* Скрыть скроллбар */
-  scroll-snap-type: x mandatory;    /* Привязка при свайпе */
+  scrollbar-width: none;             /* Скрыть скроллбар (Firefox) */
+  scroll-snap-type: x mandatory;     /* Привязка к элементам при свайпе */
+  scroll-behavior: smooth;           /* Плавная прокрутка */
+  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
 }
 
 .home-calendar__days::-webkit-scrollbar {
-  display: none;                     /* Скрыть скроллбар в Chrome */
+  display: none;                     /* Скрыть скроллбар (Chrome/Safari) */
 }
 
-/* ===== Дни календаря (главная) ===== */
+/* ========================================
+   ДНИ КАЛЕНДАРЯ (ГЛАВНАЯ)
+   ======================================== */
 .home-cal-day {
-  flex-shrink: 0;                    /* Не сжимать */
-  scroll-snap-align: center;         /* Привязка к центру */
-  min-width: 64px;                   /* Ширина неактивного дня (узкий) */
-  height: 85px;                      /* Высота неактивного дня (высокий, вертикальный) */
+  flex-shrink: 0;                    /* Не сжимать элемент */
+  scroll-snap-align: center;         /* Привязка к центру контейнера */
+  scroll-snap-stop: always;          /* Остановка на каждом элементе (не пролетает) */
+  min-width: 64px;                   /* Ширина неактивного дня */
+  height: 85px;                      /* Высота неактивного дня */
   display: flex;
-  flex-direction: column;
+  flex-direction: column;            /* Вертикальное расположение */
   align-items: center;
-  justify-content: flex-start;       /* Всё прижато к верху */
-  padding-top: 12px;                 /* Отступ сверху */
+  justify-content: flex-start;       /* Контент прижат к верху */
+  padding-top: 12px;
   gap: 1px;
   background: var(--surface-1);
   border-radius: 20px;
   border: 2px solid var(--border);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Плавная анимация (ease-out) */
   position: relative;
 }
 
+/* Активный день (центральный) */
 .home-cal-day.active {
-  min-width: 64px;                   /* Ширина активного дня (шире) */
+  min-width: 64px;                   /* Ширина активного дня */
   height: 115px;                     /* Высота активного дня (выше) */
-  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент активного */
+  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент */
   color: white;
-  transform: translateY(8px);       /* Смещение вниз */
-  border-radius: 22px;               /* Больше скругление */
-  padding-top: 12px;                 /* Тот же отступ сверху */
+  transform: translateY(8px);        /* Смещение вниз для эффекта выделения */
+  border-radius: 22px;
+  padding-top: 12px;
   align-self: flex-start;
 }
 
+/* Число дня */
 .home-cal-day__num {
-  font-size: 26px;                   /* Размер числа неактивного дня */
+  font-size: 26px;
   font-weight: 700;
   transition: font-size 0.3s;
 }
 
 .home-cal-day.active .home-cal-day__num {
-  font-size: 26px;                   /* Размер числа активного дня (чуть крупнее) */
+  font-size: 26px;
 }
 
+/* Название дня недели */
 .home-cal-day__name {
-  font-size: 13px;                   /* Размер названия дня недели */
-  font-weight: 500;
-  opacity: 0.6;
-}
-
-.home-cal-day.active .home-cal-day__name {
-  opacity: 0.85;                     /* Больше непрозрачность у активного */
-}
-
-.home-cal-day__icon {
-  position: absolute;
-  bottom: 10px;                      /* Иконка в самом низу */
-  width: 20px;
-  height: 20px;
-  display: none;                     /* Скрыта по умолчанию */
-  opacity: 0.9;
-}
-
-.home-cal-day.active .home-cal-day__icon {
-  display: block;                    /* Показать иконку только у активного дня */
-}
-
-.home-cal-day__name {
-  font-size: 15px;                   /* Размер названия дня недели */
+  font-size: 15px;
   font-weight: 450;
   opacity: 0.6;
   order: 2;                          /* День недели после числа */
 }
 
 .home-cal-day.active .home-cal-day__name {
-  opacity: 0.85;                     /* Больше непрозрачность у активного */
+  opacity: 0.85;                     /* Ярче у активного дня */
 }
 
+/* Иконка уведомления (только у активного дня) */
 .home-cal-day__icon {
   position: absolute;
-  bottom: 12px;                      /* Иконка в самом низу */
+  bottom: 12px;                      /* Прижата к низу */
   width: 22px;
   height: 22px;
   display: none;                     /* Скрыта по умолчанию */
   opacity: 0.9;
-  order: 3;                          /* Иконка в конце */
+  order: 3;
 }
 
 .home-cal-day.active .home-cal-day__icon {
-  display: block;                    /* Показать иконку только у активного дня */
+  display: block;                    /* Показать только у активного дня */
 }
 
-
-
-
-/* ===== Заголовок экрана Расписание ===== */
+/* ========================================
+   ЗАГОЛОВОК ЭКРАНА "РАСПИСАНИЕ"
+   ======================================== */
 .schedule-header {
   margin-bottom: var(--sp-20);
 }
@@ -237,10 +252,12 @@ body {
 .schedule-header__title {
   font-size: 32px;
   font-weight: 700;
-  letter-spacing: -0.5px;            /* Отрицательное межбуквенное расстояние */
+  letter-spacing: -0.5px;            /* Отрицательное межбуквенное расстояние (плотнее) */
 }
 
-/* ===== Полоса календаря (детальный, в Расписании) ===== */
+/* ========================================
+   ПОЛОСА КАЛЕНДАРЯ (ДЕТАЛЬНЫЙ, В РАСПИСАНИИ)
+   ======================================== */
 .calendar-strip {
   margin-bottom: var(--sp-20);
 }
@@ -248,7 +265,7 @@ body {
 .calendar-strip__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between;    /* Месяц слева, стрелки справа */
   margin-bottom: var(--sp-16);
 }
 
@@ -258,6 +275,7 @@ body {
   color: var(--text-primary);
 }
 
+/* Стрелки переключения месяца */
 .calendar-strip__arrow {
   width: 36px;
   height: 36px;
@@ -274,10 +292,11 @@ body {
 }
 
 .calendar-strip__arrow:active {
-  transform: scale(0.9);             /* Анимация при клике */
+  transform: scale(0.9);             /* Анимация сжатия при клике */
   background: var(--border);
 }
 
+/* Горизонтальный список дней */
 .calendar-strip__days {
   display: flex;
   gap: 8px;
@@ -290,7 +309,9 @@ body {
   display: none;
 }
 
-/* ===== Дни в детальном календаре (Расписание) ===== */
+/* ========================================
+   ДНИ В ДЕТАЛЬНОМ КАЛЕНДАРЕ (РАСПИСАНИЕ)
+   ======================================== */
 .cal-day {
   min-width: 56px;
   height: 72px;
@@ -313,7 +334,7 @@ body {
 .cal-day__name {
   font-size: 11px;
   font-weight: 500;
-  text-transform: uppercase;         /* Заглавные буквы */
+  text-transform: uppercase;         /* Заглавные буквы (MON, TUE, ...) */
   opacity: 0.6;
 }
 
@@ -322,31 +343,38 @@ body {
   font-weight: 600;
 }
 
-/* ===== Список тренировок ===== */
+/* ========================================
+   СПИСОК ТРЕНИРОВОК
+   ======================================== */
 .schedule-list {
   display: flex;
   flex-direction: column;
   gap: var(--sp-16);
 }
 
-/* ===== Строка с тренировкой (время + карточка) ===== */
+/* ========================================
+   СТРОКА С ТРЕНИРОВКОЙ (ВРЕМЯ + КАРТОЧКА)
+   ======================================== */
 .schedule-row {
   display: flex;
   gap: var(--sp-12);
   align-items: flex-start;
 }
 
+/* Время тренировки (слева) */
 .schedule-time {
-  min-width: 52px;                   /* Фиксированная ширина времени */
+  min-width: 52px;                   /* Фиксированная ширина для выравнивания */
   padding-top: var(--sp-12);
   font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-/* ===== Карточка тренировки ===== */
+/* ========================================
+   КАРТОЧКА ТРЕНИРОВКИ
+   ======================================== */
 .schedule-card {
-  flex: 1;
+  flex: 1;                           /* Занимает всё доступное пространство */
   padding: var(--sp-16);
   border-radius: var(--radius-md);
   display: flex;
@@ -354,34 +382,39 @@ body {
   gap: 6px;
 }
 
+/* Цветовые варианты карточек (градиенты) */
 .schedule-card--blue {
-  background: linear-gradient(135deg, #E8F0FF 0%, #D6E5FF 100%); /* Голубой градиент */
+  background: linear-gradient(135deg, #E8F0FF 0%, #D6E5FF 100%);
 }
 
 .schedule-card--pink {
-  background: linear-gradient(135deg, #FFE8F5 0%, #FFD6EC 100%); /* Розовый градиент */
+  background: linear-gradient(135deg, #FFE8F5 0%, #FFD6EC 100%);
 }
 
 .schedule-card--green {
-  background: linear-gradient(135deg, #E8FFF0 0%, #D6FFE5 100%); /* Зелёный градиент */
+  background: linear-gradient(135deg, #E8FFF0 0%, #D6FFE5 100%);
 }
 
 .schedule-card--purple {
-  background: linear-gradient(135deg, #F0E8FF 0%, #E5D6FF 100%); /* Фиолетовый градиент */
+  background: linear-gradient(135deg, #F0E8FF 0%, #E5D6FF 100%);
 }
 
+/* Название тренировки */
 .schedule-card__title {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
+/* Подзаголовок (клиент + длительность) */
 .schedule-card__sub {
   font-size: 14px;
-  color: var(--text-secondary);      /* Клиент и длительность */
+  color: var(--text-secondary);
 }
 
-/* ===== Нижнее меню (навигация) ===== */
+/* ========================================
+   НИЖНЕЕ МЕНЮ (НАВИГАЦИЯ)
+   ======================================== */
 .bottomnav {
   position: fixed;
   bottom: 0;
@@ -389,15 +422,16 @@ body {
   right: 0;
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-around;     /* Равномерное распределение кнопок */
   padding: var(--sp-12) var(--sp-16);
   padding-bottom: max(var(--sp-12), env(safe-area-inset-bottom)); /* Отступ для iOS */
   background: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон */
-  backdrop-filter: blur(20px);       /* Размытие фона */
+  backdrop-filter: blur(20px);       /* Размытие фона (стеклянный эффект) */
   border-top: 1px solid var(--border);
-  z-index: 100;
+  z-index: 100;                      /* Поверх всего контента */
 }
 
+/* Кнопки навигации */
 .bottomnav__item {
   display: flex;
   flex-direction: column;
@@ -412,7 +446,7 @@ body {
 }
 
 .bottomnav__item.active {
-  color: var(--accent);              /* Фиолетовый если активна */
+  color: var(--accent);              /* Фиолетовый для активной вкладки */
 }
 
 .nav-icon {
@@ -425,18 +459,20 @@ body {
   font-weight: 500;
 }
 
-/* ===== FAB кнопка "+" ===== */
+/* ========================================
+   FAB КНОПКА "+" (ПЛАВАЮЩАЯ КНОПКА)
+   ======================================== */
 .bottomnav__fab {
   width: 56px;
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент */
+  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);
   border: none;
   border-radius: 50%;                /* Круглая кнопка */
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(91, 91, 255, 0.4); /* Яркая тень */
+  box-shadow: 0 8px 24px rgba(91, 91, 255, 0.4); /* Яркая тень для объёма */
   transition: all 0.2s;
   margin: 0 var(--sp-8);
   transform: translateY(-8px);       /* Поднята над меню */
