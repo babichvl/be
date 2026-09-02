@@ -360,3 +360,38 @@ body {
   color: var(--text-muted);
   margin-top: 2px;
 }
+/* Кнопка раскрытия даты */
+.date-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  margin: 0 var(--sp-16) var(--sp-12);
+  border: none;
+  background: var(--surface-1);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.date-toggle:active {
+  background: var(--surface-2);
+}
+
+.date-toggle svg {
+  color: var(--text-muted);
+}
+
+/* Контейнер с календарём и списком (скрыт по умолчанию) */
+.home-expand {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.home-expand.expanded {
+  max-height: 2000px;
+}
