@@ -1,6 +1,6 @@
 // ─── Telegram ──────────────────────────────────────
 var tg = window.Telegram && window.Telegram.WebApp;
-if (tg) { tg.expand(); tg.setHeaderColor('#FFFFFF'); }
+if (tg) { tg.expand(); tg.setHeaderColor('#F5F5F7'); }
 
 // ─── Supabase ──────────────────────────────────────
 var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
@@ -31,10 +31,8 @@ function loadUser() {
 loadUser();
 
 // ─── Вкладки ───────────────────────────────────────
-var TAB_TITLES = { home:'Главная', schedule:'Расписание', clients:'Клиенты', programs:'Программы' };
 var navItems  = document.querySelectorAll('.bottomnav__item[data-tab]');
 var screens   = document.querySelectorAll('.screen');
-var pageTitle = document.getElementById('page-title');
 
 function switchTab(tabId) {
   navItems.forEach(function(btn) {
@@ -48,9 +46,6 @@ function switchTab(tabId) {
 navItems.forEach(function(btn) {
   btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
 });
-switchTab('home');
-
-
 
 // ─── FAB ───────────────────────────────────────────
 document.getElementById('fab-btn').addEventListener('click', function() {
@@ -124,7 +119,10 @@ var homeExpanded = false;
 
 function buildHomeCalendar() {
   var wrap = document.getElementById('home-cal-days');
-  if (!wrap) return;
+  if (!wrap) {
+    console.warn('[app] home-cal-days not found');
+    return;
+  }
   
   wrap.innerHTML = '';
   
@@ -172,6 +170,8 @@ function buildHomeCalendar() {
     
     wrap.appendChild(chip);
   }
+  
+  console.log('[app] home calendar built, 5 days');
 }
 
 buildHomeCalendar();
@@ -192,10 +192,22 @@ function rebuildHomeCalendar() {
 }
 rebuildHomeCalendar();
 
-document.querySelector('#screen-home .calendar-strip__arrow:first-child')
-  .addEventListener('click', function() { homeCalState.offset--; rebuildHomeCalendar(); });
-document.querySelector('#screen-home .calendar-strip__arrow:last-child')
-  .addEventListener('click', function() { homeCalState.offset++; rebuildHomeCalendar(); });
+var homeArrowLeft = document.getElementById('home-arrow-left');
+var homeArrowRight = document.getElementById('home-arrow-right');
+
+if (homeArrowLeft) {
+  homeArrowLeft.addEventListener('click', function() { 
+    homeCalState.offset--; 
+    rebuildHomeCalendar(); 
+  });
+}
+
+if (homeArrowRight) {
+  homeArrowRight.addEventListener('click', function() { 
+    homeCalState.offset++; 
+    rebuildHomeCalendar(); 
+  });
+}
 
 // ─── Расписание: календарь + стрелки ───────────────
 var schedCalState = { offset: 0 };
@@ -208,10 +220,22 @@ function rebuildScheduleCalendar() {
 }
 rebuildScheduleCalendar();
 
-document.querySelector('#screen-schedule .calendar-strip__arrow:first-child')
-  .addEventListener('click', function() { schedCalState.offset--; rebuildScheduleCalendar(); });
-document.querySelector('#screen-schedule .calendar-strip__arrow:last-child')
-  .addEventListener('click', function() { schedCalState.offset++; rebuildScheduleCalendar(); });
+var schedArrowLeft = document.getElementById('schedule-arrow-left');
+var schedArrowRight = document.getElementById('schedule-arrow-right');
+
+if (schedArrowLeft) {
+  schedArrowLeft.addEventListener('click', function() { 
+    schedCalState.offset--; 
+    rebuildScheduleCalendar(); 
+  });
+}
+
+if (schedArrowRight) {
+  schedArrowRight.addEventListener('click', function() { 
+    schedCalState.offset++; 
+    rebuildScheduleCalendar(); 
+  });
+}
 
 // ─── Рендер тренировок ─────────────────────────────
 var allWorkouts = [];
