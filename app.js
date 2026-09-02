@@ -201,7 +201,59 @@ function buildHomeCalendar() {
 }
 
 buildHomeCalendar();
+buildHomeCalendar();
 
+// ─── Автоактивация центрального дня при скролле ───
+(function() {
+  var wrap = document.getElementById('home-cal-days');
+  if (!wrap) return;
+  
+  var scrollTimeout;
+  
+  wrap.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    
+    scrollTimeout = setTimeout(function() {
+      var containerCenter = wrap.scrollLeft + (wrap.offsetWidth / 2);
+      var closestDay = null;
+      var minDistance = Infinity;
+      
+      wrap.querySelectorAll('.home-cal-day').forEach(function(day) {
+        var dayCenter = day.offsetLeft + (day.offsetWidth / 2);
+        var distance = Math.abs(containerCenter - dayCenter);
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestDay = day;
+        }
+      });
+      
+      if (closestDay && !closestDay.classList.contains('active')) {
+        // Убираем active у всех
+        wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
+          el.classList.remove('active');
+        });
+        
+        // Добавляем active центральному
+        closestDay.classList.add('active');
+        selectedHomeDate = closestDay.dataset.date;
+        
+        // Центрируем его плавно
+        closestDay.scrollIntoView({ 
+          inline: 'center', 
+          block: 'nearest', 
+          behavior: 'smooth' 
+        });
+        
+        // Обновляем список тренировок
+        homeExpanded = true;
+        var expand = document.getElementById('home-expand');
+        if (expand) expand.classList.add('expanded');
+        renderHomeWorkouts();
+      }
+    }, 150); // Задержка после окончания скролла
+  });
+})();
 // Скрываем детальный календарь по умолчанию
 var expandEl = document.getElementById('home-expand');
 if (expandEl) expandEl.classList.remove('expanded');
