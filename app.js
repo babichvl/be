@@ -202,72 +202,75 @@ function buildHomeCalendar() {
 
 buildHomeCalendar();
 
-// ─── Карусель: CSS Scroll Snap ───
+// ─── Карусель: CSS Scroll Snap с живым обновлением active ───
 (function() {
   var wrap = document.getElementById('home-cal-days');
   if (!wrap) return;
   
-  var updating = false;
+  var lastActiveDay = null;
   
+  // Обновление active класса (быстрое, без debounce)
   function updateActiveDay() {
-    if (updating) return;
-    updating = true;
+    var containerCenter = wrap.scrollLeft + (wrap.offsetWidth / 2);
+    var closestDay = null;
+    var minDistance = Infinity;
     
-    requestAnimationFrame(function() {
-      var containerCenter = wrap.scrollLeft + (wrap.offsetWidth / 2);
-      var closestDay = null;
-      var minDistance = Infinity;
+    var days = wrap.querySelectorAll('.home-cal-day');
+    for (var i = 0; i < days.length; i++) {
+      var day = days[i];
+      var dayCenter = day.offsetLeft + (day.offsetWidth / 2);
+      var distance = Math.abs(containerCenter - dayCenter);
       
-      var days = wrap.querySelectorAll('.home-cal-day');
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestDay = day;
+      }
+    }
+    
+    // Обновляем active только если день изменился
+    if (closestDay && closestDay !== lastActiveDay) {
+      lastActiveDay = closestDay;
+      
+      // Убираем active у всех
       for (var i = 0; i < days.length; i++) {
-        var day = days[i];
-        var dayCenter = day.offsetLeft + (day.offsetWidth / 2);
-        var distance = Math.abs(containerCenter - dayCenter);
-        
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestDay = day;
-        }
+        days[i].classList.remove('active');
       }
       
-      if (closestDay) {
-        var newDate = closestDay.dataset.date;
-        
-        // Обновляем только если дата изменилась
-        if (newDate !== selectedHomeDate) {
-          selectedHomeDate = newDate;
-          
-          // Убираем active у всех
-          for (var i = 0; i < days.length; i++) {
-            days[i].classList.remove('active');
-          }
-          
-          // Добавляем active центральному
-          closestDay.classList.add('active');
-          
-          // Раскрываем секцию
-          homeExpanded = true;
-          var expand = document.getElementById('home-expand');
-          if (expand) expand.classList.add('expanded');
-          
-          // Обновляем контент
-          renderHomeWorkouts();
-        }
-      }
-      
-      updating = false;
-    });
+      // Добавляем active центральному
+      closestDay.classList.add('active');
+    }
   }
   
-  // Используем scrollend — срабатывает только после остановки
-  wrap.addEventListener('scrollend', updateActiveDay);
+  // Обновление контента (с debounce, только после остановки)
+  var contentTimeout;
+  function updateContent() {
+    clearTimeout(contentTimeout);
+    contentTimeout = setTimeout(function() {
+      if (!lastActiveDay) return;
+      
+      var newDate = lastActiveDay.dataset.date;
+      if (newDate !== selectedHomeDate) {
+        selectedHomeDate = newDate;
+        
+        // Раскрываем секцию
+        homeExpanded = true;
+        var expand = document.getElementById('home-expand');
+        if (expand) expand.classList.add('expanded');
+        
+        // Обновляем контент
+        renderHomeWorkouts();
+      }
+    }, 150); // Задержка только для загрузки контента
+  }
   
-  // Фоллбэк для браузеров без scrollend (Safari старые версии)
-  var scrollTimeout;
+  // Слушаем прокрутку — обновляем active мгновенно
   wrap.addEventListener('scroll', function() {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(updateActiveDay, 100);
+    requestAnimationFrame(updateActiveDay); // Синхронизация с кадром
+    updateContent(); // Контент с задержкой
   }, { passive: true });
+  
+  // Инициализация — активируем центральный день сразу
+  updateActiveDay();
 })();
 // Скрываем детальный календарь по умолчанию
 var expandEl = document.getElementById('home-expand');
