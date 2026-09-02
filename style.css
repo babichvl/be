@@ -160,7 +160,7 @@ body {
   overflow-x: auto;                  /* Горизонтальная прокрутка */
   padding: var(--sp-12) 24px; 
   scrollbar-width: none;             /* Скрыть скроллбар (Firefox) */
-  scroll-snap-type: x mandatory;     /* Привязка к элементам при свайпе */
+  scroll-snap-type: x proximity;     /* Привязка к элементам при свайпе */
   scroll-behavior: smooth;           /* Плавная прокрутка */
   -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
 }
