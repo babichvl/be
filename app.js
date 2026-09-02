@@ -21,11 +21,11 @@ function loadUser() {
       trainerTgId = u.id || null;
     } else {
       if (nameEl) nameEl.textContent = 'Тренер';
-      trainerTgId = 111111;
+      trainerTgId = 786441589;
     }
   } catch (e) {
     if (nameEl) nameEl.textContent = 'Тренер';
-    trainerTgId = 111111;
+    trainerTgId = 786441589;
   }
 }
 loadUser();
