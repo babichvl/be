@@ -43,13 +43,6 @@ function switchTab(tabId) {
   screens.forEach(function(s) {
     s.classList.toggle('active', s.id === 'screen-' + tabId);
   });
-  if (pageTitle) pageTitle.textContent = TAB_TITLES[tabId] || 'Главная';
-  
-  // Скрываем topbar на главной
-  var topbar = document.querySelector('.topbar');
-  if (topbar) {
-    topbar.style.display = (tabId === 'home') ? 'none' : 'flex';
-  }
 }
 
 navItems.forEach(function(btn) {
@@ -57,14 +50,7 @@ navItems.forEach(function(btn) {
 });
 switchTab('home');
 
-// ─── Меню ──────────────────────────────────────────
-var menuBtn  = document.getElementById('menu-btn');
-var dropdown = document.getElementById('dropdown');
-menuBtn.addEventListener('click', function(e) {
-  e.stopPropagation();
-  dropdown.hidden = !dropdown.hidden;
-});
-document.addEventListener('click', function() { dropdown.hidden = true; });
+
 
 // ─── FAB ───────────────────────────────────────────
 document.getElementById('fab-btn').addEventListener('click', function() {
