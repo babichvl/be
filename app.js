@@ -209,7 +209,6 @@ buildHomeCalendar();
   
   var lastCenterDay = null;
   var snapTimeout = null;
-  var renderTimeout = null;
   
   function updateActiveDay() {
     if (!wrap) return;
@@ -247,18 +246,15 @@ buildHomeCalendar();
       var expand = document.getElementById('home-expand');
       if (expand) expand.classList.add('expanded');
       
-      // Debounce рендера тренировок
-      if (renderTimeout) clearTimeout(renderTimeout);
-      renderTimeout = setTimeout(function() {
-        renderHomeWorkouts();
-      }, 100);
+      // Рендер без задержки — мгновенная смена списка
+      renderHomeWorkouts();
     }
   }
   
   function onScroll() {
     updateActiveDay();
     
-    // Центрируем после остановки (отдельный таймер)
+    // Центрируем после остановки (это единственная задержка)
     if (snapTimeout) clearTimeout(snapTimeout);
     snapTimeout = setTimeout(function() {
       var activeDay = wrap.querySelector('.home-cal-day.active');
