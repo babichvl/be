@@ -76,6 +76,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-16);
+  padding-top: 50px;
 }
 
 .home-header__menu {
