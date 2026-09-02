@@ -34,6 +34,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  padding-top: 60px;   
 }
 
 /* ===== Основной контейнер ===== */
