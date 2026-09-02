@@ -10,57 +10,59 @@
 </head>
 <body>
 
-  
-
   <main class="content">
 
-<!-- ===== ГЛАВНАЯ ===== -->
-<section class="screen active" id="screen-home">
-  <div class="home-header">
-    <button class="home-header__menu" id="menu-btn-home" aria-label="Меню">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
-        <circle cx="12" cy="6" r="1.5" fill="currentColor"/>
-        <circle cx="6" cy="12" r="1.5" fill="currentColor"/>
-        <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
-      </svg>
-    </button>
-    
-    <span class="home-header__title">Главная</span>
-    
-    <div class="home-header__avatar">
-      <div class="home-header__avatar-img" id="home-avatar"></div>
-      <span class="home-header__status"></span>
-    </div>
-  </div>
-
-  <div class="home-calendar">
-    <div class="home-calendar__days" id="home-cal-days"></div>
-  </div>
-
-  <div class="home-expand" id="home-expand">
-    <div class="calendar-strip card">
-      <div class="calendar-strip__header">
-        <button class="calendar-strip__arrow" id="home-arrow-left">‹</button>
-        <span class="calendar-strip__month" id="cal-month"></span>
-        <button class="calendar-strip__arrow" id="home-arrow-right">›</button>
+    <!-- ===== ГЛАВНАЯ ===== -->
+    <section class="screen active" id="screen-home">
+      <div class="home-header">
+        <button class="home-header__menu" id="menu-btn-home" aria-label="Меню">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
+            <circle cx="12" cy="6" r="1.5" fill="currentColor"/>
+            <circle cx="6" cy="12" r="1.5" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+          </svg>
+        </button>
+        
+        <span class="home-header__title">Главная</span>
+        
+        <div class="home-header__avatar">
+          <div class="home-header__avatar-img" id="home-avatar"></div>
+          <span class="home-header__status"></span>
+        </div>
       </div>
-      <div class="calendar-strip__days" id="cal-days"></div>
-    </div>
 
-    <div class="schedule-list" id="home-list">
-      <p class="placeholder-text">Загружаем...</p>
-    </div>
-  </div>
-</section>
+      <div class="home-calendar">
+        <div class="home-calendar__days" id="home-cal-days"></div>
+      </div>
+
+      <div class="home-expand" id="home-expand">
+        <div class="calendar-strip card">
+          <div class="calendar-strip__header">
+            <button class="calendar-strip__arrow" id="home-arrow-left">‹</button>
+            <span class="calendar-strip__month" id="cal-month"></span>
+            <button class="calendar-strip__arrow" id="home-arrow-right">›</button>
+          </div>
+          <div class="calendar-strip__days" id="cal-days"></div>
+        </div>
+
+        <div class="schedule-list" id="home-list">
+          <p class="placeholder-text">Загружаем...</p>
+        </div>
+      </div>
+    </section>
 
     <!-- ===== РАСПИСАНИЕ ===== -->
     <section class="screen" id="screen-schedule">
+      <div class="schedule-header">
+        <h1 class="schedule-header__title">Расписание</h1>
+      </div>
+
       <div class="calendar-strip card">
         <div class="calendar-strip__header">
-          <button class="calendar-strip__arrow">‹</button>
+          <button class="calendar-strip__arrow" id="schedule-arrow-left">‹</button>
           <span class="calendar-strip__month" id="cal-month-s"></span>
-          <button class="calendar-strip__arrow">›</button>
+          <button class="calendar-strip__arrow" id="schedule-arrow-right">›</button>
         </div>
         <div class="calendar-strip__days" id="cal-days-s"></div>
       </div>
@@ -72,11 +74,17 @@
 
     <!-- ===== КЛИЕНТЫ ===== -->
     <section class="screen" id="screen-clients">
+      <div class="schedule-header">
+        <h1 class="schedule-header__title">Клиенты</h1>
+      </div>
       <p class="placeholder-text">Клиенты — скоро</p>
     </section>
 
     <!-- ===== ПРОГРАММЫ ===== -->
     <section class="screen" id="screen-programs">
+      <div class="schedule-header">
+        <h1 class="schedule-header__title">Программы</h1>
+      </div>
       <p class="placeholder-text">Программы — скоро</p>
     </section>
 
@@ -84,7 +92,7 @@
 
   <nav class="bottomnav">
 
-    <button class="bottomnav__item" data-tab="home">
+    <button class="bottomnav__item active" data-tab="home">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
         <path d="M9 21V12h6v9"/>
