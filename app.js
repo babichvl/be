@@ -28,7 +28,7 @@ function loadUser() {
   
   // ВРЕМЕННО: подставь свой Telegram ID для тестирования
   if (!trainerTgId) {
-    trainerTgId = 123456789; // <--- ЗАМЕНИ НА СВОЙ ID
+    trainerTgId = 786441589; // <--- ЗАМЕНИ НА СВОЙ ID
   }
   
   console.log('[app] trainerTgId =', trainerTgId);
