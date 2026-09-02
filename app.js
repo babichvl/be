@@ -165,9 +165,8 @@ function renderHomeWorkouts(workouts) {
   var container = document.getElementById('home-workouts-list');
   if (!container) return;
 
-  var upcoming = workouts.filter(function(w) {
-    var dt = new Date(w.workout_date + 'T' + w.start_time).getTime();
-    return dt >= Date.now() - 60 * 60 * 1000;
+  var list = workouts.filter(function(w) {
+    return w.workout_date === selectedHomeDate;
   }).sort(function(a, b) {
     var aTime = new Date(a.workout_date + 'T' + a.start_time).getTime();
     var bTime = new Date(b.workout_date + 'T' + b.start_time).getTime();
