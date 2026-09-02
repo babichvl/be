@@ -5,7 +5,7 @@ if (tg) { tg.expand(); tg.setHeaderColor('#F5F5F7'); }
   setTimeout(function() {
     var header = document.querySelector('.home-header');
     if (header) {
-      header.style.paddingTop = '80px';
+      header.style.paddingTop = '120px';
     }
   }, 100);
 }
