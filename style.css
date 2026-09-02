@@ -70,11 +70,12 @@ body {
 
 /* ===== Шапка главной (меню, заголовок, аватар) ===== */
 .home-header {
+  position: relative;                /* Для абсолютного позиционирования заголовка */
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-16);
-  padding-top: max(var(--sp-16), env(safe-area-inset-top)); /* Отступ под выемку */
+  padding-top: max(24px, env(safe-area-inset-top)); /* Отступ под выемку + системные кнопки */
 }
 
 .home-header__menu {
@@ -90,6 +91,7 @@ body {
   color: var(--text-primary);
   box-shadow: var(--shadow-sm);
   transition: all 0.2s;
+  z-index: 10;                       /* Поверх заголовка */
 }
 
 .home-header__menu:active {
@@ -98,6 +100,9 @@ body {
 }
 
 .home-header__title {
+  position: absolute;                /* Абсолютное позиционирование */
+  left: 50%;                         /* По центру */
+  transform: translateX(-50%);       /* Центрирование */
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
@@ -107,6 +112,7 @@ body {
   position: relative;
   width: 44px;
   height: 44px;
+  z-index: 10;                       /* Поверх заголовка */
 }
 
 .home-header__avatar-img {
@@ -136,10 +142,11 @@ body {
 
 .home-calendar__days {
   display: flex;
-  gap: 12px;
+  gap: 10px;                         /* Расстояние между днями */
   overflow-x: auto;                  /* Горизонтальная прокрутка */
   padding: var(--sp-12) 0;
   scrollbar-width: none;             /* Скрыть скроллбар */
+  scroll-snap-type: x mandatory;     /* Привязка при свайпе */
 }
 
 .home-calendar__days::-webkit-scrollbar {
@@ -148,13 +155,15 @@ body {
 
 /* ===== Дни календаря (главная) ===== */
 .home-cal-day {
-  min-width: 72px;                   /* Ширина неактивного дня */
-  height: 88px;                      /* Высота неактивного дня */
+  flex-shrink: 0;                    /* Не сжимать */
+  scroll-snap-align: center;         /* Привязка к центру */
+  min-width: 64px;                   /* Ширина неактивного дня (узкий) */
+  height: 100px;                     /* Высота неактивного дня (высокий, вертикальный) */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--surface-1);
   border-radius: 20px;
   cursor: pointer;
@@ -164,8 +173,8 @@ body {
 }
 
 .home-cal-day.active {
-  min-width: 80px;                   /* Ширина активного дня (больше) */
-  height: 120px;                     /* Высота активного дня (больше) */
+  min-width: 80px;                   /* Ширина активного дня (шире) */
+  height: 130px;                     /* Высота активного дня (выше) */
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент активного */
   color: white;
   box-shadow: var(--shadow-active);  /* Яркая тень */
@@ -174,19 +183,21 @@ body {
 }
 
 .home-cal-day__num {
-  font-size: 26px;                   /* Размер числа неактивного дня */
+  font-size: 28px;                   /* Размер числа неактивного дня */
   font-weight: 600;
   transition: font-size 0.3s;
+  order: 1;                          /* Число сначала */
 }
 
 .home-cal-day.active .home-cal-day__num {
-  font-size: 32px;                   /* Размер числа активного дня (крупнее) */
+  font-size: 36px;                   /* Размер числа активного дня (крупнее) */
 }
 
 .home-cal-day__name {
   font-size: 13px;                   /* Размер названия дня недели */
   font-weight: 500;
   opacity: 0.6;
+  order: 2;                          /* День недели после числа */
 }
 
 .home-cal-day.active .home-cal-day__name {
@@ -195,28 +206,31 @@ body {
 
 .home-cal-day__icon {
   position: absolute;
-  bottom: 14px;                      /* Иконка внизу */
-  width: 24px;
-  height: 24px;
+  bottom: 12px;                      /* Иконка в самом низу */
+  width: 22px;
+  height: 22px;
   display: none;                     /* Скрыта по умолчанию */
   opacity: 0.9;
+  order: 3;                          /* Иконка в конце */
 }
 
 .home-cal-day.active .home-cal-day__icon {
   display: block;                    /* Показать иконку только у активного дня */
 }
 
-/* ===== Раскрываемая секция (детальный календарь + список) ===== */
+/* ===== Раскрываемая секция (список тренировок) ===== */
 .home-expand {
   max-height: 0;                     /* Скрыта по умолчанию */
   overflow: hidden;
   opacity: 0;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Плавное раскрытие */
+  padding: 0 var(--sp-16);
 }
 
 .home-expand.expanded {
   max-height: 2000px;                /* Раскрыта */
   opacity: 1;
+  padding: var(--sp-16);
 }
 
 /* ===== Заголовок экрана Расписание ===== */
@@ -383,61 +397,4 @@ body {
   justify-content: space-around;
   padding: var(--sp-12) var(--sp-16);
   padding-bottom: max(var(--sp-12), env(safe-area-inset-bottom)); /* Отступ для iOS */
-  background: rgba(255, 255, 255, 0.9); /* Полупрозрачный фон */
-  backdrop-filter: blur(20px);       /* Размытие фона */
-  border-top: 1px solid var(--border);
-  z-index: 100;
-}
-
-.bottomnav__item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px 12px;
-  color: var(--text-secondary);      /* Серый по умолчанию */
-  transition: all 0.2s;
-}
-
-.bottomnav__item.active {
-  color: var(--accent);              /* Фиолетовый если активна */
-}
-
-.nav-icon {
-  width: 24px;
-  height: 24px;
-}
-
-.bottomnav__label {
-  font-size: 11px;
-  font-weight: 500;
-}
-
-/* ===== FAB кнопка "+" ===== */
-.bottomnav__fab {
-  width: 56px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%); /* Градиент */
-  border: none;
-  border-radius: 50%;                /* Круглая кнопка */
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(91, 91, 255, 0.4); /* Яркая тень */
-  transition: all 0.2s;
-  margin: 0 var(--sp-8);
-  transform: translateY(-8px);       /* Поднята над меню */
-}
-
-.bottomnav__fab:active {
-  transform: translateY(-8px) scale(0.95); /* Анимация при клике */
-}
-
-.bottomnav__fab svg {
-  width: 28px;
-  height: 28px;
-}
+  background: rgba(255
