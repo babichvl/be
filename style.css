@@ -75,7 +75,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-16);
-  padding-top: max(24px, env(safe-area-inset-top)); /* Отступ под выемку + системные кнопки */
+  padding-top: max(50px, env(safe-area-inset-top)); /* Отступ под выемку + системные кнопки */
 }
 
 .home-header__menu {
