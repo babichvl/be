@@ -119,7 +119,7 @@ function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
   if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
-// ─── Главная: горизонтальный календарь ─────────────
+// ─── Главная: горизонтальный календарь (30 дней для свайпа) ─────────────
 var homeExpanded = false;
 
 function buildHomeCalendar() {
@@ -132,9 +132,10 @@ function buildHomeCalendar() {
   wrap.innerHTML = '';
   
   var startDate = new Date(today);
-  startDate.setDate(today.getDate() - 2);  // За 2 дня до сегодня
+  startDate.setDate(today.getDate() - 3);  // Начинаем за 3 дня до сегодня
   
-  for (var i = 0; i < 5; i++) {
+  // Генерируем 30 дней для свайпа
+  for (var i = 0; i < 30; i++) {
     var d = new Date(startDate);
     d.setDate(startDate.getDate() + i);
     var iso = dateToISO(d);
@@ -142,7 +143,7 @@ function buildHomeCalendar() {
     var chip = document.createElement('div');
     chip.className = 'home-cal-day';
     
-    // Проверяем, это сегодня или нет
+    // Проверяем, это выбранный день или нет
     if (iso === selectedHomeDate) {
       chip.classList.add('active');
     }
@@ -190,7 +191,13 @@ function buildHomeCalendar() {
     wrap.appendChild(chip);
   }
   
-  console.log('[app] home calendar built, selected:', selectedHomeDate);
+  // Прокрутить к активному дню
+  var activeDay = wrap.querySelector('.home-cal-day.active');
+  if (activeDay) {
+    activeDay.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }
+  
+  console.log('[app] home calendar built, 30 days, selected:', selectedHomeDate);
 }
 
 buildHomeCalendar();
@@ -198,8 +205,6 @@ buildHomeCalendar();
 // Скрываем детальный календарь по умолчанию
 var expandEl = document.getElementById('home-expand');
 if (expandEl) expandEl.classList.remove('expanded');
-
-
 
 // ─── Расписание: календарь + стрелки ───────────────
 var schedCalState = { offset: 0 };
@@ -309,6 +314,12 @@ if (trainerTgId && window.WorkoutsStore) {
 } else {
   console.warn('[app] нет trainerTgId');
   var hint = 'Откройте через Telegram';
-  document.getElementById('home-list').innerHTML = '<p class="placeholder-text">' + hint + '</p>';
-  document.getElementById('schedule-list').innerHTML = '<p class="placeholder-text">' + hint + '</p>';
+  var homeList = document.getElementById('home-list');
+  var schedList = document.getElementById('schedule-list');
+  if (homeList) homeList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
+  if (schedList) schedList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
 }
+
+// Первый рендер (на случай если тренировки уже есть)
+renderHomeWorkouts();
+renderScheduleWorkouts();
