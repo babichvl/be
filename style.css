@@ -231,7 +231,6 @@ body {
 
 .home-expand {
   display: none;
-  padding: 0 var(--sp-16);
 }
 
 .home-expand.expanded {
