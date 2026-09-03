@@ -119,31 +119,30 @@ body {
 
 .home-header__avatar {
   position: relative;
-  width: 44px;
-  height: 44px;
-  z-index: 10;                       /* Поверх заголовка */
-  padding-top: 20px;                 /* ← ИСПРАВЛЕНО */
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
 }
 
 .home-header__avatar-img {
-  width: 100%;
-  height: 100%;
-  border-radius: 25%;                /* Круглый аватар */
-  background: linear-gradient(115deg, #7B7BFF 0%, #5B5BFF 100%);
-  box-shadow: var(--shadow-sm);
-  padding-top: 20px;                 /* ← ИСПРАВЛЕНО */
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;          /* ← квадрат с закруглёнными углами вместо круга */
+  background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
 }
 
 .home-header__status {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 12px;
-  height: 12px;
-  background: #34C759;               /* Зелёный статус онлайн */
-  border: 2px solid var(--surface-1);
+  bottom: -2px;
+  right: -2px;
+  width: 11px;
+  height: 11px;
+  background: #34C759;
   border-radius: 50%;
-  padding-top: 20px;                 /* ← ИСПРАВЛЕНО */
+  border: 2px solid var(--surface-0);
 }
 
 /* ========================================
