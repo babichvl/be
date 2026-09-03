@@ -104,15 +104,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   padding: 16px;
-  /* на телефоне берём реальные отступы TG, в браузере — 60px */
-  padding-top: max(
-    60px,
-    calc(
-      var(--tg-viewport-safe-area-inset-top, 0px) +
-      var(--tg-viewport-content-safe-area-inset-top, 0px) +
-      16px
-    )
-  );
+  padding-top: 60px;
 }
 
 .home-header__title {
@@ -152,7 +144,7 @@ body {
 }
 
 .home-header__menu {
-  display: none;  /* кнопка удалена из HTML, на всякий случай скрываем */
+  display: none;
 }
 
 /* ========================================
