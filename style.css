@@ -125,8 +125,8 @@ body {
 }
 
 .home-header__avatar-img {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 12px;
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);
   background-size: cover;
