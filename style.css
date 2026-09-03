@@ -158,12 +158,12 @@ body {
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  padding: var(--sp-12) calc(50vw - 74px); /* Центрирование первого/последнего дня */
+  padding: var(--sp-12) calc(50vw - 54px); /* Центрирование первого/последнего дня */
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scroll-padding: 0 calc(50vw - 74px);     /* ← ДОБАВЬ: отступ для snap */
+  scroll-padding: calc(50vw - 54px);     /* ← ДОБАВЬ: отступ для snap */
 }
 
 .home-calendar__days::-webkit-scrollbar {
