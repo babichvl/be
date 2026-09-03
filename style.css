@@ -150,21 +150,20 @@ body {
    ГОРИЗОНТАЛЬНЫЙ КАЛЕНДАРЬ (ГЛАВНАЯ)
    ======================================== */
 .home-calendar {
-  padding: 0;              /* убрали боковые отступы */
-  padding-top: 20px;       /* оставили верхний */
+  padding: 0;              
+  padding-top: 20px;
 }
 
 .home-calendar__days {
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  padding: var(--sp-12) 0;           /* ← ИСПРАВЛЕНО: убран calc(50vw - 32px) */
+  padding: var(--sp-12) 0;
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scroll-padding: 0 50%;             /* ← ИСПРАВЛЕНО: снап-точка точно по центру */
-  align-items: center;               /* ← ДОБАВЛЕНО: центр по вертикали */
+  align-items: flex-end;     /* ← ДОБАВЛЕНО: выравнивание по нижней линии */
 }
 
 .home-calendar__days::-webkit-scrollbar {
@@ -176,17 +175,17 @@ body {
    ======================================== */
 .home-cal-day {
   flex-shrink: 0;
-  scroll-snap-align: center;               /* Центрирование каждого дня */
+  scroll-snap-align: center;
   scroll-snap-stop: always;
-  width: 64px;                              /* ← ДОБАВЛЕНО: фиксированная ширина */
+  width: 64px;
   min-width: 64px;
   max-width: 64px;
   height: 85px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding-top: 12px;
+  justify-content: flex-end;   /* ← ИЗМЕНЕНО: было flex-start, теперь flex-end */
+  padding-bottom: 12px;        /* ← ИЗМЕНЕНО: было padding-top, теперь padding-bottom */
   gap: 1px;
   background: var(--surface-1);
   border-radius: 20px;
@@ -199,25 +198,27 @@ body {
 
 /* Активный день — фиолетовый градиент, увеличенный */
 .home-cal-day.active {
-  width: 64px;                              /* ← ДОБАВЛЕНО: остаётся фиксированной */
+  width: 64px;
   max-width: 64px;
   min-width: 64px;
-  height: 115px;                            /* Активный — большой */
+  height: 115px;                           /* Активный — большой */
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%) !important;
   color: white !important;
   border: none !important;
   border-radius: 22px !important;
+  padding-bottom: 12px;                    /* ← ДОБАВЛЕНО: сохраняем отступ снизу */
 }
 
 /* Число дня */
 .home-cal-day__num {
-  font-size: 24px;                   /* Размер у неактивного */
+  font-size: 24px;
   font-weight: 700;
   transition: font-size 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  order: 1;                                /* ← ДОБАВЛЕНО: число первое */
 }
 
 .home-cal-day.active .home-cal-day__num {
-  font-size: 26px;                   /* Чуть больше у активного */
+  font-size: 26px;
 }
 
 /* Название дня недели */
@@ -225,7 +226,7 @@ body {
   font-size: 13px;
   font-weight: 450;
   opacity: 0.6;
-  order: 2;
+  order: 0;                                /* ← ДОБАВЛЕНО: название сверху (над числом) */
   transition: font-size 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s;
 }
 
@@ -240,12 +241,13 @@ body {
   bottom: 12px;
   width: 22px;
   height: 22px;
-  display: none;                     /* Скрыта по умолчанию */
+  display: none;
   opacity: 0.9;
+  order: 2;                                /* ← ДОБАВЛЕНО: иконка снизу */
 }
 
 .home-cal-day.active .home-cal-day__icon {
-  display: block;                    /* Показать только у активного */
+  display: block;
 }
 /* ========================================
    ЗАГОЛОВОК ЭКРАНА "РАСПИСАНИЕ"
