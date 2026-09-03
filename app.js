@@ -1,21 +1,7 @@
 // ─── Telegram ──────────────────────────────────────
 var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.expand(); tg.setHeaderColor('#F5F5F7'); }
-// Читаем реальные отступы из TG API и передаём в CSS
-  function applyTgInsets() {
-    var safeTop     = (tg.safeAreaInset        && tg.safeAreaInset.top)        || 0;
-    var contentTop  = (tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) || 0;
-    var total = safeTop + contentTop;
-    document.documentElement.style.setProperty('--tg-top-inset', total + 'px');
-    console.log('[app] tg insets: safe=' + safeTop + ' content=' + contentTop);
-  }
 
-  applyTgInsets();
-
-  // Обновляем если пользователь разворачивает/сворачивает
-  tg.onEvent('safeAreaChanged',        applyTgInsets);
-  tg.onEvent('contentSafeAreaChanged', applyTgInsets);
-}
 
 // ─── Supabase ──────────────────────────────────────
 var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
