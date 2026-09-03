@@ -13,7 +13,6 @@ var trainerTgId = null;
 
 function loadUser() {
   var urlId = new URLSearchParams(window.location.search).get('tg_id');
-  
   try {
     var params   = new URLSearchParams(tg && tg.initData ? tg.initData : '');
     var userJson = params.get('user');
@@ -26,11 +25,9 @@ function loadUser() {
   } catch (e) {
     trainerTgId = urlId ? Number(urlId) : null;
   }
-  
   if (!trainerTgId) {
     trainerTgId = 786441589;
   }
-  
   console.log('[app] trainerTgId =', trainerTgId);
 }
 loadUser();
@@ -60,7 +57,7 @@ document.getElementById('fab-btn').addEventListener('click', function() {
 // ─── Расписание ────────────────────────────────────
 var CARD_COLORS = ['blue','pink','green','purple'];
 var today = new Date();
-var selectedHomeDate = dateToISO(today);
+var selectedHomeDate     = dateToISO(today);
 var selectedScheduleDate = dateToISO(today);
 
 function dateToISO(date) {
@@ -139,57 +136,57 @@ function buildHomeCalendar() {
     console.warn('[app] home-cal-days not found');
     return;
   }
-  
+
   wrap.innerHTML = '';
-  
+
   var startDate = new Date(today);
   startDate.setDate(today.getDate() - 3);
-  
+
   for (var i = 0; i < 30; i++) {
     var d = new Date(startDate);
     d.setDate(startDate.getDate() + i);
     var iso = dateToISO(d);
-    
+
     var chip = document.createElement('div');
     chip.className = 'home-cal-day';
-    
+
     if (iso === selectedHomeDate) {
       chip.classList.add('active');
     }
-    
+
     chip.dataset.date = iso;
-    
+
     var numEl = document.createElement('span');
     numEl.className = 'home-cal-day__num';
     numEl.textContent = d.getDate();
-    
+
     var nameEl = document.createElement('span');
     nameEl.className = 'home-cal-day__name';
     nameEl.textContent = DAYS[d.getDay()];
-    
+
     var icon = document.createElement('div');
     icon.className = 'home-cal-day__icon';
     icon.innerHTML = '<svg viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2a2 2 0 0 1 2 2c1.7.3 3 1.8 3 3.5V11c0 1.3.8 2.4 2 2.8V15H5v-1.2c1.2-.4 2-1.5 2-2.8V7.5c0-1.7 1.3-3.2 3-3.5a2 2 0 0 1 2-2zm-1 17h2a1 1 0 1 1-2 0z"/></svg>';
-    
+
     chip.appendChild(numEl);
     chip.appendChild(nameEl);
     chip.appendChild(icon);
-    
+
     chip.addEventListener('click', (function(isoDate, element) {
       return function() {
         selectedHomeDate = isoDate;
-        
+
         wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
           el.classList.remove('active');
         });
         element.classList.add('active');
-        
+
         homeExpanded = true;
         var expand = document.getElementById('home-expand');
         if (expand) expand.classList.add('expanded');
-        
+
         renderHomeWorkouts();
-        
+
         requestAnimationFrame(function() {
           requestAnimationFrame(function() {
             centerDay(element);
@@ -197,10 +194,10 @@ function buildHomeCalendar() {
         });
       };
     })(iso, chip));
-    
+
     wrap.appendChild(chip);
   }
-  
+
   // Центрируем активный день
   var activeEl = wrap.querySelector('.home-cal-day.active');
   if (activeEl) {
@@ -208,7 +205,7 @@ function buildHomeCalendar() {
       centerDay(activeEl);
     });
   }
-  
+
   // Snap-to-center при скролле
   (function() {
     function getClosestDayToCenter() {
@@ -225,6 +222,7 @@ function buildHomeCalendar() {
       return closest;
     }
 
+    // Только обновляем подсветку дня — без перерисовки списка
     function updateActiveDay() {
       var closestDay = getClosestDayToCenter();
       if (closestDay && closestDay.dataset.date !== selectedHomeDate) {
@@ -233,14 +231,17 @@ function buildHomeCalendar() {
           el.classList.remove('active');
         });
         closestDay.classList.add('active');
-        renderHomeWorkouts();
       }
     }
 
+    // Список обновляем один раз — только когда скролл остановился
     function snapToCenter() {
       if (isScrollingProgrammatically) return;
       var closestDay = getClosestDayToCenter();
-      if (closestDay) centerDay(closestDay);
+      if (closestDay) {
+        centerDay(closestDay);
+        renderHomeWorkouts();
+      }
     }
 
     wrap.addEventListener('scroll', function() {
@@ -372,8 +373,8 @@ if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.init(trainerTgId);
 } else {
   console.warn('[app] нет trainerTgId');
-  var hint     = 'Откройте через Telegram';
-  var homeList = document.getElementById('home-list');
+  var hint      = 'Откройте через Telegram';
+  var homeList  = document.getElementById('home-list');
   var schedList = document.getElementById('schedule-list');
   if (homeList)  homeList.innerHTML  = '<p class="placeholder-text">' + hint + '</p>';
   if (schedList) schedList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
