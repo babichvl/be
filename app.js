@@ -26,9 +26,8 @@ function loadUser() {
     trainerTgId = urlId ? Number(urlId) : null;
   }
   
-  // ВРЕМЕННО: подставь свой Telegram ID для тестирования
   if (!trainerTgId) {
-    trainerTgId = 786441589; // <--- ЗАМЕНИ НА СВОЙ ID
+    trainerTgId = 786441589;
   }
   
   console.log('[app] trainerTgId =', trainerTgId);
@@ -119,18 +118,44 @@ function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
   if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
-// ─── Главная: горизонтальный календарь (30 дней для свайпа) ─────────────
+// ─── Главная: горизонтальный календарь ─────────────
 var homeExpanded = false;
+var isScrollingProgrammatically = false;
+var scrollEndTimer = null;
 
-// Функция плавного центрирования элемента в контейнере
-function centerToElement(wrap, element, smooth) {
+// Точная функция центрирования (использует offsetLeft)
+function centerDay(wrap, element, smooth) {
   if (!wrap || !element) return;
-  var options = {
-    inline: 'center',
-    block: 'nearest',
-    behavior: smooth ? 'smooth' : 'auto'
-  };
-  element.scrollIntoView(options);
+  
+  var containerWidth = wrap.offsetWidth;
+  var elementLeft = element.offsetLeft;
+  var elementWidth = element.offsetWidth;
+  
+  // Центр элемента должен совпасть с центром контейнера
+  var targetScroll = elementLeft + (elementWidth / 2) - (containerWidth / 2);
+  
+  // Ограничиваем
+  targetScroll = Math.max(0, Math.min(targetScroll, wrap.scrollWidth - containerWidth));
+  
+  // Пропускаем если уже на месте
+  if (Math.abs(wrap.scrollLeft - targetScroll) < 1) return;
+  
+  if (smooth) {
+    isScrollingProgrammatically = true;
+    wrap.scrollTo({
+      left: targetScroll,
+      behavior: 'smooth'
+    });
+    setTimeout(function() {
+      isScrollingProgrammatically = false;
+    }, 400);
+  } else {
+    isScrollingProgrammatically = true;
+    wrap.scrollLeft = targetScroll;
+    setTimeout(function() {
+      isScrollingProgrammatically = false;
+    }, 10);
+  }
 }
 
 function buildHomeCalendar() {
@@ -175,40 +200,39 @@ function buildHomeCalendar() {
     chip.appendChild(nameEl);
     chip.appendChild(icon);
     
-    // Обработчик клика
+    // Обработчик клика с задержкой центрирования
     chip.addEventListener('click', (function(isoDate, element) {
       return function() {
         selectedHomeDate = isoDate;
         
-        // Обновляем активный класс
         wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
           el.classList.remove('active');
         });
         element.classList.add('active');
         
-        // Раскрываем секцию
         homeExpanded = true;
         var expand = document.getElementById('home-expand');
         if (expand) expand.classList.add('expanded');
         
         renderHomeWorkouts();
         
-        // Центрируем выбранный день с плавной прокруткой
-        // Небольшая задержка для корректного расчёта после изменения классов
-        setTimeout(function() {
-          centerToElement(wrap, element, true);
-        }, 50);
+        // Ждём следующий кадр для пересчёта layout
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            centerDay(wrap, element, true);
+          });
+        });
       };
     })(iso, chip));
     
     wrap.appendChild(chip);
   }
   
-  // При первой загрузке центрируем выбранный день без анимации
+  // Центрируем активный день при загрузке
   var activeDay = wrap.querySelector('.home-cal-day.active');
   if (activeDay) {
     setTimeout(function() {
-      centerToElement(wrap, activeDay, false);
+      centerDay(wrap, activeDay, false);
     }, 100);
   }
   
@@ -217,16 +241,15 @@ function buildHomeCalendar() {
 
 buildHomeCalendar();
 
-// ─── Карусель: обновление активного дня и доводка до центра ───
+// ─── Карусель: обновление active при свайпе ───────
 (function() {
   var wrap = document.getElementById('home-cal-days');
   if (!wrap) return;
   
   var lastActiveDay = null;
-  var scrollEndTimer = null;
   
   function getClosestDayToCenter() {
-    var containerCenter = wrap.scrollLeft + (wrap.clientWidth / 2);
+    var containerCenter = wrap.scrollLeft + (wrap.offsetWidth / 2);
     var closestDay = null;
     var minDistance = Infinity;
     
@@ -256,7 +279,6 @@ buildHomeCalendar();
       
       closestDay.classList.add('active');
       
-      // Обновляем контент при смене активного дня
       var newDate = closestDay.dataset.date;
       if (newDate !== selectedHomeDate) {
         selectedHomeDate = newDate;
@@ -268,33 +290,24 @@ buildHomeCalendar();
     }
   }
   
-  // Доводка после остановки прокрутки: выравниваем ближайший день по центру
   function snapToCenter() {
+    if (isScrollingProgrammatically) return;
+    
     var closestDay = getClosestDayToCenter();
     if (closestDay) {
-      // Проверяем, точно ли день в центре (допуск 2px)
-      var wrapRect = wrap.getBoundingClientRect();
-      var elRect = closestDay.getBoundingClientRect();
-      var currentCenter = wrapRect.left + wrap.clientWidth / 2;
-      var elCenter = elRect.left + elRect.width / 2;
-      var diff = Math.abs(elCenter - currentCenter);
-      
-      if (diff > 2) {
-        centerToElement(wrap, closestDay, true);
-      }
+      centerDay(wrap, closestDay, true);
     }
   }
   
   wrap.addEventListener('scroll', function() {
-    // Обновляем активный день
     requestAnimationFrame(updateActiveDay);
     
-    // Перезапускаем таймер доводки после остановки
-    clearTimeout(scrollEndTimer);
-    scrollEndTimer = setTimeout(snapToCenter, 150);
+    if (!isScrollingProgrammatically) {
+      clearTimeout(scrollEndTimer);
+      scrollEndTimer = setTimeout(snapToCenter, 150);
+    }
   }, { passive: true });
   
-  // Инициализация
   updateActiveDay();
 })();
 
