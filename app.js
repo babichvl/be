@@ -164,34 +164,39 @@ function buildHomeCalendar() {
     chip.appendChild(nameEl);
     chip.appendChild(icon);
     
-    // ИСПРАВЛЕНИЕ: добавлена прокрутка при клике
-    chip.addEventListener('click', (function(isoDate, element) {
-      return function() {
-        selectedHomeDate = isoDate;
-        
-        wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
-          el.classList.remove('active');
-        });
-        
-        element.classList.add('active');
-        
-        // ПРИНУДИТЕЛЬНАЯ ПРОКРУТКА К ЦЕНТРУ
-        var containerCenter = wrap.offsetWidth / 2;
-        var elementCenter = element.offsetLeft + (element.offsetWidth / 2);
-        var scrollTarget = elementCenter - containerCenter;
-        
-        wrap.scrollTo({
-          left: scrollTarget,
-          behavior: 'smooth'
-        });
-        
-        homeExpanded = true;
-        var expand = document.getElementById('home-expand');
-        if (expand) expand.classList.add('expanded');
-        
-        renderHomeWorkouts();
-      };
-    })(iso, chip));
+// Обработчик клика
+chip.addEventListener('click', (function(isoDate, element) {
+  return function() {
+    selectedHomeDate = isoDate;
+    
+    // Убираем active у всех
+    wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
+      el.classList.remove('active');
+    });
+    
+    // Добавляем active к кликнутому
+    element.classList.add('active');
+    
+    // Раскрываем секцию
+    homeExpanded = true;
+    var expand = document.getElementById('home-expand');
+    if (expand) expand.classList.add('expanded');
+    
+    renderHomeWorkouts();
+    
+    // ЦЕНТРИРОВАНИЕ с задержкой (чтобы браузер успел применить active)
+    setTimeout(function() {
+      var containerCenter = wrap.offsetWidth / 2;
+      var elementCenter = element.offsetLeft + (element.offsetWidth / 2);
+      var scrollTarget = elementCenter - containerCenter;
+      
+      wrap.scrollTo({
+        left: scrollTarget,
+        behavior: 'smooth'
+      });
+    }, 100); // 100ms задержка
+  };
+})(iso, chip));
     
     wrap.appendChild(chip);
   }
