@@ -438,7 +438,22 @@ body {
 .schedule-card--purple {
   background: linear-gradient(135deg, #F0E8FF 0%, #E5D6FF 100%);
 }
+/* Статус "Проведена" */
+.schedule-card--done {
+  background: #E8F9EE;
+  border: 1.5px solid #34C759;
+  position: relative;
+}
 
+.schedule-card__check {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #34C759;
+  font-weight: 700;
+}
 /* ========================================
    НИЖНЕЕ МЕНЮ (НАВИГАЦИЯ)
    ======================================== */
