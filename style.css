@@ -99,22 +99,21 @@ body {
    ШАПКА ГЛАВНОЙ (МЕНЮ, ЗАГОЛОВОК, АВАТАР)
    ======================================== */
 .home-header {
-  position: relative;                /* Для абсолютного позиционирования заголовка */
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: var(--sp-16);
-  padding-top: max(100px, env(safe-area-inset-top)); /* Отступ под выемку iPhone */
+  padding-top: max(var(--sp-16), env(safe-area-inset-top));
 }
 
 .home-header__title {
-  position: absolute;                /* Абсолютное позиционирование */
-  left: 50%;                         /* По центру */
-  transform: translateX(-50%);       /* Центрирование через transform */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
-  padding-top: 20px;                 /* ← ИСПРАВЛЕНО: было 20 (не было px) */
 }
 
 .home-header__avatar {
@@ -122,16 +121,16 @@ body {
   width: 40px;
   height: 40px;
   flex-shrink: 0;
+  z-index: 10;
 }
 
 .home-header__avatar-img {
   width: 40px;
   height: 40px;
-  border-radius: 12px;          /* ← квадрат с закруглёнными углами вместо круга */
+  border-radius: 12px;
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);
   background-size: cover;
   background-position: center;
-  overflow: hidden;
 }
 
 .home-header__status {
