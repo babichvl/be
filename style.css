@@ -98,13 +98,17 @@ body {
 /* ========================================
    ШАПКА ГЛАВНОЙ (МЕНЮ, ЗАГОЛОВОК, АВАТАР)
    ======================================== */
+
+:root {
+  --tg-top-inset: 0px; /* перезаписывается JS-ом */
+}
 .home-header {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding: var(--sp-16);
-  padding-top: calc(env(safe-area-inset-top) + 64px);
+  padding-top: calc(var(--tg-top-inset) + var(--sp-16)); /* точный отступ под TG-кнопки */
 }
 
 .home-header__title {
