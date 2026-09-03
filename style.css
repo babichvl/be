@@ -158,12 +158,12 @@ body {
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  padding: var(--sp-12) calc(50vw - 54px); /* Центрирование первого/последнего дня */
+  padding: var(--sp-12) calc(50vw - 32px); /* Жёсткое центрирование: 50vw - половина ширины дня (64/2=32) */
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scroll-padding: calc(50vw - 54px);     /* ← ДОБАВЬ: отступ для snap */
+  scroll-padding: 0 calc(50vw - 32px);     /* Snap точно по центру */
 }
 
 .home-calendar__days::-webkit-scrollbar {
@@ -243,7 +243,6 @@ body {
 .home-cal-day.active .home-cal-day__icon {
   display: block;                    /* Показать только у активного */
 }
-
 /* ========================================
    ЗАГОЛОВОК ЭКРАНА "РАСПИСАНИЕ"
    ======================================== */
