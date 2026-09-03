@@ -121,38 +121,6 @@ function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
 
 // ─── Главная: горизонтальный календарь (30 дней для свайпа) ─────────────
 var homeExpanded = false;
-var isProgrammaticScroll = false; // флаг программной прокрутки
-
-function centerElementInWrap(wrap, element, smooth) {
-  if (!wrap || !element) return;
-  
-  var wrapRect = wrap.getBoundingClientRect();
-  var elRect = element.getBoundingClientRect();
-  
-  var currentScrollLeft = wrap.scrollLeft;
-  var targetScrollLeft = currentScrollLeft + (elRect.left - wrapRect.left) 
-                         + (elRect.width / 2) - (wrap.clientWidth / 2);
-  
-  // Ограничиваем возможные отрицательные значения и выход за пределы контента
-  targetScrollLeft = Math.max(0, Math.min(targetScrollLeft, wrap.scrollWidth - wrap.clientWidth));
-  
-  if (smooth) {
-    isProgrammaticScroll = true;
-    wrap.scrollTo({
-      left: targetScrollLeft,
-      behavior: 'smooth'
-    });
-    // Сброс флага после завершения анимации (примерно 300мс)
-    setTimeout(function() {
-      isProgrammaticScroll = false;
-    }, 300);
-  } else {
-    // Без анимации (например, при первой загрузке)
-    isProgrammaticScroll = true;
-    wrap.scrollLeft = targetScrollLeft;
-    isProgrammaticScroll = false;
-  }
-}
 
 function buildHomeCalendar() {
   var wrap = document.getElementById('home-cal-days');
@@ -160,6 +128,9 @@ function buildHomeCalendar() {
     console.warn('[app] home-cal-days not found');
     return;
   }
+
+  // Включаем CSS Scroll Snap для автоматического центрирования
+  wrap.style.scrollSnapType = 'x mandatory';
   
   wrap.innerHTML = '';
   
@@ -173,6 +144,7 @@ function buildHomeCalendar() {
     
     var chip = document.createElement('div');
     chip.className = 'home-cal-day';
+    chip.style.scrollSnapAlign = 'center'; // каждая карточка центрируется
     
     if (iso === selectedHomeDate) {
       chip.classList.add('active');
@@ -214,8 +186,10 @@ function buildHomeCalendar() {
         
         renderHomeWorkouts();
         
-        // Центрируем выбранный день с плавной прокруткой
-        centerElementInWrap(wrap, element, true);
+        // Плавное центрирование выбранного дня (scrollIntoView сам учтёт scroll-snap)
+        setTimeout(function() {
+          element.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+        }, 50);
       };
     })(iso, chip));
     
@@ -225,9 +199,8 @@ function buildHomeCalendar() {
   // При первой загрузке центрируем выбранный день без анимации
   var activeDay = wrap.querySelector('.home-cal-day.active');
   if (activeDay) {
-    // Небольшая задержка, чтобы DOM полностью отрисовался
     setTimeout(function() {
-      centerElementInWrap(wrap, activeDay, false);
+      activeDay.scrollIntoView({ inline: 'center', block: 'nearest' });
     }, 50);
   }
   
@@ -236,13 +209,12 @@ function buildHomeCalendar() {
 
 buildHomeCalendar();
 
-// ─── Карусель: обработка прокрутки и доводка до центра ───
+// ─── Карусель: обновление активного дня при прокрутке ───
 (function() {
   var wrap = document.getElementById('home-cal-days');
   if (!wrap) return;
   
   var lastActiveDay = null;
-  var scrollEndTimer = null;
   
   function updateActiveDay() {
     var containerCenter = wrap.scrollLeft + (wrap.clientWidth / 2);
@@ -282,59 +254,11 @@ buildHomeCalendar();
     }
   }
   
-  // Доводка: если после остановки прокрутки ближайший день не точно по центру,
-  // плавно корректируем позицию
-  function snapToCenter() {
-    if (isProgrammaticScroll) return; // не мешаем программной прокрутке
-    
-    var containerCenter = wrap.scrollLeft + (wrap.clientWidth / 2);
-    var closestDay = null;
-    var minDistance = Infinity;
-    
-    var days = wrap.querySelectorAll('.home-cal-day');
-    for (var i = 0; i < days.length; i++) {
-      var day = days[i];
-      var dayCenter = day.offsetLeft + (day.offsetWidth / 2);
-      var distance = Math.abs(containerCenter - dayCenter);
-      
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestDay = day;
-      }
-    }
-    
-    if (closestDay) {
-      var targetScrollLeft = closestDay.offsetLeft 
-                            - (wrap.clientWidth / 2) 
-                            + (closestDay.offsetWidth / 2);
-      targetScrollLeft = Math.max(0, Math.min(targetScrollLeft, wrap.scrollWidth - wrap.clientWidth));
-      
-      // Если разница больше 2px, плавно доводим
-      if (Math.abs(wrap.scrollLeft - targetScrollLeft) > 2) {
-        isProgrammaticScroll = true;
-        wrap.scrollTo({
-          left: targetScrollLeft,
-          behavior: 'smooth'
-        });
-        setTimeout(function() {
-          isProgrammaticScroll = false;
-        }, 300);
-      }
-    }
-  }
-  
+  // Запускаем обновление при каждой прокрутке (scroll-snap сам центрирует)
   wrap.addEventListener('scroll', function() {
-    // Обновляем активный день сразу
     requestAnimationFrame(updateActiveDay);
-    
-    // Если прокрутка не программная, запускаем таймер доводки после остановки
-    if (!isProgrammaticScroll) {
-      clearTimeout(scrollEndTimer);
-      scrollEndTimer = setTimeout(snapToCenter, 150);
-    }
   }, { passive: true });
   
-  // Инициализация: установить активный день
   updateActiveDay();
 })();
 
