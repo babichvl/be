@@ -260,7 +260,7 @@ if (schedArrowRight) {
 }
 
 // ─── Свайп-действия ────────────────────────────────
-var SWIPE_WIDTH = 152; // ширина панели с кнопками
+var SWIPE_WIDTH = 152;
 var currentOpenCard = null;
 
 function closeOpenCard() {
@@ -271,16 +271,96 @@ function closeOpenCard() {
   }
 }
 
-// Закрываем свайп при тапе в другом месте
 document.addEventListener('touchstart', function(e) {
-  if (currentOpenCard && !currentOpenCard.contains(e.target)) {
+  if (currentOpenCard && !currentOpenCard.closest('.swipe-wrapper').contains(e.target)) {
     closeOpenCard();
   }
 }, { passive: true });
 
+function markDone(workoutId, itemEl) {
+  // Визуально отмечаем — меняем класс карточки
+  var card = itemEl.querySelector('.schedule-card');
+  if (card) {
+    card.className = 'schedule-card schedule-card--done';
+    card.querySelector('.schedule-card__time') && (card.querySelector('.schedule-card__time').style.display = 'none');
+    // Добавляем галочку если её нет
+    if (!card.querySelector('.schedule-card__check')) {
+      var check = document.createElement('span');
+      check.className = 'schedule-card__check';
+      check.textContent = '✓';
+      card.appendChild(check);
+    }
+  }
+  // Закрываем свайп
+  var swipeCard = itemEl.querySelector('.schedule-card');
+  if (swipeCard) {
+    swipeCard.style.transition = 'transform 0.25s ease';
+    swipeCard.style.transform  = 'translateX(0)';
+  }
+  currentOpenCard = null;
+
+  // Пишем в Supabase (если есть ID)
+  if (workoutId && sb) {
+    sb.from('workouts').update({ status: 'done' }).eq('id', workoutId).then(function(res) {
+      if (res.error) console.warn('[app] ошибка обновления статуса:', res.error.message);
+    });
+  }
+}
+
+function deleteWorkout(workoutId, itemEl) {
+  // Анимация удаления
+  itemEl.style.transition = 'opacity 0.25s ease, max-height 0.3s ease';
+  itemEl.style.overflow   = 'hidden';
+  itemEl.style.opacity    = '0';
+  itemEl.style.maxHeight  = itemEl.offsetHeight + 'px';
+  requestAnimationFrame(function() {
+    itemEl.style.maxHeight = '0';
+  });
+  setTimeout(function() {
+    itemEl.remove();
+    // Убираем из массива
+    if (workoutId) {
+      allWorkouts = allWorkouts.filter(function(w) { return w.id !== workoutId; });
+    }
+  }, 300);
+
+  currentOpenCard = null;
+
+  // Удаляем в Supabase
+  if (workoutId && sb) {
+    sb.from('workouts').delete().eq('id', workoutId).then(function(res) {
+      if (res.error) console.warn('[app] ошибка удаления:', res.error.message);
+    });
+  }
+}
+
 function initSwipes(listEl) {
-  listEl.querySelectorAll('.schedule-card').forEach(function(card) {
+  listEl.querySelectorAll('.swipe-wrapper').forEach(function(wrapper) {
+    var card     = wrapper.querySelector('.schedule-card');
+    var btnDone  = wrapper.querySelector('.swipe-btn--done');
+    var btnDel   = wrapper.querySelector('.swipe-btn--delete');
+    var itemEl   = wrapper.closest('.schedule-item');
+    var workoutId = card ? card.dataset.id : null;
+
     var startX, startY, startedOpen, isHoriz = null;
+
+    // Кнопка "Проведена"
+    if (btnDone) {
+      btnDone.addEventListener('click', function(e) {
+        e.stopPropagation();
+        markDone(workoutId, itemEl);
+      });
+    }
+
+    // Кнопка "Удалить"
+    if (btnDel) {
+      btnDel.addEventListener('click', function(e) {
+        e.stopPropagation();
+        deleteWorkout(workoutId, itemEl);
+      });
+    }
+
+    if (!card) return;
 
     card.addEventListener('touchstart', function(e) {
       startX      = e.touches[0].clientX;
@@ -297,7 +377,6 @@ function initSwipes(listEl) {
       if (isHoriz === null) {
         isHoriz = Math.abs(dx) > Math.abs(dy);
         if (!isHoriz) return;
-        // Закрываем другую открытую карточку
         if (currentOpenCard && currentOpenCard !== card) closeOpenCard();
       }
       if (!isHoriz) return;
@@ -311,19 +390,17 @@ function initSwipes(listEl) {
     card.addEventListener('touchend', function(e) {
       if (!isHoriz) return;
 
-      var dx       = e.changedTouches[0].clientX - startX;
-      var base     = startedOpen ? -SWIPE_WIDTH : 0;
-      var finalX   = Math.min(0, Math.max(-SWIPE_WIDTH, base + dx));
+      var dx        = e.changedTouches[0].clientX - startX;
+      var base      = startedOpen ? -SWIPE_WIDTH : 0;
+      var finalX    = Math.min(0, Math.max(-SWIPE_WIDTH, base + dx));
       var threshold = SWIPE_WIDTH * 0.35;
 
       card.style.transition = 'transform 0.25s ease';
 
       if (finalX < -threshold) {
-        // Открываем
         card.style.transform = 'translateX(-' + SWIPE_WIDTH + 'px)';
         currentOpenCard = card;
       } else {
-        // Закрываем
         card.style.transform = 'translateX(0)';
         if (currentOpenCard === card) currentOpenCard = null;
       }
@@ -338,17 +415,19 @@ function buildCardHTML(w, i) {
   var name  = w.client_name || 'Клиент';
   var title = w.title || 'Тренировка';
   var id    = w.id || '';
+  var isDone = w.status === 'done';
   return (
     '<div class="schedule-item">' +
       '<div class="swipe-wrapper">' +
         '<div class="swipe-actions">' +
-          '<button class="swipe-btn swipe-btn--done"  data-id="' + id + '">✓ Проведена</button>' +
-          '<button class="swipe-btn swipe-btn--delete" data-id="' + id + '">🗑 Удалить</button>' +
+          '<button class="swipe-btn swipe-btn--done"   data-id="' + id + '">✓<br>Проведена</button>' +
+          '<button class="swipe-btn swipe-btn--delete" data-id="' + id + '">🗑<br>Удалить</button>' +
         '</div>' +
-        '<div class="schedule-card schedule-card--' + color + '" data-id="' + id + '">' +
-          '<span class="schedule-card__time">'  + time  + '</span>' +
+        '<div class="schedule-card ' + (isDone ? 'schedule-card--done' : 'schedule-card--' + color) + '" data-id="' + id + '">' +
+          (isDone ? '' : '<span class="schedule-card__time">' + time + '</span>') +
           '<span class="schedule-card__title">' + title + '</span>' +
           '<span class="schedule-card__sub">'   + name  + ' · ' + (w.duration || 60) + ' мин</span>' +
+          (isDone ? '<span class="schedule-card__check">✓</span>' : '') +
         '</div>' +
       '</div>' +
     '</div>'
