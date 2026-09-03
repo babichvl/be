@@ -277,74 +277,81 @@ document.addEventListener('touchstart', function(e) {
   }
 }, { passive: true });
 
+// ─── Проведена ─────────────────────────────────────
 function markDone(workoutId, itemEl) {
-  // Визуально отмечаем — меняем класс карточки
+  if (!workoutId) return;
+
+  // Обновляем в массиве — чтобы ре-рендер не откатил изменение
+  allWorkouts = allWorkouts.map(function(w) {
+    if (String(w.id) === String(workoutId)) {
+      return Object.assign({}, w, { status: 'done' });
+    }
+    return w;
+  });
+
+  // Визуально обновляем карточку без перерисовки списка
   var card = itemEl.querySelector('.schedule-card');
   if (card) {
     card.className = 'schedule-card schedule-card--done';
-    card.querySelector('.schedule-card__time') && (card.querySelector('.schedule-card__time').style.display = 'none');
-    // Добавляем галочку если её нет
+    var timeEl = card.querySelector('.schedule-card__time');
+    if (timeEl) timeEl.style.display = 'none';
     if (!card.querySelector('.schedule-card__check')) {
       var check = document.createElement('span');
-      check.className = 'schedule-card__check';
+      check.className   = 'schedule-card__check';
       check.textContent = '✓';
       card.appendChild(check);
     }
-  }
-  // Закрываем свайп
-  var swipeCard = itemEl.querySelector('.schedule-card');
-  if (swipeCard) {
-    swipeCard.style.transition = 'transform 0.25s ease';
-    swipeCard.style.transform  = 'translateX(0)';
+    card.style.transition = 'transform 0.25s ease';
+    card.style.transform  = 'translateX(0)';
   }
   currentOpenCard = null;
 
-  // Пишем в Supabase (если есть ID)
-  if (workoutId && sb) {
-    sb.from('workouts').update({ status: 'done' }).eq('id', workoutId).then(function(res) {
-      if (res.error) console.warn('[app] ошибка обновления статуса:', res.error.message);
-    });
-  }
+  // Пишем в Supabase
+  sb.from('workouts').update({ status: 'done' }).eq('id', workoutId).then(function(res) {
+    if (res.error) console.warn('[app] ошибка обновления статуса:', res.error.message);
+    else console.log('[app] статус обновлён:', workoutId);
+  });
 }
 
+// ─── Удалить ───────────────────────────────────────
 function deleteWorkout(workoutId, itemEl) {
-  // Анимация удаления
+  if (!workoutId) return;
+
+  // Убираем из массива — чтобы ре-рендер не вернул запись
+  allWorkouts = allWorkouts.filter(function(w) {
+    return String(w.id) !== String(workoutId);
+  });
+
+  // Анимация исчезновения
   itemEl.style.transition = 'opacity 0.25s ease, max-height 0.3s ease';
   itemEl.style.overflow   = 'hidden';
-  itemEl.style.opacity    = '0';
   itemEl.style.maxHeight  = itemEl.offsetHeight + 'px';
+  itemEl.style.opacity    = '0';
   requestAnimationFrame(function() {
     itemEl.style.maxHeight = '0';
   });
-  setTimeout(function() {
-    itemEl.remove();
-    // Убираем из массива
-    if (workoutId) {
-      allWorkouts = allWorkouts.filter(function(w) { return w.id !== workoutId; });
-    }
-  }, 300);
+  setTimeout(function() { itemEl.remove(); }, 300);
 
   currentOpenCard = null;
 
   // Удаляем в Supabase
-  if (workoutId && sb) {
-    sb.from('workouts').delete().eq('id', workoutId).then(function(res) {
-      if (res.error) console.warn('[app] ошибка удаления:', res.error.message);
-    });
-  }
+  sb.from('workouts').delete().eq('id', workoutId).then(function(res) {
+    if (res.error) console.warn('[app] ошибка удаления:', res.error.message);
+    else console.log('[app] тренировка удалена:', workoutId);
+  });
 }
 
+// ─── Навешиваем свайп на список ────────────────────
 function initSwipes(listEl) {
   listEl.querySelectorAll('.swipe-wrapper').forEach(function(wrapper) {
-    var card     = wrapper.querySelector('.schedule-card');
-    var btnDone  = wrapper.querySelector('.swipe-btn--done');
-    var btnDel   = wrapper.querySelector('.swipe-btn--delete');
-    var itemEl   = wrapper.closest('.schedule-item');
+    var card      = wrapper.querySelector('.schedule-card');
+    var btnDone   = wrapper.querySelector('.swipe-btn--done');
+    var btnDel    = wrapper.querySelector('.swipe-btn--delete');
+    var itemEl    = wrapper.closest('.schedule-item');
     var workoutId = card ? card.dataset.id : null;
 
     var startX, startY, startedOpen, isHoriz = null;
 
-    // Кнопка "Проведена"
     if (btnDone) {
       btnDone.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -352,7 +359,6 @@ function initSwipes(listEl) {
       });
     }
 
-    // Кнопка "Удалить"
     if (btnDel) {
       btnDel.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -389,7 +395,6 @@ function initSwipes(listEl) {
 
     card.addEventListener('touchend', function(e) {
       if (!isHoriz) return;
-
       var dx        = e.changedTouches[0].clientX - startX;
       var base      = startedOpen ? -SWIPE_WIDTH : 0;
       var finalX    = Math.min(0, Math.max(-SWIPE_WIDTH, base + dx));
@@ -410,11 +415,11 @@ function initSwipes(listEl) {
 
 // ─── Шаблон карточки ───────────────────────────────
 function buildCardHTML(w, i) {
-  var time  = w.start_time ? w.start_time.slice(0, 5) : '--:--';
-  var color = CARD_COLORS[i % CARD_COLORS.length];
-  var name  = w.client_name || 'Клиент';
-  var title = w.title || 'Тренировка';
-  var id    = w.id || '';
+  var time   = w.start_time ? w.start_time.slice(0, 5) : '--:--';
+  var color  = CARD_COLORS[i % CARD_COLORS.length];
+  var name   = w.client_name || 'Клиент';
+  var title  = w.title || 'Тренировка';
+  var id     = w.id || '';
   var isDone = w.status === 'done';
   return (
     '<div class="schedule-item">' +
@@ -488,8 +493,23 @@ function renderScheduleWorkouts() {
 // ─── Инициализация WorkoutsStore ───────────────────
 if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.subscribe(function(workouts) {
-    allWorkouts = workouts;
-    console.log('[app] тренировок загружено:', workouts.length);
+    // Мержим входящие данные с локальными изменениями:
+    // удалённые не возвращаем, статус 'done' не откатываем
+    var deletedIds = {};
+    var doneIds    = {};
+    allWorkouts.forEach(function(w) {
+      if (w._deleted) deletedIds[String(w.id)] = true;
+      if (w.status === 'done') doneIds[String(w.id)] = true;
+    });
+
+    allWorkouts = workouts
+      .filter(function(w) { return !deletedIds[String(w.id)]; })
+      .map(function(w) {
+        if (doneIds[String(w.id)]) return Object.assign({}, w, { status: 'done' });
+        return w;
+      });
+
+    console.log('[app] тренировок загружено:', allWorkouts.length);
     renderHomeWorkouts();
     renderScheduleWorkouts();
   });
