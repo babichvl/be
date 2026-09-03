@@ -7,6 +7,11 @@ var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ─── Локальный кэш изменений ────────────────────────
+// Защита от реалтайм-гонки: храним изменения до подтверждения из БД
+var localDeletedIds = {};   // { id: true }
+var localDoneIds    = {};   // { id: true }
+
 // ─── ID тренера ────────────────────────────────────
 var trainerTgId = null;
 
@@ -280,16 +285,18 @@ document.addEventListener('touchstart', function(e) {
 // ─── Проведена ─────────────────────────────────────
 function markDone(workoutId, itemEl) {
   if (!workoutId) return;
+  var id = String(workoutId);
 
-  // Обновляем в локальном массиве
+  // Сохраняем в локальный кэш
+  localDoneIds[id] = true;
+
+  // Обновляем в массиве
   allWorkouts = allWorkouts.map(function(w) {
-    if (String(w.id) === String(workoutId)) {
-      return Object.assign({}, w, { status: 'done' });
-    }
+    if (String(w.id) === id) return Object.assign({}, w, { status: 'done' });
     return w;
   });
 
-  // Визуально обновляем карточку
+  // Визуально
   var card = itemEl.querySelector('.schedule-card');
   if (card) {
     card.className = 'schedule-card schedule-card--done';
@@ -311,40 +318,67 @@ function markDone(workoutId, itemEl) {
     .update({ status: 'done' })
     .eq('id', workoutId)
     .then(function(res) {
-      if (res.error) console.warn('[app] ошибка обновления статуса:', res.error.message);
-      else console.log('[app] статус обновлён:', workoutId);
+      if (res.error) {
+        console.warn('[app] ошибка обновления статуса:', res.error.message);
+      } else {
+        console.log('[app] статус обновлён в БД:', workoutId);
+        // После подтверждения из БД можно убрать из локального кэша
+        delete localDoneIds[id];
+      }
     });
 }
 
-// ─── Удалить (мягкое удаление через флаг deleted) ──
+// ─── Удалить ───────────────────────────────────────
 function deleteWorkout(workoutId, itemEl) {
   if (!workoutId) return;
+  var id = String(workoutId);
 
-  // Убираем из локального массива
+  // Сохраняем в локальный кэш удалённых — не уберём из localDeletedIds
+  // пока не придёт подтверждение из БД
+  localDeletedIds[id] = true;
+
+  // Убираем из массива
   allWorkouts = allWorkouts.filter(function(w) {
-    return String(w.id) !== String(workoutId);
+    return String(w.id) !== id;
   });
 
-  // Анимация исчезновения
+  // Анимация
   itemEl.style.transition = 'opacity 0.25s ease, max-height 0.3s ease';
   itemEl.style.overflow   = 'hidden';
   itemEl.style.maxHeight  = itemEl.offsetHeight + 'px';
   itemEl.style.opacity    = '0';
-  requestAnimationFrame(function() {
-    itemEl.style.maxHeight = '0';
-  });
+  requestAnimationFrame(function() { itemEl.style.maxHeight = '0'; });
   setTimeout(function() { itemEl.remove(); }, 300);
-
   currentOpenCard = null;
 
-  // Мягкое удаление — ставим deleted=true вместо физического удаления
-  // Синхронизация с Google Calendar будет пропускать эту запись
+  // Мягкое удаление в Supabase
   sb.from('workouts')
     .update({ deleted: true })
     .eq('id', workoutId)
     .then(function(res) {
-      if (res.error) console.warn('[app] ошибка удаления:', res.error.message);
-      else console.log('[app] тренировка помечена удалённой:', workoutId);
+      if (res.error) {
+        console.warn('[app] ошибка удаления:', res.error.message);
+      } else {
+        console.log('[app] deleted=true записано в БД:', workoutId);
+        // Убираем из кэша — теперь БД сама не вернёт эту запись
+        delete localDeletedIds[id];
+      }
+    });
+}
+
+// ─── Применяем локальный кэш к данным из стора ─────
+function applyLocalCache(workouts) {
+  return workouts
+    .filter(function(w) {
+      // Убираем то, что удалили локально (до подтверждения из БД)
+      return !localDeletedIds[String(w.id)];
+    })
+    .map(function(w) {
+      // Применяем локальный статус done (до подтверждения из БД)
+      if (localDoneIds[String(w.id)]) {
+        return Object.assign({}, w, { status: 'done' });
+      }
+      return w;
     });
 }
 
@@ -453,11 +487,6 @@ function renderHomeWorkouts() {
   var listEl = document.getElementById('home-list');
   if (!listEl) return;
 
-  if (!allWorkouts || !Array.isArray(allWorkouts)) {
-    listEl.innerHTML = '<p class="placeholder-text">Загружаем тренировки...</p>';
-    return;
-  }
-
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedHomeDate;
   }).sort(function(a, b) {
@@ -477,11 +506,6 @@ function renderScheduleWorkouts() {
   var listEl = document.getElementById('schedule-list');
   if (!listEl) return;
 
-  if (!allWorkouts || !Array.isArray(allWorkouts)) {
-    listEl.innerHTML = '<p class="placeholder-text">Загружаем тренировки...</p>';
-    return;
-  }
-
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedScheduleDate;
   }).sort(function(a, b) {
@@ -500,9 +524,9 @@ function renderScheduleWorkouts() {
 // ─── Инициализация WorkoutsStore ───────────────────
 if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.subscribe(function(workouts) {
-    // Store уже отфильтровал deleted=false, просто берём данные
-    allWorkouts = workouts;
-    console.log('[app] тренировок загружено:', allWorkouts.length);
+    // Применяем локальный кэш: убираем удалённые, восстанавливаем done
+    allWorkouts = applyLocalCache(workouts);
+    console.log('[app] тренировок после фильтра:', allWorkouts.length);
     renderHomeWorkouts();
     renderScheduleWorkouts();
   });
