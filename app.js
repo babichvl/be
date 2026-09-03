@@ -281,7 +281,7 @@ document.addEventListener('touchstart', function(e) {
 function markDone(workoutId, itemEl) {
   if (!workoutId) return;
 
-  // Обновляем в массиве — чтобы ре-рендер не откатил изменение
+  // Обновляем в локальном массиве
   allWorkouts = allWorkouts.map(function(w) {
     if (String(w.id) === String(workoutId)) {
       return Object.assign({}, w, { status: 'done' });
@@ -289,7 +289,7 @@ function markDone(workoutId, itemEl) {
     return w;
   });
 
-  // Визуально обновляем карточку без перерисовки списка
+  // Визуально обновляем карточку
   var card = itemEl.querySelector('.schedule-card');
   if (card) {
     card.className = 'schedule-card schedule-card--done';
@@ -307,17 +307,20 @@ function markDone(workoutId, itemEl) {
   currentOpenCard = null;
 
   // Пишем в Supabase
-  sb.from('workouts').update({ status: 'done' }).eq('id', workoutId).then(function(res) {
-    if (res.error) console.warn('[app] ошибка обновления статуса:', res.error.message);
-    else console.log('[app] статус обновлён:', workoutId);
-  });
+  sb.from('workouts')
+    .update({ status: 'done' })
+    .eq('id', workoutId)
+    .then(function(res) {
+      if (res.error) console.warn('[app] ошибка обновления статуса:', res.error.message);
+      else console.log('[app] статус обновлён:', workoutId);
+    });
 }
 
-// ─── Удалить ───────────────────────────────────────
+// ─── Удалить (мягкое удаление через флаг deleted) ──
 function deleteWorkout(workoutId, itemEl) {
   if (!workoutId) return;
 
-  // Убираем из массива — чтобы ре-рендер не вернул запись
+  // Убираем из локального массива
   allWorkouts = allWorkouts.filter(function(w) {
     return String(w.id) !== String(workoutId);
   });
@@ -334,11 +337,15 @@ function deleteWorkout(workoutId, itemEl) {
 
   currentOpenCard = null;
 
-  // Удаляем в Supabase
-  sb.from('workouts').delete().eq('id', workoutId).then(function(res) {
-    if (res.error) console.warn('[app] ошибка удаления:', res.error.message);
-    else console.log('[app] тренировка удалена:', workoutId);
-  });
+  // Мягкое удаление — ставим deleted=true вместо физического удаления
+  // Синхронизация с Google Calendar будет пропускать эту запись
+  sb.from('workouts')
+    .update({ deleted: true })
+    .eq('id', workoutId)
+    .then(function(res) {
+      if (res.error) console.warn('[app] ошибка удаления:', res.error.message);
+      else console.log('[app] тренировка помечена удалённой:', workoutId);
+    });
 }
 
 // ─── Навешиваем свайп на список ────────────────────
@@ -493,22 +500,8 @@ function renderScheduleWorkouts() {
 // ─── Инициализация WorkoutsStore ───────────────────
 if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.subscribe(function(workouts) {
-    // Мержим входящие данные с локальными изменениями:
-    // удалённые не возвращаем, статус 'done' не откатываем
-    var deletedIds = {};
-    var doneIds    = {};
-    allWorkouts.forEach(function(w) {
-      if (w._deleted) deletedIds[String(w.id)] = true;
-      if (w.status === 'done') doneIds[String(w.id)] = true;
-    });
-
-    allWorkouts = workouts
-      .filter(function(w) { return !deletedIds[String(w.id)]; })
-      .map(function(w) {
-        if (doneIds[String(w.id)]) return Object.assign({}, w, { status: 'done' });
-        return w;
-      });
-
+    // Store уже отфильтровал deleted=false, просто берём данные
+    allWorkouts = workouts;
     console.log('[app] тренировок загружено:', allWorkouts.length);
     renderHomeWorkouts();
     renderScheduleWorkouts();
