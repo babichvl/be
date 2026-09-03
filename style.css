@@ -150,8 +150,8 @@ body {
    ГОРИЗОНТАЛЬНЫЙ КАЛЕНДАРЬ (ГЛАВНАЯ)
    ======================================== */
 .home-calendar {
-  padding: var(--sp-16);
-  padding-top: 20px;
+  padding: 0;              /* убрали боковые отступы */
+  padding-top: 20px;       /* оставили верхний */
 }
 
 .home-calendar__days {
