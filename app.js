@@ -123,39 +123,14 @@ var homeExpanded = false;
 var isScrollingProgrammatically = false;
 var scrollEndTimer = null;
 
-// Точная функция центрирования (использует offsetLeft)
-function centerDay(wrap, element, smooth) {
-  if (!wrap || !element) return;
-  
-  var containerWidth = wrap.offsetWidth;
-  var elementLeft = element.offsetLeft;
-  var elementWidth = element.offsetWidth;
-  
-  // Центр элемента должен совпасть с центром контейнера
-  var targetScroll = elementLeft + (elementWidth / 2) - (containerWidth / 2);
-  
-  // Ограничиваем
-  targetScroll = Math.max(0, Math.min(targetScroll, wrap.scrollWidth - containerWidth));
-  
-  // Пропускаем если уже на месте
-  if (Math.abs(wrap.scrollLeft - targetScroll) < 1) return;
-  
-  if (smooth) {
-    isScrollingProgrammatically = true;
-    wrap.scrollTo({
-      left: targetScroll,
-      behavior: 'smooth'
-    });
-    setTimeout(function() {
-      isScrollingProgrammatically = false;
-    }, 400);
-  } else {
-    isScrollingProgrammatically = true;
-    wrap.scrollLeft = targetScroll;
-    setTimeout(function() {
-      isScrollingProgrammatically = false;
-    }, 10);
-  }
+// Центрирование через scrollIntoView (без behavior smooth чтобы не конфликтовать со scroll-snap)
+function centerDay(element) {
+  if (!element) return;
+  isScrollingProgrammatically = true;
+  element.scrollIntoView({ inline: 'center', block: 'nearest' });
+  setTimeout(function() {
+    isScrollingProgrammatically = false;
+  }, 50);
 }
 
 function buildHomeCalendar() {
@@ -200,7 +175,7 @@ function buildHomeCalendar() {
     chip.appendChild(nameEl);
     chip.appendChild(icon);
     
-    // Обработчик клика с задержкой центрирования
+    // Обработчик клика — два requestAnimationFrame для пересчёта layout после увеличения высоты
     chip.addEventListener('click', (function(isoDate, element) {
       return function() {
         selectedHomeDate = isoDate;
@@ -216,10 +191,10 @@ function buildHomeCalendar() {
         
         renderHomeWorkouts();
         
-        // Ждём следующий кадр для пересчёта layout
+        // Ждём два кадра чтобы браузер пересчитал layout после смены класса active
         requestAnimationFrame(function() {
           requestAnimationFrame(function() {
-            centerDay(wrap, element, true);
+            centerDay(element);
           });
         });
       };
@@ -232,8 +207,8 @@ function buildHomeCalendar() {
   var activeDay = wrap.querySelector('.home-cal-day.active');
   if (activeDay) {
     setTimeout(function() {
-      centerDay(wrap, activeDay, false);
-    }, 100);
+      centerDay(activeDay);
+    }, 50);
   }
   
   console.log('[app] home calendar built, 30 days, selected:', selectedHomeDate);
@@ -292,11 +267,8 @@ buildHomeCalendar();
   
   function snapToCenter() {
     if (isScrollingProgrammatically) return;
-    
     var closestDay = getClosestDayToCenter();
-    if (closestDay) {
-      centerDay(wrap, closestDay, true);
-    }
+    if (closestDay) centerDay(closestDay);
   }
   
   wrap.addEventListener('scroll', function() {
@@ -349,6 +321,12 @@ function renderHomeWorkouts() {
   var listEl = document.getElementById('home-list');
   if (!listEl) return;
 
+  // Защита от undefined
+  if (!allWorkouts || !Array.isArray(allWorkouts)) {
+    listEl.innerHTML = '<p class="placeholder-text">Загружаем тренировки...</p>';
+    return;
+  }
+
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedHomeDate;
   }).sort(function(a,b) {
@@ -380,6 +358,12 @@ function renderHomeWorkouts() {
 function renderScheduleWorkouts() {
   var listEl = document.getElementById('schedule-list');
   if (!listEl) return;
+
+  // Защита от undefined
+  if (!allWorkouts || !Array.isArray(allWorkouts)) {
+    listEl.innerHTML = '<p class="placeholder-text">Загружаем тренировки...</p>';
+    return;
+  }
 
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedScheduleDate;
@@ -427,6 +411,3 @@ if (trainerTgId && window.WorkoutsStore) {
   if (homeList) homeList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
   if (schedList) schedList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
 }
-
-renderHomeWorkouts();
-renderScheduleWorkouts();
