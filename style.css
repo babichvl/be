@@ -2,35 +2,22 @@
    ПЕРЕМЕННЫЕ (ТОКЕНЫ ДИЗАЙНА)
    ======================================== */
 :root {
-  /* Цвета поверхностей */
-  --surface-0: #F5F5F7;              /* Фон страницы */
-  --surface-1: #FFFFFF;              /* Фон карточек */
-  --surface-2: #FAFAFA;              /* Фон вторичных элементов */
-  
-  /* Цвета текста */
-  --text-primary: #1C1C1E;           /* Основной текст */
-  --text-secondary: #8E8E93;         /* Второстепенный текст */
-  
-  /* Акцентные цвета */
-  --accent: #7B7BFF;                 /* Акцентный цвет (фиолетовый) */
-  --accent-hover: #6B6BEF;           /* Акцент при наведении */
-  
-  /* Границы */
-  --border: rgba(0, 0, 0, 0.06);     /* Цвет границ */
-  
-  /* Тени */
+  --surface-0: #F5F5F7;
+  --surface-1: #FFFFFF;
+  --surface-2: #FAFAFA;
+  --text-primary: #1C1C1E;
+  --text-secondary: #8E8E93;
+  --accent: #7B7BFF;
+  --accent-hover: #6B6BEF;
+  --border: rgba(0, 0, 0, 0.06);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   --shadow-active: 0 12px 32px rgba(91, 91, 255, 0.35);
-  
-  /* Отступы */
   --sp-8: 8px;
   --sp-12: 12px;
   --sp-16: 16px;
   --sp-20: 20px;
   --sp-24: 24px;
-  
-  /* Радиусы скругления */
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 20px;
@@ -55,17 +42,11 @@ body {
   overflow-x: hidden;
 }
 
-/* ========================================
-   ОСНОВНОЙ КОНТЕЙНЕР
-   ======================================== */
 .content {
   padding-bottom: 90px;
   min-height: 100vh;
 }
 
-/* ========================================
-   ЭКРАНЫ (ВКЛАДКИ)
-   ======================================== */
 .screen {
   display: none;
   padding: var(--sp-16);
@@ -75,9 +56,6 @@ body {
   display: block;
 }
 
-/* ========================================
-   ЗАГЛУШКА "ЗАГРУЖАЕМ"
-   ======================================== */
 .placeholder-text {
   text-align: center;
   color: var(--text-secondary);
@@ -85,9 +63,6 @@ body {
   font-size: 15px;
 }
 
-/* ========================================
-   БАЗОВАЯ КАРТОЧКА
-   ======================================== */
 .card {
   background: var(--surface-1);
   border-radius: var(--radius-md);
@@ -96,7 +71,7 @@ body {
 }
 
 /* ========================================
-   ШАПКА ГЛАВНОЙ (ЗАГОЛОВОК, АВАТАР)
+   ШАПКА ГЛАВНОЙ
    ======================================== */
 .home-header {
   position: relative;
@@ -353,7 +328,6 @@ body {
   display: flex;
 }
 
-/* старый внешний элемент времени — скрываем */
 .schedule-time {
   display: none;
 }
@@ -365,19 +339,72 @@ body {
 }
 
 /* ========================================
+   СВАЙП-ОБЁРТКА
+   ======================================== */
+.swipe-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  flex: 1;
+}
+
+/* Кнопки действий (за карточкой справа) */
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 152px;
+  display: flex;
+}
+
+.swipe-btn {
+  flex: 1;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  -webkit-tap-highlight-color: transparent;
+  transition: filter 0.15s;
+}
+
+.swipe-btn:active {
+  filter: brightness(0.9);
+}
+
+.swipe-btn--done {
+  background: #34C759;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.swipe-btn--delete {
+  background: #FF3B30;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* ========================================
    КАРТОЧКА ТРЕНИРОВКИ
    ======================================== */
 .schedule-card {
-  flex: 1;
+  position: relative;
+  z-index: 1;
+  width: 100%;
   padding: 8px 12px;
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: 2px;
   cursor: pointer;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* время — маленькое, вверху слева */
 .schedule-card__time {
   font-size: 11px;
   font-weight: 500;
@@ -396,7 +423,6 @@ body {
   color: var(--text-secondary);
 }
 
-/* Цветовые варианты карточек */
 .schedule-card--blue {
   background: linear-gradient(135deg, #E8F0FF 0%, #D6E5FF 100%);
 }
