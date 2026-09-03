@@ -104,7 +104,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   padding: var(--sp-16);
-  padding-top: max(56px), env(safe-area-inset-top));
+  padding-top: calc(env(safe-area-inset-top) + 56px);
 }
 
 .home-header__title {
