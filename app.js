@@ -132,9 +132,8 @@ function buildHomeCalendar() {
   wrap.innerHTML = '';
   
   var startDate = new Date(today);
-  startDate.setDate(today.getDate() - 3);  // Начинаем за 3 дня до сегодня
+  startDate.setDate(today.getDate() - 3);
   
-  // Генерируем 30 дней для свайпа
   for (var i = 0; i < 30; i++) {
     var d = new Date(startDate);
     d.setDate(startDate.getDate() + i);
@@ -143,7 +142,6 @@ function buildHomeCalendar() {
     var chip = document.createElement('div');
     chip.className = 'home-cal-day';
     
-    // Проверяем, это выбранный день или нет
     if (iso === selectedHomeDate) {
       chip.classList.add('active');
     }
@@ -166,20 +164,27 @@ function buildHomeCalendar() {
     chip.appendChild(nameEl);
     chip.appendChild(icon);
     
-    // Обработчик клика
+    // ИСПРАВЛЕНИЕ: добавлена прокрутка при клике
     chip.addEventListener('click', (function(isoDate, element) {
       return function() {
         selectedHomeDate = isoDate;
         
-        // Убираем active у всех
         wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
           el.classList.remove('active');
         });
         
-        // Добавляем active к кликнутому
         element.classList.add('active');
         
-        // Раскрываем секцию
+        // ПРИНУДИТЕЛЬНАЯ ПРОКРУТКА К ЦЕНТРУ
+        var containerCenter = wrap.offsetWidth / 2;
+        var elementCenter = element.offsetLeft + (element.offsetWidth / 2);
+        var scrollTarget = elementCenter - containerCenter;
+        
+        wrap.scrollTo({
+          left: scrollTarget,
+          behavior: 'smooth'
+        });
+        
         homeExpanded = true;
         var expand = document.getElementById('home-expand');
         if (expand) expand.classList.add('expanded');
@@ -191,7 +196,6 @@ function buildHomeCalendar() {
     wrap.appendChild(chip);
   }
   
-  // Прокрутить к активному дню
   var activeDay = wrap.querySelector('.home-cal-day.active');
   if (activeDay) {
     activeDay.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
@@ -209,7 +213,6 @@ buildHomeCalendar();
   
   var lastActiveDay = null;
   
-  // Обновление active класса (быстрое, без debounce)
   function updateActiveDay() {
     var containerCenter = wrap.scrollLeft + (wrap.offsetWidth / 2);
     var closestDay = null;
@@ -227,21 +230,17 @@ buildHomeCalendar();
       }
     }
     
-    // Обновляем active только если день изменился
     if (closestDay && closestDay !== lastActiveDay) {
       lastActiveDay = closestDay;
       
-      // Убираем active у всех
       for (var i = 0; i < days.length; i++) {
         days[i].classList.remove('active');
       }
       
-      // Добавляем active центральному
       closestDay.classList.add('active');
     }
   }
   
-  // Обновление контента (с debounce, только после остановки)
   var contentTimeout;
   function updateContent() {
     clearTimeout(contentTimeout);
@@ -252,27 +251,23 @@ buildHomeCalendar();
       if (newDate !== selectedHomeDate) {
         selectedHomeDate = newDate;
         
-        // Раскрываем секцию
         homeExpanded = true;
         var expand = document.getElementById('home-expand');
         if (expand) expand.classList.add('expanded');
         
-        // Обновляем контент
         renderHomeWorkouts();
       }
-    }, 150); // Задержка только для загрузки контента
+    }, 150);
   }
   
-  // Слушаем прокрутку — обновляем active мгновенно
   wrap.addEventListener('scroll', function() {
-    requestAnimationFrame(updateActiveDay); // Синхронизация с кадром
-    updateContent(); // Контент с задержкой
+    requestAnimationFrame(updateActiveDay);
+    updateContent();
   }, { passive: true });
   
-  // Инициализация — активируем центральный день сразу
   updateActiveDay();
 })();
-// Скрываем детальный календарь по умолчанию
+
 var expandEl = document.getElementById('home-expand');
 if (expandEl) expandEl.classList.remove('expanded');
 
@@ -397,6 +392,5 @@ if (trainerTgId && window.WorkoutsStore) {
   if (schedList) schedList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
 }
 
-// Первый рендер (на случай если тренировки уже есть)
 renderHomeWorkouts();
 renderScheduleWorkouts();
