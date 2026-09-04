@@ -30,7 +30,6 @@ function loadUser() {
     trainerTgId = urlId ? Number(urlId) : null;
   }
   if (!trainerTgId) trainerTgId = 786441589;
-  console.log('[app] trainerTgId =', trainerTgId);
 }
 loadUser();
 
@@ -268,96 +267,44 @@ function closeOpenCard() {
 }
 
 function markDone(workoutId, itemEl) {
-  console.log('[action] markDone() вызвана, workoutId =', workoutId);
-  
-  if (!workoutId) {
-    console.warn('[action] workoutId пуст, выходим');
-    return;
-  }
-  var id = String(workoutId);  // Уже строка, но на всякий случай
+  if (!workoutId) return;
+  var id = String(workoutId);
 
-  // ... весь остальной код остаётся как был ...
-  
+  localDoneIds[id] = true;
+
+  allWorkouts = allWorkouts.map(function(w) {
+    if (String(w.id) === id) return Object.assign({}, w, { status: 'done' });
+    return w;
+  });
+
+  var card = itemEl.querySelector('.schedule-card');
+  if (card) {
+    card.className = 'schedule-card schedule-card--done';
+    var timeEl = card.querySelector('.schedule-card__time');
+    if (timeEl) timeEl.style.display = 'none';
+    if (!card.querySelector('.schedule-card__check')) {
+      var check = document.createElement('span');
+      check.className   = 'schedule-card__check';
+      check.textContent = '✓';
+      card.appendChild(check);
+    }
+    card.style.transition = 'transform 0.25s ease';
+    card.style.transform  = 'translateX(0)';
+  }
+  currentOpenCard = null;
+
   sb.from('workouts')
     .update({ 
       status: 'done',
       updated_at_supabase: new Date().toISOString()
     })
-    .eq('id', workoutId)  // ← Передаём как строка/UUID
-    .then(function(res) {
-      // ...
-    });
-}
-
-function deleteWorkout(workoutId, itemEl) {
-  console.log('[action] deleteWorkout() вызвана, workoutId =', workoutId);
-  
-  if (!workoutId) {
-    console.warn('[action] workoutId пуст, выходим');
-    return;
-  }
-  var id = String(workoutId);  // Уже строка, но на всякий случай
-
-  // ... весь остальной код остаётся как был ...
-  
-  sb.from('workouts')
-    .update({ 
-      deleted: true,
-      updated_at_supabase: new Date().toISOString()
-    })
-    .eq('id', workoutId)  // ← Передаём как строка/UUID
-    .then(function(res) {
-      // ...
-    });
-}
-
-function deleteWorkout(workoutId, itemEl) {
-  console.log('[action] deleteWorkout() вызвана, workoutId =', workoutId);
-  
-  if (!workoutId) {
-    console.warn('[action] workoutId пуст, выходим');
-    return;
-  }
-  var id = String(workoutId);
-
-  localDeletedIds[id] = true;
-  console.log('[action] добавил в localDeletedIds, сейчас =', localDeletedIds);
-
-  allWorkouts = allWorkouts.filter(function(w) {
-    return String(w.id) !== id;
-  });
-
-  itemEl.style.transition = 'opacity 0.25s ease, max-height 0.3s ease';
-  itemEl.style.overflow   = 'hidden';
-  itemEl.style.maxHeight  = itemEl.offsetHeight + 'px';
-  itemEl.style.opacity    = '0';
-  
-  requestAnimationFrame(function() { itemEl.style.maxHeight = '0'; });
-  setTimeout(function() { 
-    console.log('[action] удаляю itemEl из DOM');
-    itemEl.remove(); 
-  }, 300);
-  
-  currentOpenCard = null;
-
-  // Мягкое удаление в Supabase
-  console.log('[action] отправляю UPDATE deleted=true в Supabase для', workoutId);
-  sb.from('workouts')
-    .update({ 
-      deleted: true,
-      updated_at_supabase: new Date().toISOString()
-    })
     .eq('id', workoutId)
     .then(function(res) {
       if (res.error) {
-        console.warn('[action] ❌ ошибка UPDATE:', res.error.message);
+        // ошибка обновления
       } else {
-        console.log('[action] ✅ UPDATE deleted=true успешно');
-        delete localDeletedIds[id];
+        delete localDoneIds[id];
       }
-    })
-    .catch(function(e) {
-      console.error('[action] ❌ ошибка запроса:', e);
     });
 }
 
@@ -379,7 +326,6 @@ function deleteWorkout(workoutId, itemEl) {
   setTimeout(function() { itemEl.remove(); }, 300);
   currentOpenCard = null;
 
-  // Мягкое удаление в Supabase (для двусторонней синхронизации)
   sb.from('workouts')
     .update({ 
       deleted: true,
@@ -388,9 +334,8 @@ function deleteWorkout(workoutId, itemEl) {
     .eq('id', workoutId)
     .then(function(res) {
       if (res.error) {
-        console.warn('[app] ошибка удаления:', res.error.message);
+        // ошибка удаления
       } else {
-        console.log('[app] ✅ deleted=true записано (id=' + workoutId + '), google_sync.py удалит из календаря');
         delete localDeletedIds[id];
       }
     });
@@ -410,17 +355,11 @@ function applyLocalCache(workouts) {
 }
 
 function initSwipes(container) {
-  console.log('[swipe] ===== initSwipes START =====');
-  
   var items = container.querySelectorAll('.schedule-item');
-  console.log('[swipe] найдено карточек:', items.length);
   
-  items.forEach(function(item, index) {
+  items.forEach(function(item) {
     var card = item.querySelector('.schedule-card');
-    if (!card) {
-      console.warn('[swipe] карточка не найдена в item', index);
-      return;
-    }
+    if (!card) return;
 
     var startX = 0;
     var currentX = 0;
@@ -459,57 +398,40 @@ function initSwipes(container) {
     });
   });
 
-  // ✅ ИСПРАВЛЕНО: НЕ преобразуем в Number(), это UUID!
   var doneBtns = container.querySelectorAll('.swipe-btn--done');
-  console.log('[swipe] найдено кнопок "Проведена":', doneBtns.length);
-  
   doneBtns.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      var workoutId = this.dataset.id;  // ← Это UUID строка
-      console.log('[swipe] ✅ markDone нажата, ID =', workoutId);
+      var workoutId = this.dataset.id;
       if (workoutId) {
         var item = this.closest('.schedule-item');
-        markDone(workoutId, item);  // ← Передаём как строку!
+        markDone(workoutId, item);
       }
     });
   });
 
   var deleteBtns = container.querySelectorAll('.swipe-btn--delete');
-  console.log('[swipe] найдено кнопок "Удалить":', deleteBtns.length);
-  
   deleteBtns.forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      var workoutId = this.dataset.id;  // ← Это UUID строка
-      console.log('[swipe] ✅ deleteWorkout нажата, ID =', workoutId);
+      var workoutId = this.dataset.id;
       if (workoutId) {
         var item = this.closest('.schedule-item');
-        deleteWorkout(workoutId, item);  // ← Передаём как строку!
+        deleteWorkout(workoutId, item);
       }
     });
   });
-  
-  console.log('[swipe] ===== initSwipes END =====');
 }
 
 function buildCardHTML(w, index) {
-  console.log('[build] buildCardHTML вызвана для workout:', w);
-  
   var time   = w.start_time ? w.start_time.slice(0, 5) : '--:--';
   var color  = CARD_COLORS[index % CARD_COLORS.length];
   var name   = w.client_name || 'Клиент';
   var title  = w.title || 'Тренировка';
   var id     = w.id || '';
   var isDone = w.status === 'done';
-  
-  console.log('[build] id =', id, ', title =', title, ', isDone =', isDone);
-  
-  if (!id) {
-    console.error('[build] ❌ ОШИБКА: id пуст! workout =', w);
-  }
   
   return (
     '<div class="schedule-item">' +
@@ -535,8 +457,6 @@ var allWorkouts = [];
 function renderHomeWorkouts() {
   var listEl = document.getElementById('home-list');
   if (!listEl) return;
-  
-  console.log('[render] renderHomeWorkouts вызвана');
 
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedHomeDate;
@@ -544,24 +464,18 @@ function renderHomeWorkouts() {
     return (a.start_time || '').localeCompare(b.start_time || '');
   });
 
-  console.log('[render] найдено тренировок на', selectedHomeDate, ':', list.length);
-
   if (list.length === 0) {
     listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
     return;
   }
 
   listEl.innerHTML = list.map(buildCardHTML).join('');
-  console.log('[render] HTML вставлен, вызываю initSwipes');
   initSwipes(listEl);
-  console.log('[render] initSwipes завершена');
 }
 
 function renderScheduleWorkouts() {
   var listEl = document.getElementById('schedule-list');
   if (!listEl) return;
-  
-  console.log('[render] renderScheduleWorkouts вызвана');
 
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedScheduleDate;
@@ -569,40 +483,24 @@ function renderScheduleWorkouts() {
     return (a.start_time || '').localeCompare(b.start_time || '');
   });
 
-  console.log('[render] найдено тренировок на', selectedScheduleDate, ':', list.length);
-
   if (list.length === 0) {
     listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
     return;
   }
 
   listEl.innerHTML = list.map(buildCardHTML).join('');
-  console.log('[render] HTML вставлен, вызываю initSwipes');
   initSwipes(listEl);
-  console.log('[render] initSwipes завершена');
 }
 
 // ─── Инициализация WorkoutsStore ──────────────────
 if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.subscribe(function(workouts) {
-    console.log('[app] subscribe callback: получено', workouts.length, 'тренировок');
     allWorkouts = applyLocalCache(workouts);
-    console.log('[app] после фильтра:', allWorkouts.length, 'тренировок');
-    console.log('[app] selectedHomeDate =', selectedHomeDate);
-    console.log('[app] selectedScheduleDate =', selectedScheduleDate);
-    
-    console.log('[app] ===== ВЫЗЫВАЮ РЕНДЕР =====');
     renderHomeWorkouts();
-    console.log('[app] renderHomeWorkouts завершена');
     renderScheduleWorkouts();
-    console.log('[app] renderScheduleWorkouts завершена');
-    console.log('[app] ===== РЕНДЕР ЗАВЕРШЁН =====');
   });
-  console.log('[app] вызываю WorkoutsStore.init(' + trainerTgId + ')');
   WorkoutsStore.init(trainerTgId);
-  console.log('[app] WorkoutsStore.init завершена');
 } else {
-  console.warn('[app] нет trainerTgId или WorkoutsStore');
   var hint      = 'Откройте через Telegram';
   var homeList  = document.getElementById('home-list');
   var schedList = document.getElementById('schedule-list');
@@ -613,5 +511,3 @@ if (trainerTgId && window.WorkoutsStore) {
 // ─── Инициализация календарей ──────────────────────
 buildHomeCalendar();
 rebuildScheduleCalendar();
-
-console.log('[app] инициализация завершена');
