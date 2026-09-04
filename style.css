@@ -98,10 +98,8 @@ body {
 }
 
 .page-header__avatar {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
+  position: absolute;
+  right: 16px;
 }
 
 .page-header__avatar-img {
