@@ -364,6 +364,8 @@ function applyLocalCache(workouts) {
 
 function initSwipes(container) {
   var items = container.querySelectorAll('.schedule-item');
+  console.log('[swipe] инициализация для', items.length, 'карточек');
+  
   items.forEach(function(item) {
     var card = item.querySelector('.schedule-card');
     if (!card) return;
@@ -405,23 +407,30 @@ function initSwipes(container) {
     });
   });
 
+  // ✅ ИСПРАВЛЕНО: Получаем ID из data-id атрибута карточки
   var doneBtns = container.querySelectorAll('.swipe-btn--done');
   doneBtns.forEach(function(btn) {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
       var item = btn.closest('.schedule-item');
       if (!item) return;
-      var id = item.querySelector('.schedule-card').dataset.id;
-      if (id) markDone(Number(id), item);
+      var card = item.querySelector('.schedule-card');
+      var workoutId = card ? card.dataset.id : null;
+      console.log('[swipe] markDone нажата для', workoutId);
+      if (workoutId) markDone(Number(workoutId), item);
     });
   });
 
   var deleteBtns = container.querySelectorAll('.swipe-btn--delete');
   deleteBtns.forEach(function(btn) {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
       var item = btn.closest('.schedule-item');
       if (!item) return;
-      var id = item.querySelector('.schedule-card').dataset.id;
-      if (id) deleteWorkout(Number(id), item);
+      var card = item.querySelector('.schedule-card');
+      var workoutId = card ? card.dataset.id : null;
+      console.log('[swipe] deleteWorkout нажата для', workoutId);
+      if (workoutId) deleteWorkout(Number(workoutId), item);
     });
   });
 }
