@@ -511,3 +511,17 @@ if (trainerTgId && window.WorkoutsStore) {
 // ─── Инициализация календарей ──────────────────────
 buildHomeCalendar();
 rebuildScheduleCalendar();
+
+// ─── Инициализация календаря-сетки ────────────────
+if (window.CalendarScheduler) {
+  CalendarScheduler.init('calendar-scheduler', today);
+  
+  if (trainerTgId && window.WorkoutsStore) {
+    WorkoutsStore.subscribe(function(workouts) {
+      allWorkouts = applyLocalCache(workouts);
+      renderHomeWorkouts();
+      renderScheduleWorkouts();
+      CalendarScheduler.updateWorkouts(allWorkouts);
+    });
+  }
+}
