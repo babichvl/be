@@ -480,6 +480,8 @@ var allWorkouts = [];
 function renderHomeWorkouts() {
   var listEl = document.getElementById('home-list');
   if (!listEl) return;
+  
+  console.log('[render] renderHomeWorkouts вызвана');
 
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedHomeDate;
@@ -487,18 +489,24 @@ function renderHomeWorkouts() {
     return (a.start_time || '').localeCompare(b.start_time || '');
   });
 
+  console.log('[render] найдено тренировок на', selectedHomeDate, ':', list.length);
+
   if (list.length === 0) {
     listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
     return;
   }
 
   listEl.innerHTML = list.map(buildCardHTML).join('');
+  console.log('[render] HTML вставлен, вызываю initSwipes');
   initSwipes(listEl);
+  console.log('[render] initSwipes завершена');
 }
 
 function renderScheduleWorkouts() {
   var listEl = document.getElementById('schedule-list');
   if (!listEl) return;
+  
+  console.log('[render] renderScheduleWorkouts вызвана');
 
   var list = allWorkouts.filter(function(w) {
     return w.workout_date === selectedScheduleDate;
@@ -506,13 +514,17 @@ function renderScheduleWorkouts() {
     return (a.start_time || '').localeCompare(b.start_time || '');
   });
 
+  console.log('[render] найдено тренировок на', selectedScheduleDate, ':', list.length);
+
   if (list.length === 0) {
     listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
     return;
   }
 
   listEl.innerHTML = list.map(buildCardHTML).join('');
+  console.log('[render] HTML вставлен, вызываю initSwipes');
   initSwipes(listEl);
+  console.log('[render] initSwipes завершена');
 }
 
 // ─── Инициализация WorkoutsStore ──────────────────
