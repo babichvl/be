@@ -50,119 +50,178 @@ document.getElementById('fab-btn').addEventListener('click', function() {
   alert('Добавить — в разработке');
 });
 
-// ─── Расписание ────────────────────────────────────
-var CARD_COLORS = ['blue','pink','green','purple'];
-var today = new Date();
-var selectedDate = today.toISOString().split('T')[0];
-var currentMonth = today;
-
-// Инициализируем хранилище тренировок
+// ─── Инициализация хранилища ──────────────────────
 WorkoutsStore.init(trainerTgId);
 
-function renderCalendar() {
-  var monthDiv = document.getElementById('month-select');
-  var monthName = currentMonth.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-  monthDiv.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+// ─── ВКЛАДКА "ГЛАВНАЯ" ─────────────────────────────
+var homeSelectedDate = new Date().toISOString().split('T')[0];
+
+function renderHomeCalendar() {
+  var container = document.getElementById('home-cal-days');
+  if (!container) return;
   
-  var grid = document.getElementById('calendar-grid');
-  grid.innerHTML = '';
+  container.innerHTML = '';
   
-  // Дни недели
-  var weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-  weekDays.forEach(function(day) {
-    var header = document.createElement('div');
-    header.className = 'calendar-header-day';
-    header.textContent = day;
-    grid.appendChild(header);
-  });
+  // Показываем 14 дней: -7 дней и +7 дней от сегодня
+  var today = new Date();
   
-  // Первый день месяца
-  var firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-  var startDow = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
-  
-  // Пустые ячейки в начале
-  for (var i = 0; i < startDow; i++) {
-    var empty = document.createElement('div');
-    empty.className = 'calendar-day empty';
-    grid.appendChild(empty);
-  }
-  
-  // Дни месяца
-  var lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-  for (var day = 1; day <= lastDay; day++) {
-    var dateStr = currentMonth.getFullYear() + '-' + 
-                  String(currentMonth.getMonth() + 1).padStart(2, '0') + '-' + 
-                  String(day).padStart(2, '0');
+  for (var i = -7; i <= 7; i++) {
+    var d = new Date(today);
+    d.setDate(d.getDate() + i);
+    var dateStr = d.toISOString().split('T')[0];
     
-    var dayDiv = document.createElement('div');
-    dayDiv.className = 'calendar-day';
-    if (dateStr === selectedDate) dayDiv.classList.add('selected');
-    if (dateStr === today.toISOString().split('T')[0]) dayDiv.classList.add('today');
+    var dayBtn = document.createElement('button');
+    dayBtn.className = 'home-calendar__day-btn';
+    if (dateStr === homeSelectedDate) dayBtn.classList.add('active');
+    if (i === 0) dayBtn.classList.add('today');
     
-    dayDiv.innerHTML = '<span class="day-number">' + day + '</span>';
-    dayDiv.addEventListener('click', function() {
-      selectedDate = dateStr;
-      renderCalendar();
-      renderWorkouts();
+    dayBtn.textContent = d.getDate();
+    dayBtn.addEventListener('click', function() {
+      homeSelectedDate = dateStr;
+      renderHomeCalendar();
+      renderHomeWorkouts();
     });
     
-    grid.appendChild(dayDiv);
+    container.appendChild(dayBtn);
   }
 }
 
-function renderWorkouts() {
-  var workouts = WorkoutsStore.forDate(selectedDate);
-  var container = document.getElementById('workouts-list');
-  container.innerHTML = '';
+function renderHomeWorkouts() {
+  var container = document.getElementById('home-list');
+  if (!container) return;
+  
+  var workouts = WorkoutsStore.forDate(homeSelectedDate);
   
   if (workouts.length === 0) {
-    container.innerHTML = '<div class="empty-state">На этот день тренировок нет</div>';
+    container.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
     return;
   }
   
-  workouts.forEach(function(w, i) {
+  container.innerHTML = '';
+  
+  workouts.forEach(function(w) {
     var card = document.createElement('div');
     card.className = 'workout-card';
     card.setAttribute('data-workout-id', w.id);
-    card.style.borderLeftColor = '#' + ['3B82F6', 'EC4899', '10B981', 'A855F7'][i % 4];
+    
+    var colors = ['#3B82F6', '#EC4899', '#10B981', '#A855F7'];
+    card.style.borderLeftColor = colors[workouts.indexOf(w) % 4];
     
     card.innerHTML = 
-      '<div class="workout-header">' +
-        '<h3>' + (w.client_name || 'Тренировка') + '</h3>' +
-      '</div>' +
-      '<div class="workout-details">' +
-        '<span>' + w.start_time + ' • ' + w.duration + ' мин</span>' +
+      '<div class="workout-info">' +
+        '<h3 class="workout-card__title">' + (w.client_name || 'Тренировка') + '</h3>' +
+        '<p class="workout-card__time">' + w.start_time + ' • ' + w.duration + ' мин</p>' +
       '</div>';
     
-    // Свайп для действий
     makeSwipeable(card, w.id);
-    
     container.appendChild(card);
   });
 }
 
+// ─── ВКЛАДКА "РАСПИСАНИЕ" ──────────────────────────
+var scheduleCurrentDate = new Date().toISOString().split('T')[0];
+
+function renderScheduleCalendar() {
+  var monthContainer = document.getElementById('cal-month-s');
+  var daysContainer = document.getElementById('cal-days-s');
+  
+  if (!monthContainer || !daysContainer) return;
+  
+  // Месяц
+  var d = new Date(scheduleCurrentDate);
+  var monthName = d.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+  monthContainer.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  
+  // Дни месяца (горизонтальная полоса)
+  daysContainer.innerHTML = '';
+  
+  var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+  var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  
+  for (var day = 1; day <= lastDay; day++) {
+    var dateStr = d.getFullYear() + '-' + 
+                  String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+                  String(day).padStart(2, '0');
+    
+    var dayBtn = document.createElement('button');
+    dayBtn.className = 'calendar-strip__day-btn';
+    
+    if (dateStr === scheduleCurrentDate) dayBtn.classList.add('active');
+    if (dateStr === new Date().toISOString().split('T')[0]) dayBtn.classList.add('today');
+    
+    dayBtn.innerHTML = '<span class="day-num">' + day + '</span>';
+    dayBtn.addEventListener('click', function() {
+      scheduleCurrentDate = dateStr;
+      renderScheduleCalendar();
+      renderScheduleWorkouts();
+    });
+    
+    daysContainer.appendChild(dayBtn);
+  }
+}
+
+function renderScheduleWorkouts() {
+  var container = document.getElementById('schedule-list');
+  if (!container) return;
+  
+  var workouts = WorkoutsStore.forDate(scheduleCurrentDate);
+  
+  if (workouts.length === 0) {
+    container.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  
+  workouts.forEach(function(w) {
+    var card = document.createElement('div');
+    card.className = 'workout-card';
+    card.setAttribute('data-workout-id', w.id);
+    
+    var colors = ['#3B82F6', '#EC4899', '#10B981', '#A855F7'];
+    card.style.borderLeftColor = colors[workouts.indexOf(w) % 4];
+    
+    card.innerHTML = 
+      '<div class="workout-info">' +
+        '<h3 class="workout-card__title">' + (w.client_name || 'Тренировка') + '</h3>' +
+        '<p class="workout-card__time">' + w.start_time + ' • ' + w.duration + ' мин</p>' +
+      '</div>';
+    
+    makeSwipeable(card, w.id);
+    container.appendChild(card);
+  });
+}
+
+// ─── Свайп на карточке ────────────────────────────
 function makeSwipeable(card, workoutId) {
   var startX = 0;
   var currentX = 0;
   var isDragging = false;
+  var threshold = 80;
   
   card.addEventListener('touchstart', function(e) {
+    if (card.classList.contains('swiped')) return;
     startX = e.touches[0].clientX;
     isDragging = true;
   });
   
   card.addEventListener('touchmove', function(e) {
-    if (!isDragging) return;
+    if (!isDragging || card.classList.contains('swiped')) return;
     currentX = e.touches[0].clientX;
     var diff = startX - currentX;
-    card.style.transform = 'translateX(' + (-diff) + 'px)';
+    
+    if (diff > 0) {
+      card.style.transform = 'translateX(' + (-diff) + 'px)';
+    }
   });
   
   card.addEventListener('touchend', function(e) {
+    if (!isDragging) return;
     isDragging = false;
+    
     var diff = startX - currentX;
     
-    if (diff > 100) {
+    if (diff > threshold) {
       // Свайп влево — показываем кнопки
       showCardActions(card, workoutId);
     } else {
@@ -173,20 +232,28 @@ function makeSwipeable(card, workoutId) {
 
 function showCardActions(card, workoutId) {
   card.classList.add('swiped');
+  
   card.innerHTML = 
-    '<div class="card-actions">' +
-      '<button class="action-btn done-btn">Проведена</button>' +
-      '<button class="action-btn delete-btn">Удалить</button>' +
+    '<div class="workout-actions">' +
+      '<button class="action-btn action-done">✓ Проведена</button>' +
+      '<button class="action-btn action-delete">🗑 Удалить</button>' +
     '</div>';
   
-  card.querySelector('.done-btn').addEventListener('click', function() {
+  card.querySelector('.action-done').addEventListener('click', function() {
     markWorkoutDone(workoutId);
   });
   
-  card.querySelector('.delete-btn').addEventListener('click', function() {
+  card.querySelector('.action-delete').addEventListener('click', function() {
     deleteWorkout(workoutId);
   });
 }
+
+function hideCardActions(card) {
+  card.classList.remove('swiped');
+  card.style.transform = 'translateX(0)';
+}
+
+// ─── Действия с тренировками ──────────────────────
 
 function markWorkoutDone(workoutId) {
   sb.from('workouts').update({
@@ -196,7 +263,10 @@ function markWorkoutDone(workoutId) {
   }).eq('id', workoutId).then(function(res) {
     if (!res.error) {
       console.log('[app] ✅ Тренировка отмечена как проведённая');
-      renderWorkouts();
+      renderHomeWorkouts();
+      renderScheduleWorkouts();
+    } else {
+      console.error('[app] Ошибка:', res.error);
     }
   });
 }
@@ -209,26 +279,45 @@ function deleteWorkout(workoutId) {
   }).eq('id', workoutId).then(function(res) {
     if (!res.error) {
       console.log('[app] ✅ Тренировка удалена (помечена как deleted_at)');
-      renderWorkouts();
+      renderHomeWorkouts();
+      renderScheduleWorkouts();
+    } else {
+      console.error('[app] Ошибка:', res.error);
     }
   });
 }
 
-// ─── Инициализация ─────────────────────────────────
+// ─── Слушатель на изменение хранилища ─────────────
+
 WorkoutsStore.subscribe(function() {
-  renderWorkouts();
+  console.log('[app] Хранилище обновилось');
+  renderHomeWorkouts();
+  renderScheduleWorkouts();
 });
 
-renderCalendar();
-renderWorkouts();
+// ─── Кнопки навигации месяца ──────────────────────
 
-// Кнопки навигации месяца
-document.getElementById('prev-month').addEventListener('click', function() {
-  currentMonth.setMonth(currentMonth.getMonth() - 1);
-  renderCalendar();
+document.getElementById('schedule-arrow-left').addEventListener('click', function() {
+  var d = new Date(scheduleCurrentDate);
+  d.setMonth(d.getMonth() - 1);
+  scheduleCurrentDate = d.toISOString().split('T')[0];
+  renderScheduleCalendar();
+  renderScheduleWorkouts();
 });
 
-document.getElementById('next-month').addEventListener('click', function() {
-  currentMonth.setMonth(currentMonth.getMonth() + 1);
-  renderCalendar();
+document.getElementById('schedule-arrow-right').addEventListener('click', function() {
+  var d = new Date(scheduleCurrentDate);
+  d.setMonth(d.getMonth() + 1);
+  scheduleCurrentDate = d.toISOString().split('T')[0];
+  renderScheduleCalendar();
+  renderScheduleWorkouts();
 });
+
+// ─── Инициализация ────────────────────────────────
+
+renderHomeCalendar();
+renderHomeWorkouts();
+renderScheduleCalendar();
+renderScheduleWorkouts();
+
+console.log('[app] Инициализация завершена');
