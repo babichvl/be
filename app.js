@@ -244,14 +244,21 @@ function rebuildScheduleCalendar() {
   }, scheduleState, selectedScheduleDate);
 }
 
-document.getElementById('schedule-arrow-left').addEventListener('click', function() {
-  scheduleState.offset--;
-  rebuildScheduleCalendar();
-});
-document.getElementById('schedule-arrow-right').addEventListener('click', function() {
-  scheduleState.offset++;
-  rebuildScheduleCalendar();
-});
+// Стрелки календаря (теперь не используются)
+var arrowLeft = document.getElementById('schedule-arrow-left');
+var arrowRight = document.getElementById('schedule-arrow-right');
+if (arrowLeft) {
+  arrowLeft.addEventListener('click', function() {
+    scheduleState.offset--;
+    rebuildScheduleCalendar();
+  });
+}
+if (arrowRight) {
+  arrowRight.addEventListener('click', function() {
+    scheduleState.offset++;
+    rebuildScheduleCalendar();
+  });
+}
 
 // ─── Свайп ─────────────────────────────────────────
 var currentOpenCard = null;
