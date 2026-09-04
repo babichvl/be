@@ -6,7 +6,7 @@ var WorkoutsStore = (function() {
 
   function notify() {
     listeners.forEach(function(fn) {
-      try { fn(items); } catch(e) { console.error('[store] listener error', e); }
+      try { fn(items); } catch(e) {}
     });
   }
 
@@ -32,15 +32,12 @@ var WorkoutsStore = (function() {
     return sb.from('workouts')
       .select('*')
       .eq('trainer_tg_id', trainerId)
-      .neq('deleted', true)           // фильтруем удалённые (null тоже проходит)
+      .neq('deleted', true)
       .gte('workout_date', fromDate)
       .order('workout_date', { ascending: true })
       .order('start_time',   { ascending: true })
       .then(function(result) {
-        if (result.error) {
-          console.error('[store] load error:', result.error);
-          return items;
-        }
+        if (result.error) return items;
         items = (result.data || []).filter(function(w) {
           return w.status !== 'cancelled';
         });
@@ -72,7 +69,6 @@ var WorkoutsStore = (function() {
         table: 'workouts',
         filter: 'trainer_tg_id=eq.' + trainerId
       }, function() {
-        console.log('[store] realtime update detected');
         loadAll();
       })
       .subscribe();
