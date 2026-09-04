@@ -49,11 +49,13 @@ body {
 
 .screen {
   display: none;
-  padding: var(--sp-16);
+  padding: 0;
 }
 
 .screen.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .placeholder-text {
@@ -71,45 +73,53 @@ body {
 }
 
 /* ========================================
-   ШАПКА ГЛАВНОЙ
+   ЕДИНЫЙ ХЕДЕР ДЛЯ ВСЕХ СТРАНИЦ
    ======================================== */
-.home-header {
-  position: relative;
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 16px;
-  padding-top: 60px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
-.home-header__title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+.page-header__title {
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
-  padding-top: 30px;
+  margin: 0;
 }
 
-.home-header__avatar {
+.page-header__avatar {
   position: relative;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  padding-top: 30px;
 }
 
-.home-header__avatar-img {
-  width: 40px;
-  height: 40px;
+.page-header__avatar-img {
+  width: 100%;
+  height: 100%;
   border-radius: 12px;
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);
   background-size: cover;
   background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  object-fit: cover;
 }
 
-.home-header__status {
+.page-header__status {
   position: absolute;
   bottom: -2px;
   right: -2px;
@@ -117,11 +127,24 @@ body {
   height: 11px;
   background: #34C759;
   border-radius: 50%;
-  border: 2px solid var(--surface-0);
+  border: 2px solid var(--surface-1);
 }
 
-.home-header__menu {
-  display: none;
+/* ========================================
+   ГЛАВНАЯ СТРАНИЦА
+   ======================================== */
+.screen#screen-home {
+  flex-direction: column;
+}
+
+.screen#screen-home .page-header {
+  position: relative;
+}
+
+.screen#screen-home .page-header__title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* ========================================
@@ -130,6 +153,8 @@ body {
 .home-calendar {
   padding: 0;
   padding-top: 20px;
+  padding-left: var(--sp-16);
+  padding-right: var(--sp-16);
 }
 
 .home-calendar__days {
@@ -225,93 +250,22 @@ body {
 .home-expand {
   margin-top: var(--sp-16);
   padding: 0 var(--sp-16);
+  flex: 1;
+  overflow-y: auto;
 }
 
 /* ========================================
-   КАЛЕНДАРЬ РАСПИСАНИЯ (МЕСЯЧНЫЙ)
+   РАСПИСАНИЕ СТРАНИЦА
    ======================================== */
-.schedule-calendar {
-  background: var(--surface-1);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-16);
-  margin-bottom: var(--sp-16);
-  box-shadow: var(--shadow-sm);
+.screen#screen-schedule {
+  flex-direction: column;
 }
 
-.schedule-calendar__header {
+.calendar-scheduler {
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--sp-12);
-}
-
-.schedule-calendar__month {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.cal-arrow {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: var(--surface-0);
-  color: var(--text-primary);
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-}
-
-.cal-arrow:hover {
-  background: var(--border);
-}
-
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.cal-weekday {
-  text-align: center;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  padding: 4px 0;
-}
-
-.cal-day {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.cal-day.active {
-  background: var(--accent);
-  color: white;
-}
-
-.cal-day__name {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-
-.cal-day__num {
-  font-size: 18px;
-  font-weight: 600;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* ========================================
@@ -321,7 +275,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 0 0 var(--sp-16);
+  padding: var(--sp-16);
+  overflow-y: auto;
 }
 
 .schedule-item {
@@ -438,6 +393,7 @@ body {
 .schedule-card--purple {
   background: linear-gradient(135deg, #F0E8FF 0%, #E5D6FF 100%);
 }
+
 /* Статус "Проведена" */
 .schedule-card--done {
   background: #E8F9EE;
@@ -454,6 +410,16 @@ body {
   color: #34C759;
   font-weight: 700;
 }
+
+/* ========================================
+   КЛИЕНТЫ И ПРОГРАММЫ СТРАНИЦЫ
+   ======================================== */
+.screen#screen-clients,
+.screen#screen-programs {
+  padding: var(--sp-16);
+  flex: 1;
+}
+
 /* ========================================
    НИЖНЕЕ МЕНЮ (НАВИГАЦИЯ)
    ======================================== */
@@ -539,20 +505,19 @@ body {
 }
 
 /* ========================================
-   ШАПКА РАСПИСАНИЯ
+   СТАРЫЕ СТИЛИ (СОВМЕСТИМОСТЬ)
    ======================================== */
-.schedule-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sp-16);
-  padding-top: 60px;
-  padding-bottom: 8px;
+.home-header {
+  display: none;
 }
 
-.schedule-header__title {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  padding-top: 20px;
+.schedule-header {
+  display: none;
+}
+
+.home-header__title,
+.schedule-header__title,
+.home-header__avatar,
+.schedule-header__avatar {
+  display: none;
 }
