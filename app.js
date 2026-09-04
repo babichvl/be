@@ -449,19 +449,27 @@ function initSwipes(container) {
 }
 
 function buildCardHTML(w, index) {
-  var isDone = w.status === 'done';
+  console.log('[build] buildCardHTML вызвана для workout:', w);
+  
+  var time   = w.start_time ? w.start_time.slice(0, 5) : '--:--';
   var color  = CARD_COLORS[index % CARD_COLORS.length];
-  var time   = (w.start_time || '09:00').substring(0, 5);
-  var title  = w.title || 'Тренировка';
   var name   = w.client_name || 'Клиент';
-  var id     = w.id;
-
+  var title  = w.title || 'Тренировка';
+  var id     = w.id || '';
+  var isDone = w.status === 'done';
+  
+  console.log('[build] id =', id, ', title =', title, ', isDone =', isDone);
+  
+  if (!id) {
+    console.error('[build] ❌ ОШИБКА: id пуст! workout =', w);
+  }
+  
   return (
     '<div class="schedule-item">' +
       '<div class="swipe-wrapper">' +
         '<div class="swipe-actions">' +
-          '<button class="swipe-btn swipe-btn--done">✓<br>Готово</button>' +
-          '<button class="swipe-btn swipe-btn--delete">✕<br>Удалить</button>' +
+          '<button class="swipe-btn swipe-btn--done"   data-id="' + id + '">✓<br>Проведена</button>' +
+          '<button class="swipe-btn swipe-btn--delete" data-id="' + id + '">✕<br>Удалить</button>' +
         '</div>' +
         '<div class="schedule-card ' + (isDone ? 'schedule-card--done' : 'schedule-card--' + color) + '" data-id="' + id + '">' +
           (isDone ? '' : '<span class="schedule-card__time">' + time + '</span>') +
