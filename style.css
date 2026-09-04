@@ -84,12 +84,13 @@ body {
   justify-content: space-between;
   padding: 16px;
   padding-top: max(16px, env(safe-area-inset-top));
-  background: var(--surface-1);
+  background: var(--surface-0);  ← Изменена строка
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
 .page-header__title {
+  position: center;
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
