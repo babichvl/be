@@ -365,17 +365,22 @@ function deleteWorkout(workoutId, itemEl) {
 
 // ─── НОВОЕ: Удаление из Google Calendar ────────────
 function deleteFromGoogleCalendar(workoutId) {
-  if (!tg || !tg.sendData) {
-    console.warn('[calendar] Telegram WebApp sendData недоступен');
+  // Отправляем команду боту через initData
+  if (!tg || !tg.initData) {
+    console.warn('[calendar] Telegram WebApp initData недоступен');
     return;
   }
   
+  // Вызываем бота напрямую через sendMessage в чат
   try {
-    tg.sendData(JSON.stringify({
-      action: 'delete_calendar_event',
-      workout_id: workoutId
-    }));
-    console.log('[calendar] Команда на удаление отправлена боту:', workoutId);
+    // Формируем команду для бота
+    var botUsername = 'BeGymBro_bot'; // Замени на username своего бота
+    var command = '/delete_calendar ' + workoutId;
+    
+    // Открываем чат с ботом и отправляем команду
+    tg.openTelegramLink('https://t.me/' + botUsername + '?start=delete_' + workoutId);
+    
+    console.log('[calendar] Команда на удаление через deeplink:', workoutId);
   } catch (e) {
     console.error('[calendar] Ошибка отправки команды:', e);
   }
