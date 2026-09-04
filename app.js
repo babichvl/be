@@ -8,7 +8,7 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ─── Локальный кэш изменений ──────────────────────
-// Защита от реалтайм-гонки: храним изменения до подтверждения из БД
+// Защита от реалтайм-гонки: храним изменения до подтверждения из БДв
 var localDeletedIds = {};   // { id: true }
 var localDoneIds    = {};   // { id: true }
 
