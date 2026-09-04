@@ -521,3 +521,17 @@ body {
 .schedule-header__avatar {
   display: none;
 }
+/* ========================================
+   ГЛАВНАЯ - ПРОФИЛЬ СПРАВА
+   ======================================== */
+.screen#screen-home .page-header {
+  background: var(--surface-0);
+  border-bottom: none;
+  justify-content: flex-end;
+}
+
+.screen#screen-home .page-header__title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
