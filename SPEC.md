@@ -69,7 +69,7 @@
 | Бэкенд (бот) | ✅ Работает | Replit, Python + aiogram 3.x, файл `main.py` |
 | База данных | ✅ Готова | Supabase, все таблицы созданы |
 | Telegram-бот | ✅ Настроен | Кнопка меню открывает Mini App |
-| Секреты | ✅ Настроены | `BOT_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` в Replit Secrets |
+| Секреты | ✅ Настроены | BOT_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GOOGLE_CREDENTIALS_JSON, WEBAPP_URL в Replit Secrets |
 
 ### Таблицы Supabase ✅
 `users`, `clients`, `workouts`, `programs`, `exercises`, `triggers`, `trigger_logs`, `referrals`, `public_profiles`
