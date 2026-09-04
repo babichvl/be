@@ -84,7 +84,8 @@ body {
   justify-content: center;
   position: relative;
   padding: 16px;
-  padding-top: max(16px, env(safe-area-inset-top));
+  padding-top: 16px;
+  min-height: 72px;
   background: var(--surface-0);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
