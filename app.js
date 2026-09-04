@@ -530,14 +530,24 @@ function renderScheduleWorkouts() {
 // ─── Инициализация WorkoutsStore ──────────────────
 if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.subscribe(function(workouts) {
+    console.log('[app] subscribe callback: получено', workouts.length, 'тренировок');
     allWorkouts = applyLocalCache(workouts);
-    console.log('[app] тренировок после фильтра:', allWorkouts.length);
+    console.log('[app] после фильтра:', allWorkouts.length, 'тренировок');
+    console.log('[app] selectedHomeDate =', selectedHomeDate);
+    console.log('[app] selectedScheduleDate =', selectedScheduleDate);
+    
+    console.log('[app] ===== ВЫЗЫВАЮ РЕНДЕР =====');
     renderHomeWorkouts();
+    console.log('[app] renderHomeWorkouts завершена');
     renderScheduleWorkouts();
+    console.log('[app] renderScheduleWorkouts завершена');
+    console.log('[app] ===== РЕНДЕР ЗАВЕРШЁН =====');
   });
+  console.log('[app] вызываю WorkoutsStore.init(' + trainerTgId + ')');
   WorkoutsStore.init(trainerTgId);
+  console.log('[app] WorkoutsStore.init завершена');
 } else {
-  console.warn('[app] нет trainerTgId');
+  console.warn('[app] нет trainerTgId или WorkoutsStore');
   var hint      = 'Откройте через Telegram';
   var homeList  = document.getElementById('home-list');
   var schedList = document.getElementById('schedule-list');
