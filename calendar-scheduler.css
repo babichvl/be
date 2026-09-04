@@ -7,7 +7,7 @@
   overflow: hidden;
 }
 
-/* ─── Топ бар с переключением и датой ─── */
+/* ─── Топ бар с переключением и датой ─── */ 
 .calendar-top-bar {
   display: flex;
   justify-content: space-between;
