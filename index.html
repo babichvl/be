@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>GymBro</title>
-  <link rel="stylesheet" href="style.css?v=9" />
+  <link rel="stylesheet" href="style.css?v=10" />
   <link rel="stylesheet" href="calendar-scheduler.css?v=1" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,25 +13,21 @@
 
   <main class="content">
 
-<!-- ===== ГЛАВНАЯ ===== -->
-<section class="screen active" id="screen-home">
-  <div class="page-header">
-    <h1 class="page-header__title">Главная</h1>
-    <div class="page-header__avatar">
-      <div class="page-header__avatar-img" id="home-avatar"></div>
-      <span class="page-header__status"></span>
-    </div>
-  </div>
-  <!-- контент -->
-</section>
+    <!-- ===== ГЛАВНАЯ ===== -->
+    <section class="screen active" id="screen-home">
+      <div class="page-header">
+        <h1 class="page-header__title">Главная</h1>
+        <div class="page-header__avatar">
+          <div class="page-header__avatar-img" id="home-avatar"></div>
+          <span class="page-header__status"></span>
+        </div>
+      </div>
 
-<div class="home-calendar">
-  <!-- Фиксированная рамка с иконкой (выглядит как активный день) -->
-
-  <div class="home-calendar__days" id="home-cal-days">
-    <!-- дни генерируются JS -->
-  </div>
-</div>
+      <div class="home-calendar">
+        <div class="home-calendar__days" id="home-cal-days">
+          <!-- дни генерируются JS -->
+        </div>
+      </div>
 
       <div class="home-expand" id="home-expand">
         <div class="schedule-list" id="home-list">
@@ -40,45 +36,44 @@
       </div>
     </section>
 
-   <!-- ===== РАСПИСАНИЕ ===== -->
-<section class="screen" id="screen-schedule">
-  <div class="page-header">
-    <h1 class="page-header__title">Расписание</h1>
-    <div class="page-header__avatar">
-      <div class="page-header__avatar-img" id="schedule-avatar"></div>
-      <span class="page-header__status"></span>
-    </div>
-  </div>
-  <!-- контент -->
-</section>
+    <!-- ===== РАСПИСАНИЕ ===== -->
+    <section class="screen" id="screen-schedule">
+      <div class="page-header">
+        <h1 class="page-header__title">Расписание</h1>
+        <div class="page-header__avatar">
+          <div class="page-header__avatar-img" id="schedule-avatar"></div>
+          <span class="page-header__status"></span>
+        </div>
+      </div>
 
       <!-- Контейнер для сетки календаря -->
       <div id="calendar-scheduler" class="calendar-scheduler"></div>
     </section>
 
     <!-- ===== КЛИЕНТЫ ===== -->
-<section class="screen" id="screen-clients">
-  <div class="page-header">
-    <h1 class="page-header__title">Клиенты</h1>
-    <div class="page-header__avatar">
-      <div class="page-header__avatar-img" id="clients-avatar"></div>
-      <span class="page-header__status"></span>
-    </div>
-  </div>
-  <!-- контент -->
-</section>
+    <section class="screen" id="screen-clients">
+      <div class="page-header">
+        <h1 class="page-header__title">Клиенты</h1>
+        <div class="page-header__avatar">
+          <div class="page-header__avatar-img" id="clients-avatar"></div>
+          <span class="page-header__status"></span>
+        </div>
+      </div>
+      <p class="placeholder-text">Клиенты — скоро</p>
+    </section>
 
-    <!-- ===== КЛИЕНТЫ ===== -->
-<section class="screen" id="screen-clients">
-  <div class="page-header">
-    <h1 class="page-header__title">Клиенты</h1>
-    <div class="page-header__avatar">
-      <div class="page-header__avatar-img" id="clients-avatar"></div>
-      <span class="page-header__status"></span>
-    </div>
-  </div>
-  <!-- контент -->
-</section>
+    <!-- ===== ПРОГРАММЫ ===== -->
+    <section class="screen" id="screen-programs">
+      <div class="page-header">
+        <h1 class="page-header__title">Программы</h1>
+        <div class="page-header__avatar">
+          <div class="page-header__avatar-img" id="programs-avatar"></div>
+          <span class="page-header__status"></span>
+        </div>
+      </div>
+      <p class="placeholder-text">Программы — скоро</p>
+    </section>
+
   </main>
 
   <nav class="bottomnav">
@@ -129,6 +124,6 @@
 
   <script src="workouts-store.js?v=9"></script>
   <script src="calendar-scheduler.js?v=1"></script>
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
