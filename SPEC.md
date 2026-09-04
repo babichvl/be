@@ -69,10 +69,11 @@
 | Бэкенд (бот) | ✅ Работает | Replit, Python + aiogram 3.x, файл `main.py` |
 | База данных | ✅ Готова | Supabase, все таблицы созданы |
 | Telegram-бот | ✅ Настроен | Кнопка меню открывает Mini App |
-| Секреты | ✅ Настроены | BOT_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GOOGLE_CREDENTIALS_JSON, WEBAPP_URL в Replit Secrets |
+| Google Calendar API | ✅ Настроен | Синхронизация событий + удаление через очередь `calendar_delete_queue` |
+| Секреты | ✅ Настроены | `BOT_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_CREDENTIALS`, `WEBAPP_URL` в Replit Secrets |
 
 ### Таблицы Supabase ✅
-`users`, `clients`, `workouts`, `programs`, `exercises`, `triggers`, `trigger_logs`, `referrals`, `public_profiles`, 'calendar_delete_queue'
+`users`, `clients`, `workouts`, `programs`, `exercises`, `triggers`, `trigger_logs`, `referrals`, `public_profiles`, `calendar_delete_queue`
 
 ### Фронтенд — что реализовано
 - [x] Каркас интерфейса: 4 вкладки + FAB-кнопка по центру
@@ -81,8 +82,6 @@
 - [x] Вкладка «Главная»: список тренировок на день (карточки с цветами)
 - [x] Вкладка «Главная»: свайп по карточке → **Проведена** / **Удалить**
 - [x] `WorkoutsStore.js`: загрузка тренировок из Supabase + realtime-подписка
-- [x] Удаление тренировок из Google Calendar (через очередь calendar_delete_queue)
-- [x] Вкладка «Главная»: свайп по карточке → **Удалить** → удаление из Google Calendar
 - [ ] Вкладка «Расписание» — не реализована, делаем с нуля
 - [ ] Вкладки «Клиенты» и «Программы» — только заглушки
 
@@ -150,6 +149,7 @@
 - [x] Список тренировок на выбранный день
 - [x] Карточка тренировки: имя клиента, время, тип, статус (цветовая индикация)
 - [x] Свайп по карточке → **Проведена** / **Удалить**
+- [x] Удаление тренировок из Google Calendar (через очередь `calendar_delete_queue`)
 - [x] Пустое состояние: текст «На этот день тренировок нет»
 - [ ] Умные подсказки (триггеры) — только заглушка и дизайн (реализуется следующим этапом)
 
