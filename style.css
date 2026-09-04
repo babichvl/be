@@ -140,15 +140,7 @@ body {
   flex-direction: column;
 }
 
-.screen#screen-home .page-header {
-  position: relative;
-}
 
-.screen#screen-home .page-header__title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
 
 /* ========================================
    ГОРИЗОНТАЛЬНЫЙ КАЛЕНДАРЬ (ГЛАВНАЯ)
