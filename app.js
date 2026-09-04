@@ -3,9 +3,14 @@ var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.expand(); tg.setHeaderColor('#F5F5F7'); }
 
 // ─── Supabase ──────────────────────────────────────
-var SUPABASE_URL = 'https://qhvtapqlyajkikgfacdo.supabase.co';
+var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ─── Локальный кэш изменений ────────────────────────
+// Защита от реалтайм-гонки: храним изменения до подтверждения из БД
+var localDeletedIds = {};   // { id: true }
+var localDoneIds    = {};   // { id: true }
 
 // ─── ID тренера ────────────────────────────────────
 var trainerTgId = null;
@@ -13,7 +18,7 @@ var trainerTgId = null;
 function loadUser() {
   var urlId = new URLSearchParams(window.location.search).get('tg_id');
   try {
-    var params = new URLSearchParams(tg && tg.initData ? tg.initData : '');
+    var params   = new URLSearchParams(tg && tg.initData ? tg.initData : '');
     var userJson = params.get('user');
     if (userJson) {
       var u = JSON.parse(userJson);
@@ -24,16 +29,14 @@ function loadUser() {
   } catch (e) {
     trainerTgId = urlId ? Number(urlId) : null;
   }
-  if (!trainerTgId) {
-    trainerTgId = 786441589;
-  }
+  if (!trainerTgId) trainerTgId = 786441589;
   console.log('[app] trainerTgId =', trainerTgId);
 }
 loadUser();
 
 // ─── Вкладки ───────────────────────────────────────
 var navItems = document.querySelectorAll('.bottomnav__item[data-tab]');
-var screens = document.querySelectorAll('.screen');
+var screens  = document.querySelectorAll('.screen');
 
 function switchTab(tabId) {
   navItems.forEach(function(btn) {
@@ -43,7 +46,6 @@ function switchTab(tabId) {
     s.classList.toggle('active', s.id === 'screen-' + tabId);
   });
 }
-
 navItems.forEach(function(btn) {
   btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
 });
@@ -56,177 +58,291 @@ document.getElementById('fab-btn').addEventListener('click', function() {
 // ─── Расписание ────────────────────────────────────
 var CARD_COLORS = ['blue','pink','green','purple'];
 var today = new Date();
-var selectedDate = today;
-var allWorkouts = [];
-var localDoneIds = {};
-var localDeletedIds = {};
-var currentOpenCard = null;
+var selectedHomeDate     = dateToISO(today);
+var selectedScheduleDate = dateToISO(today);
+
+function dateToISO(date) {
+  var y = date.getFullYear();
+  var m = String(date.getMonth() + 1).padStart(2, '0');
+  var d = String(date.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + d;
+}
 
 // ─── Календарь ─────────────────────────────────────
-function buildCalendar(centerDate) {
-  var wrap = document.getElementById('calendar-days');
+var DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var MONTHS = ['January','February','March','April','May','June',
+              'July','August','September','October','November','December'];
+
+function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
+  var wrap  = document.getElementById(daysId);
+  var label = document.getElementById(monthId);
+  if (!wrap || !label) return;
+
+  var ref = new Date(today.getFullYear(), today.getMonth() + state.offset, 1);
+  label.textContent = MONTHS[ref.getMonth()] + ' ' + ref.getFullYear();
   wrap.innerHTML = '';
 
-  var start = new Date(centerDate);
-  start.setDate(start.getDate() - 7);
+  var daysInMonth = new Date(ref.getFullYear(), ref.getMonth() + 1, 0).getDate();
+  for (var d = 1; d <= daysInMonth; d++) {
+    var date = new Date(ref.getFullYear(), ref.getMonth(), d);
+    var iso  = dateToISO(date);
 
-  for (var i = 0; i < 15; i++) {
-    var d = new Date(start);
-    d.setDate(start.getDate() + i);
+    var chip = document.createElement('div');
+    chip.className    = 'cal-day' + (iso === selectedDate ? ' active' : '');
+    chip.dataset.date = iso;
 
-    var div = document.createElement('div');
-    div.className = 'cal-day';
-    div.dataset.date = d.toISOString().split('T')[0];
+    var nameEl = document.createElement('span');
+    nameEl.className   = 'cal-day__name';
+    nameEl.textContent = DAYS[date.getDay()];
 
-    var daySpan = document.createElement('div');
-    daySpan.className = 'cal-day__name';
-    daySpan.textContent = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'][d.getDay()];
+    var numEl = document.createElement('span');
+    numEl.className   = 'cal-day__num';
+    numEl.textContent = d;
 
-    var numSpan = document.createElement('div');
-    numSpan.className = 'cal-day__number';
-    numSpan.textContent = d.getDate();
+    chip.appendChild(nameEl);
+    chip.appendChild(numEl);
 
-    div.appendChild(daySpan);
-    div.appendChild(numSpan);
+    chip.addEventListener('click', (function(el, isoDate) {
+      return function() {
+        wrap.querySelectorAll('.cal-day').forEach(function(c) { c.classList.remove('active'); });
+        el.classList.add('active');
+        if (onSelect) onSelect(isoDate);
+      };
+    })(chip, iso));
 
-    if (d.toDateString() === centerDate.toDateString()) {
-      div.classList.add('active');
-    }
-
-    div.addEventListener('click', function() {
-      var clickedDate = new Date(this.dataset.date + 'T00:00:00');
-      selectedDate = clickedDate;
-      wrap.querySelectorAll('.cal-day').forEach(function(c) { c.classList.remove('active'); });
-      this.classList.add('active');
-      renderWorkouts();
-    });
-
-    wrap.appendChild(div);
+    wrap.appendChild(chip);
   }
 
-  wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
+  var active = wrap.querySelector('.cal-day.active') || wrap.querySelector('.cal-day');
+  if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
-buildCalendar(today);
+// ─── Главная: горизонтальный календарь ─────────────
+var homeExpanded = false;
+var isScrollingProgrammatically = false;
+var scrollEndTimer = null;
 
-// ─── Свайп календаря ───────────────────────────────
-(function() {
-  var wrap = document.getElementById('calendar-days');
-  var startX = 0, scrollStart = 0;
+function centerDay(element) {
+  if (!element) return;
+  isScrollingProgrammatically = true;
+  element.scrollIntoView({ inline: 'center', block: 'nearest' });
+  setTimeout(function() { isScrollingProgrammatically = false; }, 50);
+}
 
-  wrap.addEventListener('touchstart', function(e) {
-    startX = e.touches[0].clientX;
-    scrollStart = wrap.scrollLeft;
-  });
+function buildHomeCalendar() {
+  var wrap = document.getElementById('home-cal-days');
+  if (!wrap) return;
 
-  wrap.addEventListener('touchmove', function(e) {
-    var dx = startX - e.touches[0].clientX;
-    wrap.scrollLeft = scrollStart + dx;
-  });
+  wrap.innerHTML = '';
 
-  wrap.addEventListener('touchend', function() {
-    var day = wrap.querySelector('.cal-day.active');
-    if (day) {
-      var rect = day.getBoundingClientRect();
-      var wrapRect = wrap.getBoundingClientRect();
-      if (rect.right < wrapRect.left || rect.left > wrapRect.right) {
-        var allDays = Array.from(wrap.querySelectorAll('.cal-day'));
-        var closest = null;
-        var minDist = Infinity;
-        allDays.forEach(function(el) {
-          var r = el.getBoundingClientRect();
-          var center = (r.left + r.right) / 2;
-          var wrapCenter = (wrapRect.left + wrapRect.right) / 2;
-          var dist = Math.abs(center - wrapCenter);
-          if (dist < minDist) {
-            minDist = dist;
-            closest = el;
-          }
+  var startDate = new Date(today);
+  startDate.setDate(today.getDate() - 3);
+
+  for (var i = 0; i < 30; i++) {
+    var d = new Date(startDate);
+    d.setDate(startDate.getDate() + i);
+    var iso = dateToISO(d);
+
+    var chip = document.createElement('div');
+    chip.className = 'home-cal-day' + (iso === selectedHomeDate ? ' active' : '');
+    chip.dataset.date = iso;
+
+    var numEl = document.createElement('span');
+    numEl.className   = 'home-cal-day__num';
+    numEl.textContent = d.getDate();
+
+    var nameEl = document.createElement('span');
+    nameEl.className   = 'home-cal-day__name';
+    nameEl.textContent = DAYS[d.getDay()];
+
+    var icon = document.createElement('div');
+    icon.className = 'home-cal-day__icon';
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2a2 2 0 0 1 2 2c1.7.3 3 1.8 3 3.5V11c0 1.3.8 2.4 2 2.8V15H5v-1.2c1.2-.4 2-1.5 2-2.8V7.5c0-1.7 1.3-3.2 3-3.5a2 2 0 0 1 2-2zm-1 17h2a1 1 0 1 1-2 0z"/></svg>';
+
+    chip.appendChild(numEl);
+    chip.appendChild(nameEl);
+    chip.appendChild(icon);
+
+    chip.addEventListener('click', (function(isoDate, element) {
+      return function() {
+        selectedHomeDate = isoDate;
+        wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
+          el.classList.remove('active');
         });
-        if (closest) {
-          var clickedDate = new Date(closest.dataset.date + 'T00:00:00');
-          selectedDate = clickedDate;
-          allDays.forEach(function(el) { el.classList.remove('active'); });
-          closest.classList.add('active');
-          renderWorkouts();
-        }
+        element.classList.add('active');
+        homeExpanded = true;
+        var expand = document.getElementById('home-expand');
+        if (expand) expand.classList.add('expanded');
+        renderHomeWorkouts();
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() { centerDay(element); });
+        });
+      };
+    })(iso, chip));
+
+    wrap.appendChild(chip);
+  }
+
+  var activeEl = wrap.querySelector('.home-cal-day.active');
+  if (activeEl) {
+    requestAnimationFrame(function() { centerDay(activeEl); });
+  }
+
+  (function() {
+    function getClosestDayToCenter() {
+      var wrapRect = wrap.getBoundingClientRect();
+      var centerX  = wrapRect.left + wrapRect.width / 2;
+      var days     = wrap.querySelectorAll('.home-cal-day');
+      var closest  = null;
+      var minDist  = Infinity;
+      days.forEach(function(el) {
+        var rect = el.getBoundingClientRect();
+        var dist = Math.abs(rect.left + rect.width / 2 - centerX);
+        if (dist < minDist) { minDist = dist; closest = el; }
+      });
+      return closest;
+    }
+
+    function updateActiveDay() {
+      var closestDay = getClosestDayToCenter();
+      if (closestDay && closestDay.dataset.date !== selectedHomeDate) {
+        selectedHomeDate = closestDay.dataset.date;
+        wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
+          el.classList.remove('active');
+        });
+        closestDay.classList.add('active');
       }
     }
+
+    function snapToCenter() {
+      if (isScrollingProgrammatically) return;
+      var closestDay = getClosestDayToCenter();
+      if (closestDay) {
+        centerDay(closestDay);
+        renderHomeWorkouts();
+      }
+    }
+
+    wrap.addEventListener('scroll', function() {
+      requestAnimationFrame(updateActiveDay);
+      if (!isScrollingProgrammatically) {
+        clearTimeout(scrollEndTimer);
+        scrollEndTimer = setTimeout(snapToCenter, 150);
+      }
+    }, { passive: true });
+
+    updateActiveDay();
+  })();
+
+  var expandEl = document.getElementById('home-expand');
+  if (expandEl) expandEl.classList.remove('expanded');
+}
+
+// ─── Расписание: календарь + стрелки ───────────────
+var schedCalState = { offset: 0 };
+
+function rebuildScheduleCalendar() {
+  buildCalendar('cal-days-s', 'cal-month-s', function(dateISO) {
+    selectedScheduleDate = dateISO;
+    renderScheduleWorkouts();
+  }, schedCalState, selectedScheduleDate);
+}
+rebuildScheduleCalendar();
+
+var schedArrowLeft  = document.getElementById('schedule-arrow-left');
+var schedArrowRight = document.getElementById('schedule-arrow-right');
+if (schedArrowLeft) {
+  schedArrowLeft.addEventListener('click', function() {
+    schedCalState.offset--;
+    rebuildScheduleCalendar();
   });
-})();
-
-// ─── Развернуть карточку ───────────────────────────
-function toggleExpand(cardEl) {
-  var expandEl = cardEl.querySelector('.workout-card__expand');
-  if (!expandEl) return;
-
-  var wasExpanded = expandEl.classList.contains('expanded');
-  document.querySelectorAll('.workout-card__expand.expanded').forEach(function(el) {
-    el.classList.remove('expanded');
+}
+if (schedArrowRight) {
+  schedArrowRight.addEventListener('click', function() {
+    schedCalState.offset++;
+    rebuildScheduleCalendar();
   });
+}
 
-  if (!wasExpanded) {
-    expandEl.classList.add('expanded');
+// ─── Свайп-действия ────────────────────────────────
+var SWIPE_WIDTH = 152;
+var currentOpenCard = null;
+
+function closeOpenCard() {
+  if (currentOpenCard) {
+    currentOpenCard.style.transition = 'transform 0.25s ease';
+    currentOpenCard.style.transform  = 'translateX(0)';
+    currentOpenCard = null;
   }
 }
 
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('.workout-card__expand')) {
-    document.querySelectorAll('.workout-card__expand.expanded').forEach(function(el) {
-      el.classList.remove('expanded');
-    });
-  }
-});
-
-// ─── Свайп по карточкам ────────────────────────────
-var SWIPE_WIDTH = 152;
-
-document.addEventListener('click', function(e) {
+document.addEventListener('touchstart', function(e) {
   if (currentOpenCard && !currentOpenCard.closest('.swipe-wrapper').contains(e.target)) {
-    currentOpenCard.style.transform = 'translateX(0)';
-    currentOpenCard = null;
+    closeOpenCard();
   }
-});
+}, { passive: true });
 
+// ─── Проведена ─────────────────────────────────────
 function markDone(workoutId, itemEl) {
   if (!workoutId) return;
   var id = String(workoutId);
+
+  // Сохраняем в локальный кэш
   localDoneIds[id] = true;
 
-  var badge = itemEl.querySelector('.workout-card__status-badge');
-  if (!badge) {
-    badge = document.createElement('div');
-    badge.className = 'workout-card__status-badge';
-    badge.textContent = '✓ Проведена';
-    itemEl.querySelector('.workout-card__main').appendChild(badge);
-  }
+  // Обновляем в массиве
+  allWorkouts = allWorkouts.map(function(w) {
+    if (String(w.id) === id) return Object.assign({}, w, { status: 'done' });
+    return w;
+  });
 
-  currentOpenCard.style.transform = 'translateX(0)';
+  // Визуально
+  var card = itemEl.querySelector('.schedule-card');
+  if (card) {
+    card.className = 'schedule-card schedule-card--done';
+    var timeEl = card.querySelector('.schedule-card__time');
+    if (timeEl) timeEl.style.display = 'none';
+    if (!card.querySelector('.schedule-card__check')) {
+      var check = document.createElement('span');
+      check.className   = 'schedule-card__check';
+      check.textContent = '✓';
+      card.appendChild(check);
+    }
+    card.style.transition = 'transform 0.25s ease';
+    card.style.transform  = 'translateX(0)';
+  }
   currentOpenCard = null;
 
+  // Пишем в Supabase
   sb.from('workouts')
-    .update({ status: 'completed' })
+    .update({ status: 'done' })
     .eq('id', workoutId)
     .then(function(res) {
       if (res.error) {
         console.warn('[app] ошибка обновления статуса:', res.error.message);
       } else {
-        console.log('[app] status=completed записан в БД:', workoutId);
+        console.log('[app] статус обновлён в БД:', workoutId);
+        // После подтверждения из БД можно убрать из локального кэша
         delete localDoneIds[id];
       }
     });
 }
 
+// ─── Удалить ───────────────────────────────────────
 function deleteWorkout(workoutId, itemEl) {
   if (!workoutId) return;
   var id = String(workoutId);
 
+  // Сохраняем в локальный кэш удалённых — не уберём из localDeletedIds
+  // пока не придёт подтверждение из БД
   localDeletedIds[id] = true;
 
+  // Убираем из массива
   allWorkouts = allWorkouts.filter(function(w) {
     return String(w.id) !== id;
   });
 
+  // Анимация
   itemEl.style.transition = 'opacity 0.25s ease, max-height 0.3s ease';
   itemEl.style.overflow   = 'hidden';
   itemEl.style.maxHeight  = itemEl.offsetHeight + 'px';
@@ -235,6 +351,7 @@ function deleteWorkout(workoutId, itemEl) {
   setTimeout(function() { itemEl.remove(); }, 300);
   currentOpenCard = null;
 
+  // Мягкое удаление в Supabase
   sb.from('workouts')
     .update({ deleted: true })
     .eq('id', workoutId)
@@ -243,192 +360,185 @@ function deleteWorkout(workoutId, itemEl) {
         console.warn('[app] ошибка удаления:', res.error.message);
       } else {
         console.log('[app] deleted=true записано в БД:', workoutId);
+        // Убираем из кэша — теперь БД сама не вернёт эту запись
         delete localDeletedIds[id];
-        
-        // Удаляем из Google Calendar через бота
-        deleteFromGoogleCalendar(workoutId);
       }
     });
 }
 
-// ─── Удаление из Google Calendar ───────────────────
-function deleteFromGoogleCalendar(workoutId) {
-  if (tg && tg.sendData) {
-    tg.sendData(JSON.stringify({
-      action: 'delete_calendar_event',
-      workout_id: workoutId
-    }));
-    console.log('[calendar] Команда отправлена боту:', workoutId);
-  } else {
-    console.warn('[calendar] Telegram WebApp sendData недоступен');
-  }
-}
-
+// ─── Применяем локальный кэш к данным из стора ─────
 function applyLocalCache(workouts) {
   return workouts
     .filter(function(w) {
+      // Убираем то, что удалили локально (до подтверждения из БД)
       return !localDeletedIds[String(w.id)];
     })
     .map(function(w) {
+      // Применяем локальный статус done (до подтверждения из БД)
       if (localDoneIds[String(w.id)]) {
-        w.status = 'completed';
+        return Object.assign({}, w, { status: 'done' });
       }
       return w;
     });
 }
 
+// ─── Навешиваем свайп на список ────────────────────
 function initSwipes(listEl) {
   listEl.querySelectorAll('.swipe-wrapper').forEach(function(wrapper) {
-    var card      = wrapper.querySelector('.workout-card');
+    var card      = wrapper.querySelector('.schedule-card');
     var btnDone   = wrapper.querySelector('.swipe-btn--done');
     var btnDel    = wrapper.querySelector('.swipe-btn--delete');
+    var itemEl    = wrapper.closest('.schedule-item');
+    var workoutId = card ? card.dataset.id : null;
+
+    var startX, startY, startedOpen, isHoriz = null;
 
     if (btnDone) {
-      btnDone.addEventListener('click', function() {
-        var workoutId = this.dataset.id;
-        var itemEl = this.closest('.workout-item');
+      btnDone.addEventListener('click', function(e) {
+        e.stopPropagation();
         markDone(workoutId, itemEl);
       });
     }
 
     if (btnDel) {
-      btnDel.addEventListener('click', function() {
-        var workoutId = this.dataset.id;
-        var itemEl = this.closest('.workout-item');
+      btnDel.addEventListener('click', function(e) {
+        e.stopPropagation();
         deleteWorkout(workoutId, itemEl);
       });
     }
 
-    var startX = 0, startedOpen = false;
+    if (!card) return;
+
     card.addEventListener('touchstart', function(e) {
-      startX = e.touches[0].clientX;
+      startX      = e.touches[0].clientX;
+      startY      = e.touches[0].clientY;
       startedOpen = (currentOpenCard === card);
-    });
+      isHoriz     = null;
+      card.style.transition = 'none';
+    }, { passive: true });
 
     card.addEventListener('touchmove', function(e) {
-      if (currentOpenCard && currentOpenCard !== card) {
-        currentOpenCard.style.transform = 'translateX(0)';
-        currentOpenCard = null;
-      }
       var dx = e.touches[0].clientX - startX;
-      if (dx > 0) return;
+      var dy = e.touches[0].clientY - startY;
 
+      if (isHoriz === null) {
+        isHoriz = Math.abs(dx) > Math.abs(dy);
+        if (!isHoriz) return;
+        if (currentOpenCard && currentOpenCard !== card) closeOpenCard();
+      }
+      if (!isHoriz) return;
+
+      e.preventDefault();
       var base = startedOpen ? -SWIPE_WIDTH : 0;
       var x    = Math.min(0, Math.max(-SWIPE_WIDTH, base + dx));
       card.style.transform = 'translateX(' + x + 'px)';
-    });
+    }, { passive: false });
 
     card.addEventListener('touchend', function(e) {
+      if (!isHoriz) return;
       var dx        = e.changedTouches[0].clientX - startX;
       var base      = startedOpen ? -SWIPE_WIDTH : 0;
       var finalX    = Math.min(0, Math.max(-SWIPE_WIDTH, base + dx));
       var threshold = SWIPE_WIDTH * 0.35;
 
-      if (Math.abs(finalX) >= threshold) {
+      card.style.transition = 'transform 0.25s ease';
+
+      if (finalX < -threshold) {
         card.style.transform = 'translateX(-' + SWIPE_WIDTH + 'px)';
         currentOpenCard = card;
       } else {
         card.style.transform = 'translateX(0)';
-        currentOpenCard = null;
+        if (currentOpenCard === card) currentOpenCard = null;
       }
     });
   });
 }
 
-// ─── Рендер списка тренировок ──────────────────────
-function renderWorkouts() {
-  var listEl = document.getElementById('workouts-list');
-  var dateStr = selectedDate.toISOString().split('T')[0];
-
-  var filtered = applyLocalCache(allWorkouts).filter(function(w) {
-    return w.workout_date === dateStr;
-  });
-
-  if (!filtered.length) {
-    listEl.innerHTML = '<div class="empty-state">Нет тренировок на этот день</div>';
-    return;
-  }
-
-  listEl.innerHTML = filtered.map(function(w, idx) {
-    var color = CARD_COLORS[idx % CARD_COLORS.length];
-    var time  = w.start_time ? w.start_time.slice(0,5) : '';
-    var clientName = w.client_name || 'Клиент';
-    var title = w.title || 'Тренировка';
-    var statusBadge = (w.status === 'completed') 
-      ? '<div class="workout-card__status-badge">✓ Проведена</div>' 
-      : '';
-    var id = w.id;
-
-    return (
-      '<div class="workout-item">' +
+// ─── Шаблон карточки ───────────────────────────────
+function buildCardHTML(w, i) {
+  var time   = w.start_time ? w.start_time.slice(0, 5) : '--:--';
+  var color  = CARD_COLORS[i % CARD_COLORS.length];
+  var name   = w.client_name || 'Клиент';
+  var title  = w.title || 'Тренировка';
+  var id     = w.id || '';
+  var isDone = w.status === 'done';
+  return (
+    '<div class="schedule-item">' +
       '<div class="swipe-wrapper">' +
         '<div class="swipe-actions">' +
           '<button class="swipe-btn swipe-btn--done"   data-id="' + id + '">✓<br>Проведена</button>' +
           '<button class="swipe-btn swipe-btn--delete" data-id="' + id + '">🗑<br>Удалить</button>' +
         '</div>' +
-        '<div class="workout-card workout-card--' + color + '" onclick="toggleExpand(this)">' +
-          '<div class="workout-card__main">' +
-            '<div class="workout-card__time">' + time + '</div>' +
-            '<div class="workout-card__info">' +
-              '<div class="workout-card__client">' + clientName + '</div>' +
-              '<div class="workout-card__title">' + title + '</div>' +
-            '</div>' +
-            statusBadge +
-          '</div>' +
-          '<div class="workout-card__expand">' +
-            '<div class="workout-card__expand-row">' +
-              '<span class="workout-card__expand-label">Описание:</span>' +
-              '<span>' + (w.description || 'Нет описания') + '</span>' +
-            '</div>' +
-          '</div>' +
+        '<div class="schedule-card ' + (isDone ? 'schedule-card--done' : 'schedule-card--' + color) + '" data-id="' + id + '">' +
+          (isDone ? '' : '<span class="schedule-card__time">' + time + '</span>') +
+          '<span class="schedule-card__title">' + title + '</span>' +
+          '<span class="schedule-card__sub">'   + name  + ' · ' + (w.duration || 60) + ' мин</span>' +
+          (isDone ? '<span class="schedule-card__check">✓</span>' : '') +
         '</div>' +
       '</div>' +
-      '</div>'
-    );
-  }).join('');
+    '</div>'
+  );
+}
 
+// ─── Рендер тренировок ─────────────────────────────
+var allWorkouts = [];
+
+function renderHomeWorkouts() {
+  var listEl = document.getElementById('home-list');
+  if (!listEl) return;
+
+  var list = allWorkouts.filter(function(w) {
+    return w.workout_date === selectedHomeDate;
+  }).sort(function(a, b) {
+    return (a.start_time || '').localeCompare(b.start_time || '');
+  });
+
+  if (list.length === 0) {
+    listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
+    return;
+  }
+
+  listEl.innerHTML = list.map(buildCardHTML).join('');
   initSwipes(listEl);
 }
 
-// ─── Загрузка тренировок ───────────────────────────
-function loadWorkouts() {
-  if (!trainerTgId) return;
+function renderScheduleWorkouts() {
+  var listEl = document.getElementById('schedule-list');
+  if (!listEl) return;
 
-  var sevenDaysAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
-  var fromDate = sevenDaysAgo.toISOString().split('T')[0];
+  var list = allWorkouts.filter(function(w) {
+    return w.workout_date === selectedScheduleDate;
+  }).sort(function(a, b) {
+    return (a.start_time || '').localeCompare(b.start_time || '');
+  });
 
-  sb.from('workouts')
-    .select('*, clients(name)')
-    .eq('trainer_id', trainerTgId)
-    .eq('deleted', false)
-    .gte('workout_date', fromDate)
-    .order('workout_date', { ascending: true })
-    .order('start_time', { ascending: true })
-    .then(function(res) {
-      if (res.error) {
-        console.error('[app] ошибка загрузки:', res.error);
-        return;
-      }
+  if (list.length === 0) {
+    listEl.innerHTML = '<p class="placeholder-text">На этот день тренировок нет</p>';
+    return;
+  }
 
-      allWorkouts = (res.data || []).map(function(w) {
-        w.client_name = (w.clients && w.clients.name) || 'Клиент';
-        return w;
-      });
-
-      console.log('[app] загружено тренировок:', allWorkouts.length);
-      renderWorkouts();
-    });
+  listEl.innerHTML = list.map(buildCardHTML).join('');
+  initSwipes(listEl);
 }
 
-loadWorkouts();
+// ─── Инициализация WorkoutsStore ───────────────────
+if (trainerTgId && window.WorkoutsStore) {
+  WorkoutsStore.subscribe(function(workouts) {
+    // Применяем локальный кэш: убираем удалённые, восстанавливаем done
+    allWorkouts = applyLocalCache(workouts);
+    console.log('[app] тренировок после фильтра:', allWorkouts.length);
+    renderHomeWorkouts();
+    renderScheduleWorkouts();
+  });
+  WorkoutsStore.init(trainerTgId);
+} else {
+  console.warn('[app] нет trainerTgId');
+  var hint      = 'Откройте через Telegram';
+  var homeList  = document.getElementById('home-list');
+  var schedList = document.getElementById('schedule-list');
+  if (homeList)  homeList.innerHTML  = '<p class="placeholder-text">' + hint + '</p>';
+  if (schedList) schedList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
+}
 
-// ─── Realtime подписка ─────────────────────────────
-sb.channel('workouts-changes')
-  .on('postgres_changes', 
-      { event: '*', schema: 'public', table: 'workouts' },
-      function(payload) {
-        console.log('[realtime]', payload);
-        loadWorkouts();
-      }
-  )
-  .subscribe();
+// ─── Запуск главного календаря ─────────────────────
+buildHomeCalendar();
