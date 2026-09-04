@@ -49,7 +49,7 @@ body {
 
 .screen {
   display: none;
-  padding: 0;
+  padding-top: 20px;
 }
 
 .screen.active {
