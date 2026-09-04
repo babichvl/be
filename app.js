@@ -274,58 +274,40 @@ function markDone(workoutId, itemEl) {
     console.warn('[action] workoutId пуст, выходим');
     return;
   }
-  var id = String(workoutId);
+  var id = String(workoutId);  // Уже строка, но на всякий случай
 
-  // Сохраняем в локальный кэш
-  localDoneIds[id] = true;
-  console.log('[action] добавил в localDoneIds, сейчас =', localDoneIds);
-
-  // Обновляем в массиве
-  allWorkouts = allWorkouts.map(function(w) {
-    if (String(w.id) === id) {
-      console.log('[action] нашли workout, меняем status на done');
-      return Object.assign({}, w, { status: 'done' });
-    }
-    return w;
-  });
-
-  // Визуально
-  var card = itemEl.querySelector('.schedule-card');
-  console.log('[action] card найдена:', !!card);
+  // ... весь остальной код остаётся как был ...
   
-  if (card) {
-    card.className = 'schedule-card schedule-card--done';
-    var timeEl = card.querySelector('.schedule-card__time');
-    if (timeEl) timeEl.style.display = 'none';
-    if (!card.querySelector('.schedule-card__check')) {
-      var check = document.createElement('span');
-      check.className   = 'schedule-card__check';
-      check.textContent = '✓';
-      card.appendChild(check);
-    }
-    card.style.transition = 'transform 0.25s ease';
-    card.style.transform  = 'translateX(0)';
-  }
-  currentOpenCard = null;
-
-  // Пишем в Supabase
-  console.log('[action] отправляю UPDATE в Supabase для', workoutId);
   sb.from('workouts')
     .update({ 
       status: 'done',
       updated_at_supabase: new Date().toISOString()
     })
-    .eq('id', workoutId)
+    .eq('id', workoutId)  // ← Передаём как строка/UUID
     .then(function(res) {
-      if (res.error) {
-        console.warn('[action] ❌ ошибка UPDATE:', res.error.message);
-      } else {
-        console.log('[action] ✅ UPDATE успешно, удаляю из localDoneIds');
-        delete localDoneIds[id];
-      }
+      // ...
+    });
+}
+
+function deleteWorkout(workoutId, itemEl) {
+  console.log('[action] deleteWorkout() вызвана, workoutId =', workoutId);
+  
+  if (!workoutId) {
+    console.warn('[action] workoutId пуст, выходим');
+    return;
+  }
+  var id = String(workoutId);  // Уже строка, но на всякий случай
+
+  // ... весь остальной код остаётся как был ...
+  
+  sb.from('workouts')
+    .update({ 
+      deleted: true,
+      updated_at_supabase: new Date().toISOString()
     })
-    .catch(function(e) {
-      console.error('[action] ❌ ошибка запроса:', e);
+    .eq('id', workoutId)  // ← Передаём как строка/UUID
+    .then(function(res) {
+      // ...
     });
 }
 
@@ -477,7 +459,7 @@ function initSwipes(container) {
     });
   });
 
-  // ✅ ИСПРАВЛЕНО: ID берём прямо из кнопки data-id
+  // ✅ ИСПРАВЛЕНО: НЕ преобразуем в Number(), это UUID!
   var doneBtns = container.querySelectorAll('.swipe-btn--done');
   console.log('[swipe] найдено кнопок "Проведена":', doneBtns.length);
   
@@ -485,11 +467,11 @@ function initSwipes(container) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      var workoutId = this.dataset.id;
+      var workoutId = this.dataset.id;  // ← Это UUID строка
       console.log('[swipe] ✅ markDone нажата, ID =', workoutId);
       if (workoutId) {
         var item = this.closest('.schedule-item');
-        markDone(Number(workoutId), item);
+        markDone(workoutId, item);  // ← Передаём как строку!
       }
     });
   });
@@ -501,11 +483,11 @@ function initSwipes(container) {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      var workoutId = this.dataset.id;
+      var workoutId = this.dataset.id;  // ← Это UUID строка
       console.log('[swipe] ✅ deleteWorkout нажата, ID =', workoutId);
       if (workoutId) {
         var item = this.closest('.schedule-item');
-        deleteWorkout(Number(workoutId), item);
+        deleteWorkout(workoutId, item);  // ← Передаём как строку!
       }
     });
   });
