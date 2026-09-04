@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>GymBro</title>
   <link rel="stylesheet" href="style.css?v=9" />
+  <link rel="stylesheet" href="calendar-scheduler.css?v=1" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -16,7 +17,6 @@
     <section class="screen active" id="screen-home">
       <div class="home-header">
 
-        
         <span class="home-header__title">Главная</span>
         
         <div class="home-header__avatar">
@@ -27,8 +27,7 @@
 
 <div class="home-calendar">
   <!-- Фиксированная рамка с иконкой (выглядит как активный день) -->
-  
-  
+
   <div class="home-calendar__days" id="home-cal-days">
     <!-- дни генерируются JS -->
   </div>
@@ -45,20 +44,14 @@
     <section class="screen" id="screen-schedule">
       <div class="schedule-header">
         <h1 class="schedule-header__title">Расписание</h1>
-      </div>
-
-      <div class="calendar-strip card">
-        <div class="calendar-strip__header">
-          <button class="calendar-strip__arrow" id="schedule-arrow-left">‹</button>
-          <span class="calendar-strip__month" id="cal-month-s"></span>
-          <button class="calendar-strip__arrow" id="schedule-arrow-right">›</button>
+        <div class="schedule-header__avatar">
+          <div class="schedule-header__avatar-img" id="schedule-avatar"></div>
+          <span class="schedule-header__status"></span>
         </div>
-        <div class="calendar-strip__days" id="cal-days-s"></div>
       </div>
 
-      <div class="schedule-list" id="schedule-list">
-        <p class="placeholder-text">Загружаем...</p>
-      </div>
+      <!-- Контейнер для сетки календаря -->
+      <div id="calendar-scheduler" class="calendar-scheduler"></div>
     </section>
 
     <!-- ===== КЛИЕНТЫ ===== -->
@@ -125,7 +118,8 @@
 
   </nav>
 
- <script src="workouts-store.js?v=9"></script>
+  <script src="workouts-store.js?v=9"></script>
+  <script src="calendar-scheduler.js?v=1"></script>
   <script src="app.js?v=9"></script>
 </body>
 </html>
