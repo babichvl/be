@@ -7,7 +7,7 @@ var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ─── Локальный кэш изменений ────────────────────────
+// ─── Локальный кэш изменений ──────────────────────
 // Защита от реалтайм-гонки: храним изменения до подтверждения из БД
 var localDeletedIds = {};   // { id: true }
 var localDoneIds    = {};   // { id: true }
@@ -117,7 +117,7 @@ function buildCalendar(daysId, monthId, onSelect, state, selectedDate) {
   if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
-// ─── Главная: горизонтальный календарь ─────────────
+// ─── Главная: горизонтальный календарь ────────────
 var homeExpanded = false;
 var isScrollingProgrammatically = false;
 var scrollEndTimer = null;
@@ -204,85 +204,69 @@ function buildHomeCalendar() {
     }
 
     function updateActiveDay() {
-      var closestDay = getClosestDayToCenter();
-      if (closestDay && closestDay.dataset.date !== selectedHomeDate) {
-        selectedHomeDate = closestDay.dataset.date;
+      if (isScrollingProgrammatically) return;
+      var closest = getClosestDayToCenter();
+      if (closest && !closest.classList.contains('active')) {
         wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
           el.classList.remove('active');
         });
-        closestDay.classList.add('active');
+        closest.classList.add('active');
+        selectedHomeDate = closest.dataset.date;
+        homeExpanded = true;
+        var expand = document.getElementById('home-expand');
+        if (expand) expand.classList.add('expanded');
+        renderHomeWorkouts();
       }
     }
 
     function snapToCenter() {
       if (isScrollingProgrammatically) return;
-      var closestDay = getClosestDayToCenter();
-      if (closestDay) {
-        centerDay(closestDay);
-        renderHomeWorkouts();
-      }
+      var closest = getClosestDayToCenter();
+      if (closest) centerDay(closest);
     }
 
     wrap.addEventListener('scroll', function() {
-      requestAnimationFrame(updateActiveDay);
-      if (!isScrollingProgrammatically) {
-        clearTimeout(scrollEndTimer);
-        scrollEndTimer = setTimeout(snapToCenter, 150);
-      }
-    }, { passive: true });
-
-    updateActiveDay();
+      if (scrollEndTimer) clearTimeout(scrollEndTimer);
+      scrollEndTimer = setTimeout(function() {
+        updateActiveDay();
+        snapToCenter();
+      }, 150);
+    });
   })();
-
-  var expandEl = document.getElementById('home-expand');
-  if (expandEl) expandEl.classList.remove('expanded');
 }
 
-// ─── Расписание: календарь + стрелки ───────────────
-var schedCalState = { offset: 0 };
+// ─── Расписание: календарь ─────────────────────────
+var scheduleState = { offset: 0 };
 
 function rebuildScheduleCalendar() {
-  buildCalendar('cal-days-s', 'cal-month-s', function(dateISO) {
-    selectedScheduleDate = dateISO;
+  buildCalendar('cal-days-s', 'cal-month-s', function(iso) {
+    selectedScheduleDate = iso;
     renderScheduleWorkouts();
-  }, schedCalState, selectedScheduleDate);
-}
-rebuildScheduleCalendar();
-
-var schedArrowLeft  = document.getElementById('schedule-arrow-left');
-var schedArrowRight = document.getElementById('schedule-arrow-right');
-if (schedArrowLeft) {
-  schedArrowLeft.addEventListener('click', function() {
-    schedCalState.offset--;
-    rebuildScheduleCalendar();
-  });
-}
-if (schedArrowRight) {
-  schedArrowRight.addEventListener('click', function() {
-    schedCalState.offset++;
-    rebuildScheduleCalendar();
-  });
+  }, scheduleState, selectedScheduleDate);
 }
 
-// ─── Свайп-действия ────────────────────────────────
-var SWIPE_WIDTH = 152;
+document.getElementById('schedule-arrow-left').addEventListener('click', function() {
+  scheduleState.offset--;
+  rebuildScheduleCalendar();
+});
+document.getElementById('schedule-arrow-right').addEventListener('click', function() {
+  scheduleState.offset++;
+  rebuildScheduleCalendar();
+});
+
+// ─── Свайп ─────────────────────────────────────────
 var currentOpenCard = null;
 
 function closeOpenCard() {
-  if (currentOpenCard) {
-    currentOpenCard.style.transition = 'transform 0.25s ease';
-    currentOpenCard.style.transform  = 'translateX(0)';
-    currentOpenCard = null;
+  if (!currentOpenCard) return;
+  var card = currentOpenCard.querySelector('.schedule-card');
+  if (card) {
+    card.style.transition = 'transform 0.25s ease';
+    card.style.transform  = 'translateX(0)';
   }
+  currentOpenCard = null;
 }
 
-document.addEventListener('touchstart', function(e) {
-  if (currentOpenCard && !currentOpenCard.closest('.swipe-wrapper').contains(e.target)) {
-    closeOpenCard();
-  }
-}, { passive: true });
-
-// ─── Проведена ─────────────────────────────────────
 function markDone(workoutId, itemEl) {
   if (!workoutId) return;
   var id = String(workoutId);
@@ -315,7 +299,10 @@ function markDone(workoutId, itemEl) {
 
   // Пишем в Supabase
   sb.from('workouts')
-    .update({ status: 'done' })
+    .update({ 
+      status: 'done',
+      updated_at_supabase: new Date().toISOString()
+    })
     .eq('id', workoutId)
     .then(function(res) {
       if (res.error) {
@@ -327,7 +314,6 @@ function markDone(workoutId, itemEl) {
     });
 }
 
-// ─── Удалить ───────────────────────────────────────
 function deleteWorkout(workoutId, itemEl) {
   if (!workoutId) return;
   var id = String(workoutId);
@@ -346,41 +332,23 @@ function deleteWorkout(workoutId, itemEl) {
   setTimeout(function() { itemEl.remove(); }, 300);
   currentOpenCard = null;
 
-  // Мягкое удаление в Supabase
+  // Мягкое удаление в Supabase (для двусторонней синхронизации)
   sb.from('workouts')
-    .update({ deleted: true })
+    .update({ 
+      deleted: true,
+      updated_at_supabase: new Date().toISOString()
+    })
     .eq('id', workoutId)
     .then(function(res) {
       if (res.error) {
         console.warn('[app] ошибка удаления:', res.error.message);
       } else {
-        console.log('[app] deleted=true записано в БД:', workoutId);
+        console.log('[app] ✅ deleted=true записано (id=' + workoutId + '), google_sync.py удалит из календаря');
         delete localDeletedIds[id];
-        
-        // НОВОЕ: Удаляем из Google Calendar через бота
-        deleteFromGoogleCalendar(workoutId);
       }
     });
 }
 
-// ─── НОВОЕ: Удаление из Google Calendar ────────────
-function deleteFromGoogleCalendar(workoutId) {
-  // Добавляем задачу в очередь через Supabase
-  sb.from('calendar_delete_queue')
-    .insert({
-      workout_id: workoutId,
-      trainer_id: trainerTgId
-    })
-    .then(function(res) {
-      if (res.error) {
-        console.error('[calendar] Ошибка добавления в очередь:', res.error);
-      } else {
-        console.log('[calendar] Задача на удаление добавлена в очередь:', workoutId);
-      }
-    });
-}
-
-// ─── Применяем локальный кэш к данным из стора ─────
 function applyLocalCache(workouts) {
   return workouts
     .filter(function(w) {
@@ -394,92 +362,84 @@ function applyLocalCache(workouts) {
     });
 }
 
-// ─── Навешиваем свайп на список ────────────────────
-function initSwipes(listEl) {
-  listEl.querySelectorAll('.swipe-wrapper').forEach(function(wrapper) {
-    var card      = wrapper.querySelector('.schedule-card');
-    var btnDone   = wrapper.querySelector('.swipe-btn--done');
-    var btnDel    = wrapper.querySelector('.swipe-btn--delete');
-    var itemEl    = wrapper.closest('.schedule-item');
-    var workoutId = card ? card.dataset.id : null;
-
-    var startX, startY, startedOpen, isHoriz = null;
-
-    if (btnDone) {
-      btnDone.addEventListener('click', function(e) {
-        e.stopPropagation();
-        markDone(workoutId, itemEl);
-      });
-    }
-
-    if (btnDel) {
-      btnDel.addEventListener('click', function(e) {
-        e.stopPropagation();
-        deleteWorkout(workoutId, itemEl);
-      });
-    }
-
+function initSwipes(container) {
+  var items = container.querySelectorAll('.schedule-item');
+  items.forEach(function(item) {
+    var card = item.querySelector('.schedule-card');
     if (!card) return;
 
+    var startX = 0;
+    var currentX = 0;
+    var isDragging = false;
+    var threshold = 50;
+
     card.addEventListener('touchstart', function(e) {
-      startX      = e.touches[0].clientX;
-      startY      = e.touches[0].clientY;
-      startedOpen = (currentOpenCard === card);
-      isHoriz     = null;
-      card.style.transition = 'none';
+      if (currentOpenCard && currentOpenCard !== item) closeOpenCard();
+      startX = e.touches[0].clientX;
+      isDragging = true;
     }, { passive: true });
 
     card.addEventListener('touchmove', function(e) {
-      var dx = e.touches[0].clientX - startX;
-      var dy = e.touches[0].clientY - startY;
-
-      if (isHoriz === null) {
-        isHoriz = Math.abs(dx) > Math.abs(dy);
-        if (!isHoriz) return;
-        if (currentOpenCard && currentOpenCard !== card) closeOpenCard();
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX;
+      var delta = startX - currentX;
+      if (delta > 0 && delta < 152) {
+        card.style.transition = 'none';
+        card.style.transform = 'translateX(' + (-delta) + 'px)';
       }
-      if (!isHoriz) return;
+    }, { passive: true });
 
-      e.preventDefault();
-      var base = startedOpen ? -SWIPE_WIDTH : 0;
-      var x    = Math.min(0, Math.max(-SWIPE_WIDTH, base + dx));
-      card.style.transform = 'translateX(' + x + 'px)';
-    }, { passive: false });
-
-    card.addEventListener('touchend', function(e) {
-      if (!isHoriz) return;
-      var dx        = e.changedTouches[0].clientX - startX;
-      var base      = startedOpen ? -SWIPE_WIDTH : 0;
-      var finalX    = Math.min(0, Math.max(-SWIPE_WIDTH, base + dx));
-      var threshold = SWIPE_WIDTH * 0.35;
-
-      card.style.transition = 'transform 0.25s ease';
-
-      if (finalX < -threshold) {
-        card.style.transform = 'translateX(-' + SWIPE_WIDTH + 'px)';
-        currentOpenCard = card;
+    card.addEventListener('touchend', function() {
+      if (!isDragging) return;
+      isDragging = false;
+      var delta = startX - currentX;
+      if (delta > threshold) {
+        card.style.transition = 'transform 0.25s ease';
+        card.style.transform = 'translateX(-152px)';
+        currentOpenCard = item;
       } else {
+        card.style.transition = 'transform 0.25s ease';
         card.style.transform = 'translateX(0)';
-        if (currentOpenCard === card) currentOpenCard = null;
+        currentOpenCard = null;
       }
+    });
+  });
+
+  var doneBtns = container.querySelectorAll('.swipe-btn--done');
+  doneBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var item = btn.closest('.schedule-item');
+      if (!item) return;
+      var id = item.querySelector('.schedule-card').dataset.id;
+      if (id) markDone(Number(id), item);
+    });
+  });
+
+  var deleteBtns = container.querySelectorAll('.swipe-btn--delete');
+  deleteBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var item = btn.closest('.schedule-item');
+      if (!item) return;
+      var id = item.querySelector('.schedule-card').dataset.id;
+      if (id) deleteWorkout(Number(id), item);
     });
   });
 }
 
-// ─── Шаблон карточки ───────────────────────────────
-function buildCardHTML(w, i) {
-  var time   = w.start_time ? w.start_time.slice(0, 5) : '--:--';
-  var color  = CARD_COLORS[i % CARD_COLORS.length];
-  var name   = w.client_name || 'Клиент';
-  var title  = w.title || 'Тренировка';
-  var id     = w.id || '';
+function buildCardHTML(w, index) {
   var isDone = w.status === 'done';
+  var color  = CARD_COLORS[index % CARD_COLORS.length];
+  var time   = (w.start_time || '09:00').substring(0, 5);
+  var title  = w.title || 'Тренировка';
+  var name   = w.client_name || 'Клиент';
+  var id     = w.id;
+
   return (
     '<div class="schedule-item">' +
       '<div class="swipe-wrapper">' +
         '<div class="swipe-actions">' +
-          '<button class="swipe-btn swipe-btn--done"   data-id="' + id + '">✓<br>Проведена</button>' +
-          '<button class="swipe-btn swipe-btn--delete" data-id="' + id + '">🗑<br>Удалить</button>' +
+          '<button class="swipe-btn swipe-btn--done">✓<br>Готово</button>' +
+          '<button class="swipe-btn swipe-btn--delete">✕<br>Удалить</button>' +
         '</div>' +
         '<div class="schedule-card ' + (isDone ? 'schedule-card--done' : 'schedule-card--' + color) + '" data-id="' + id + '">' +
           (isDone ? '' : '<span class="schedule-card__time">' + time + '</span>') +
@@ -533,7 +493,7 @@ function renderScheduleWorkouts() {
   initSwipes(listEl);
 }
 
-// ─── Инициализация WorkoutsStore ───────────────────
+// ─── Инициализация WorkoutsStore ──────────────────
 if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.subscribe(function(workouts) {
     allWorkouts = applyLocalCache(workouts);
@@ -551,5 +511,8 @@ if (trainerTgId && window.WorkoutsStore) {
   if (schedList) schedList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
 }
 
-// ─── Запуск главного календаря ─────────────────────
+// ─── Инициализация календарей ──────────────────────
 buildHomeCalendar();
+rebuildScheduleCalendar();
+
+console.log('[app] инициализация завершена');
