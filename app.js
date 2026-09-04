@@ -322,7 +322,6 @@ function markDone(workoutId, itemEl) {
         console.warn('[app] ошибка обновления статуса:', res.error.message);
       } else {
         console.log('[app] статус обновлён в БД:', workoutId);
-        // После подтверждения из БД можно убрать из локального кэша
         delete localDoneIds[id];
       }
     });
@@ -333,16 +332,12 @@ function deleteWorkout(workoutId, itemEl) {
   if (!workoutId) return;
   var id = String(workoutId);
 
-  // Сохраняем в локальный кэш удалённых — не уберём из localDeletedIds
-  // пока не придёт подтверждение из БД
   localDeletedIds[id] = true;
 
-  // Убираем из массива
   allWorkouts = allWorkouts.filter(function(w) {
     return String(w.id) !== id;
   });
 
-  // Анимация
   itemEl.style.transition = 'opacity 0.25s ease, max-height 0.3s ease';
   itemEl.style.overflow   = 'hidden';
   itemEl.style.maxHeight  = itemEl.offsetHeight + 'px';
@@ -360,21 +355,39 @@ function deleteWorkout(workoutId, itemEl) {
         console.warn('[app] ошибка удаления:', res.error.message);
       } else {
         console.log('[app] deleted=true записано в БД:', workoutId);
-        // Убираем из кэша — теперь БД сама не вернёт эту запись
         delete localDeletedIds[id];
+        
+        // НОВОЕ: Удаляем из Google Calendar через бота
+        deleteFromGoogleCalendar(workoutId);
       }
     });
+}
+
+// ─── НОВОЕ: Удаление из Google Calendar ────────────
+function deleteFromGoogleCalendar(workoutId) {
+  if (!tg || !tg.sendData) {
+    console.warn('[calendar] Telegram WebApp sendData недоступен');
+    return;
+  }
+  
+  try {
+    tg.sendData(JSON.stringify({
+      action: 'delete_calendar_event',
+      workout_id: workoutId
+    }));
+    console.log('[calendar] Команда на удаление отправлена боту:', workoutId);
+  } catch (e) {
+    console.error('[calendar] Ошибка отправки команды:', e);
+  }
 }
 
 // ─── Применяем локальный кэш к данным из стора ─────
 function applyLocalCache(workouts) {
   return workouts
     .filter(function(w) {
-      // Убираем то, что удалили локально (до подтверждения из БД)
       return !localDeletedIds[String(w.id)];
     })
     .map(function(w) {
-      // Применяем локальный статус done (до подтверждения из БД)
       if (localDoneIds[String(w.id)]) {
         return Object.assign({}, w, { status: 'done' });
       }
@@ -524,7 +537,6 @@ function renderScheduleWorkouts() {
 // ─── Инициализация WorkoutsStore ───────────────────
 if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.subscribe(function(workouts) {
-    // Применяем локальный кэш: убираем удалённые, восстанавливаем done
     allWorkouts = applyLocalCache(workouts);
     console.log('[app] тренировок после фильтра:', allWorkouts.length);
     renderHomeWorkouts();
