@@ -72,7 +72,7 @@
 | Секреты | ✅ Настроены | BOT_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GOOGLE_CREDENTIALS_JSON, WEBAPP_URL в Replit Secrets |
 
 ### Таблицы Supabase ✅
-`users`, `clients`, `workouts`, `programs`, `exercises`, `triggers`, `trigger_logs`, `referrals`, `public_profiles`
+`users`, `clients`, `workouts`, `programs`, `exercises`, `triggers`, `trigger_logs`, `referrals`, `public_profiles`, 'calendar_delete_queue'
 
 ### Фронтенд — что реализовано
 - [x] Каркас интерфейса: 4 вкладки + FAB-кнопка по центру
@@ -81,6 +81,7 @@
 - [x] Вкладка «Главная»: список тренировок на день (карточки с цветами)
 - [x] Вкладка «Главная»: свайп по карточке → **Проведена** / **Удалить**
 - [x] `WorkoutsStore.js`: загрузка тренировок из Supabase + realtime-подписка
+- [x] Вкладка «Главная»: свайп по карточке → **Удалить** → удаление из Google Calendar
 - [ ] Вкладка «Расписание» — не реализована, делаем с нуля
 - [ ] Вкладки «Клиенты» и «Программы» — только заглушки
 
