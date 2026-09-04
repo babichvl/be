@@ -268,20 +268,31 @@ function closeOpenCard() {
 }
 
 function markDone(workoutId, itemEl) {
-  if (!workoutId) return;
+  console.log('[action] markDone() вызвана, workoutId =', workoutId);
+  
+  if (!workoutId) {
+    console.warn('[action] workoutId пуст, выходим');
+    return;
+  }
   var id = String(workoutId);
 
   // Сохраняем в локальный кэш
   localDoneIds[id] = true;
+  console.log('[action] добавил в localDoneIds, сейчас =', localDoneIds);
 
   // Обновляем в массиве
   allWorkouts = allWorkouts.map(function(w) {
-    if (String(w.id) === id) return Object.assign({}, w, { status: 'done' });
+    if (String(w.id) === id) {
+      console.log('[action] нашли workout, меняем status на done');
+      return Object.assign({}, w, { status: 'done' });
+    }
     return w;
   });
 
   // Визуально
   var card = itemEl.querySelector('.schedule-card');
+  console.log('[action] card найдена:', !!card);
+  
   if (card) {
     card.className = 'schedule-card schedule-card--done';
     var timeEl = card.querySelector('.schedule-card__time');
@@ -298,6 +309,7 @@ function markDone(workoutId, itemEl) {
   currentOpenCard = null;
 
   // Пишем в Supabase
+  console.log('[action] отправляю UPDATE в Supabase для', workoutId);
   sb.from('workouts')
     .update({ 
       status: 'done',
@@ -306,11 +318,64 @@ function markDone(workoutId, itemEl) {
     .eq('id', workoutId)
     .then(function(res) {
       if (res.error) {
-        console.warn('[app] ошибка обновления статуса:', res.error.message);
+        console.warn('[action] ❌ ошибка UPDATE:', res.error.message);
       } else {
-        console.log('[app] статус обновлён в БД:', workoutId);
+        console.log('[action] ✅ UPDATE успешно, удаляю из localDoneIds');
         delete localDoneIds[id];
       }
+    })
+    .catch(function(e) {
+      console.error('[action] ❌ ошибка запроса:', e);
+    });
+}
+
+function deleteWorkout(workoutId, itemEl) {
+  console.log('[action] deleteWorkout() вызвана, workoutId =', workoutId);
+  
+  if (!workoutId) {
+    console.warn('[action] workoutId пуст, выходим');
+    return;
+  }
+  var id = String(workoutId);
+
+  localDeletedIds[id] = true;
+  console.log('[action] добавил в localDeletedIds, сейчас =', localDeletedIds);
+
+  allWorkouts = allWorkouts.filter(function(w) {
+    return String(w.id) !== id;
+  });
+
+  itemEl.style.transition = 'opacity 0.25s ease, max-height 0.3s ease';
+  itemEl.style.overflow   = 'hidden';
+  itemEl.style.maxHeight  = itemEl.offsetHeight + 'px';
+  itemEl.style.opacity    = '0';
+  
+  requestAnimationFrame(function() { itemEl.style.maxHeight = '0'; });
+  setTimeout(function() { 
+    console.log('[action] удаляю itemEl из DOM');
+    itemEl.remove(); 
+  }, 300);
+  
+  currentOpenCard = null;
+
+  // Мягкое удаление в Supabase
+  console.log('[action] отправляю UPDATE deleted=true в Supabase для', workoutId);
+  sb.from('workouts')
+    .update({ 
+      deleted: true,
+      updated_at_supabase: new Date().toISOString()
+    })
+    .eq('id', workoutId)
+    .then(function(res) {
+      if (res.error) {
+        console.warn('[action] ❌ ошибка UPDATE:', res.error.message);
+      } else {
+        console.log('[action] ✅ UPDATE deleted=true успешно');
+        delete localDeletedIds[id];
+      }
+    })
+    .catch(function(e) {
+      console.error('[action] ❌ ошибка запроса:', e);
     });
 }
 
