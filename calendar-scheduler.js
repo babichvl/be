@@ -140,7 +140,7 @@ var CalendarScheduler = (function() {
   }
 
   function attachEventListeners() {
-    // Переключение вида
+    // Переключение вида 
     var viewBtns = container.querySelectorAll('.calendar-view-toggle button');
     viewBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
