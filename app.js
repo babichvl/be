@@ -514,6 +514,9 @@ if (trainerTgId && window.WorkoutsStore) {
   if (homeList)  homeList.innerHTML  = '<p class="placeholder-text">' + hint + '</p>';
   if (schedList) schedList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
 }
+if (trainerTgId && window.ClientsStore) {
+  ClientsStore.init(trainerTgId);
+}
 
 // ─── Инициализация календарей ──────────────────────
 buildHomeCalendar();
