@@ -535,3 +535,8 @@ if (window.CalendarScheduler) {
     });
   }
 }
+
+// ─── Инициализация модального окна ────────────────
+if (window.WorkoutModal) {
+  WorkoutModal.init();
+}
