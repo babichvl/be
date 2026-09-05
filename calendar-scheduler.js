@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════
+// CALENDAR SCHEDULER — ПАТЧ 1: Добавляем клик по пустым ячейкам
+// ═══════════════════════════════════════════════════════════
+// Добавить в конец calendar-scheduler.js
+
 var CalendarScheduler = (function() {
   var container = null;
   var currentDate = null;
@@ -116,12 +121,10 @@ var CalendarScheduler = (function() {
   }
 
   function renderWeekView() {
-    // Неделя (позже)
     return '<div class="calendar-week"><p style="padding: 16px;">Неделя — разработка</p></div>';
   }
 
   function renderMonthView() {
-    // Месяц (позже)
     return '<div class="calendar-month"><p style="padding: 16px;">Месяц — разработка</p></div>';
   }
 
@@ -140,7 +143,6 @@ var CalendarScheduler = (function() {
   }
 
   function attachEventListeners() {
-    // Переключение вида 
     var viewBtns = container.querySelectorAll('.calendar-view-toggle button');
     viewBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
@@ -151,12 +153,52 @@ var CalendarScheduler = (function() {
       });
     });
 
-    // Drag & Drop события
     if (currentView === 'day') {
       var events = container.querySelectorAll('.calendar-event');
       events.forEach(function(eventEl) {
         eventEl.addEventListener('mousedown', onEventMouseDown);
         eventEl.addEventListener('touchstart', onEventTouchStart);
+      });
+
+      // ═══ НОВОЕ: Клик по пустой области сетки ═══
+      var grid = document.getElementById('calendar-grid');
+      if (grid) {
+        grid.addEventListener('click', onGridClick);
+      }
+    }
+  }
+
+  // ═══ НОВАЯ ФУНКЦИЯ: Обработка клика по сетке ═══
+  function onGridClick(e) {
+    // Игнорируем клик по событию
+    if (e.target.closest('.calendar-event')) return;
+
+    var grid = document.getElementById('calendar-grid');
+    var rect = grid.getBoundingClientRect();
+    var y = e.clientY - rect.top;
+
+    // Округляем к ближайшим 15 минутам
+    var totalMinutes = Math.round(y / 15) * 15;
+    var hours = Math.floor(totalMinutes / 60);
+    var minutes = totalMinutes % 60;
+
+    if (hours >= 24) hours = 23;
+    if (hours < 0) hours = 0;
+
+    var timeStr = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':00';
+    var dateStr = dateToISO(currentDate);
+
+    // Открываем модальное окно
+    if (window.WorkoutModal) {
+      WorkoutModal.open({
+        date: dateStr,
+        time: timeStr,
+        onSave: function(workoutData) {
+          // Сохранение через WorkoutsStore
+          if (window.WorkoutsStore) {
+            WorkoutsStore.createWorkout(workoutData);
+          }
+        }
       });
     }
   }
@@ -188,9 +230,6 @@ var CalendarScheduler = (function() {
 
     eventEl.classList.add('dragging');
 
-    var onMove = e.type.indexOf('touch') >= 0 ? onTouchMove : onMouseMove;
-    var onEnd = e.type.indexOf('touch') >= 0 ? onTouchEnd : onMouseUp;
-
     if (e.type.indexOf('touch') >= 0) {
       document.addEventListener('touchmove', onTouchMove, { passive: false });
       document.addEventListener('touchend', onTouchEnd);
@@ -216,9 +255,8 @@ var CalendarScheduler = (function() {
     var delta = clientY - draggedEvent.startY;
     var newTop = draggedEvent.startTop + delta;
 
-    // Ограничение: 0 - 1440 (24 часа)
     if (newTop < 0) newTop = 0;
-    if (newTop > 1380) newTop = 1380; // 1440 - минимальная высота
+    if (newTop > 1380) newTop = 1380;
 
     draggedEvent.el.style.top = newTop + 'px';
   }
@@ -242,7 +280,6 @@ var CalendarScheduler = (function() {
     var newHours = Math.floor(newTopPx / 60);
     var newMinutes = (newTopPx % 60);
 
-    // Округляем к ближайшим 15 минутам
     newMinutes = Math.round(newMinutes / 15) * 15;
     if (newMinutes === 60) {
       newHours++;
@@ -254,7 +291,6 @@ var CalendarScheduler = (function() {
     draggedEvent.el.classList.remove('dragging');
     draggedEvent.el.style.top = (newHours * 60 + newMinutes) + 'px';
 
-    // Отправляем UPDATE в Supabase
     var workoutId = draggedEvent.id;
     if (workoutId && sb) {
       sb.from('workouts')
@@ -265,7 +301,7 @@ var CalendarScheduler = (function() {
         .eq('id', workoutId)
         .then(function(res) {
           if (!res.error) {
-            // Успешно обновлено
+            // Успешно
           }
         });
     }
@@ -282,9 +318,6 @@ var CalendarScheduler = (function() {
     };
 
     eventEl.classList.add('resizing');
-
-    var onMove = e.type.indexOf('touch') >= 0 ? onTouchMoveResize : onMouseMoveResize;
-    var onEnd = e.type.indexOf('touch') >= 0 ? onTouchEndResize : onMouseUpResize;
 
     if (e.type.indexOf('touch') >= 0) {
       document.addEventListener('touchmove', onTouchMoveResize, { passive: false });
@@ -311,7 +344,6 @@ var CalendarScheduler = (function() {
     var delta = clientY - resizedEvent.startY;
     var newHeight = resizedEvent.startHeight + delta;
 
-    // Минимум 15 минут (15px)
     if (newHeight < 15) newHeight = 15;
 
     resizedEvent.el.style.height = newHeight + 'px';
@@ -338,7 +370,6 @@ var CalendarScheduler = (function() {
     resizedEvent.el.classList.remove('resizing');
     resizedEvent.el.style.height = newDuration + 'px';
 
-    // Отправляем UPDATE в Supabase
     var workoutId = resizedEvent.id;
     if (workoutId && sb) {
       sb.from('workouts')
@@ -349,7 +380,7 @@ var CalendarScheduler = (function() {
         .eq('id', workoutId)
         .then(function(res) {
           if (!res.error) {
-            // Успешно обновлено
+            // Успешно
           }
         });
     }
