@@ -255,12 +255,19 @@ var WorkoutModal = (function() {
     }, 10);
   }
 
-  function close() {
-    modal.classList.remove('active');
-    setTimeout(function() {
-      overlay.classList.remove('active');
-    }, 300);
-  }
+function close() {
+  modal.classList.remove('active');
+  setTimeout(function() {
+    overlay.classList.remove('active');
+    
+    // Сбрасываем кнопку
+    var saveBtn = document.getElementById('modal-save');
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Сохранить';
+    }
+  }, 300);
+}
 
   function updateSubtitle() {
     var subtitle = document.getElementById('modal-subtitle');
@@ -421,34 +428,54 @@ var WorkoutModal = (function() {
     });
   }
 
-  function save() {
-    if (!selectedClient) return;
+function save() {
+  if (!selectedClient) return;
 
-    var dateInput = document.getElementById('workout-date');
-    var timeInput = document.getElementById('workout-time');
-    var costInput = document.getElementById('workout-cost');
+  var dateInput = document.getElementById('workout-date');
+  var timeInput = document.getElementById('workout-time');
+  var costInput = document.getElementById('workout-cost');
+  
+  var durationChip = document.querySelector('[data-duration].active');
+  var duration = durationChip ? parseInt(durationChip.dataset.duration, 10) : 60;
+
+  var workoutData = {
+    client_id: selectedClient.id,
+    client_name: selectedClient.name,
+    type: selectedType,
+    workout_date: dateInput.value || workoutDate,
+    start_time: timeInput.value || workoutTime,
+    duration: duration,
+    cost: costInput.value ? parseFloat(costInput.value) : null,
+    status: 'planned',
+    trainer_tg_id: window.trainerTgId
+  };
+
+  // Блокируем кнопку
+  var saveBtn = document.getElementById('modal-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Сохранение...';
+
+  if (onSaveCallback) {
+    var result = onSaveCallback(workoutData);
     
-    var durationChip = document.querySelector('[data-duration].active');
-    var duration = durationChip ? parseInt(durationChip.dataset.duration, 10) : 60;
-
-    var workoutData = {
-      client_id: selectedClient.id,
-      client_name: selectedClient.name,
-      type: selectedType,
-      workout_date: dateInput.value || workoutDate,
-      start_time: timeInput.value || workoutTime,
-      duration: duration,
-      cost: costInput.value ? parseFloat(costInput.value) : null,
-      status: 'planned',
-      trainer_tg_id: trainerTgId
-    };
-
-    if (onSaveCallback) {
-      onSaveCallback(workoutData);
+    if (result && result.then) {
+      result
+        .then(function() {
+          close();
+        })
+        .catch(function(error) {
+          console.error('[WorkoutModal] Ошибка:', error);
+          alert('Ошибка сохранения: ' + (error.message || 'Неизвестная ошибка'));
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Сохранить';
+        });
+    } else {
+      close();
     }
-
+  } else {
     close();
   }
+}
 
   return {
     init: init,
