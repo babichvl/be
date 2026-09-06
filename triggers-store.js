@@ -123,48 +123,72 @@ var TriggersStore = (function() {
     };
   }
 
-  function loadAll() {
-    if (!trainerId || !window.sb) {
-      console.warn('[TriggersStore] trainerId или sb не инициализирован');
-      return;
-    }
+function loadAll() {
+  if (!trainerId || !window.sb) {
+    console.warn('[TriggersStore] trainerId или sb не инициализирован');
+    return;
+  }
 
-    console.log('[TriggersStore] Загружаем триггеры для trainer_id:', trainerId);
+  console.log('[TriggersStore] Загружаем триггеры для trainer_id:', trainerId);
 
-    window.sb
-      .from('trigger_settings')
-      .select('*')
-      .eq('trainer_id', trainerId)
-      .then(function(res) {
-        if (res.error) {
-          console.error('[TriggersStore] Ошибка загрузки:', res.error);
-          items = createDefaultTriggers();
-          notify();
-          return;
-        }
-
-        if (!res.data || res.data.length === 0) {
-          console.log('[TriggersStore] Триггеров не найдено, создаю по умолчанию');
-          items = createDefaultTriggers();
-          notify();
-          return;
-        }
-
-        // Мергуем с определениями
-        items = res.data.map(function(row) {
-          var def = TRIGGER_DEFINITIONS.find(function(d) { return d.key === row.trigger_key; });
-          return Object.assign({}, def || {}, row, { key: row.trigger_key });
-        });
-
-        console.log('[TriggersStore] ✅ Загружены триггеры:', items.length);
-        notify();
-      })
-      .catch(function(err) {
-        console.error('[TriggersStore] Ошибка при запросе:', err);
+  window.sb
+    .from('trigger_settings')
+    .select('*')
+    .eq('trainer_id', trainerId)
+    .then(function(res) {
+      if (res.error) {
+        console.error('[TriggersStore] Ошибка загрузки:', res.error);
         items = createDefaultTriggers();
         notify();
+        return;
+      }
+
+      if (!res.data) {
+        items = createDefaultTriggers();
+        notify();
+        return;
+      }
+
+      // Мержим: берём из БД, дополняем дефолтами
+      var dbTriggers = {};
+      res.data.forEach(function(row) {
+        dbTriggers[row.trigger_key] = row;
       });
-  }
+
+      items = TRIGGER_DEFINITIONS.map(function(def) {
+        var dbData = dbTriggers[def.key];
+        
+        if (dbData) {
+          // Есть в БД — используем БД + дефолт
+          return Object.assign({}, def, dbData, { key: def.key, trigger_key: def.key });
+        } else {
+          // Нет в БД — создаём из дефолта
+          return {
+            key: def.key,
+            trigger_key: def.key,
+            trainer_id: trainerId,
+            icon: def.icon,
+            title: def.title,
+            description: def.description,
+            is_enabled: true,
+            bonus_type: def.defaultBonus.type,
+            bonus_value: def.defaultBonus.value,
+            message_text: def.defaultMessage,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+        }
+      });
+
+      console.log('[TriggersStore] ✅ Загружены триггеры:', items.length);
+      notify();
+    })
+    .catch(function(err) {
+      console.error('[TriggersStore] Ошибка при запросе:', err);
+      items = createDefaultTriggers();
+      notify();
+    });
+}
 
   function createDefaultTriggers() {
     return TRIGGER_DEFINITIONS.map(function(def) {
