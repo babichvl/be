@@ -24,22 +24,48 @@
   --radius-full: 999px;
 }
 
+:root {
+  --surface-0: #F5F5F7;
+  --surface-1: #FFFFFF;
+  --surface-2: #FAFAFA;
+  --text-primary: #1C1C1E;
+  --text-secondary: #8E8E93;
+  --accent: #7B7BFF;
+  --accent-hover: #6B6BEF;
+  --border: rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-active: 0 12px 32px rgba(91, 91, 255, 0.35);
+  --sp-8: 8px;
+  --sp-12: 12px;
+  --sp-16: 16px;
+  --sp-20: 20px;
+  --sp-24: 24px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+}
+
 html,
-body,
-* {
+body {
   touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
   -webkit-touch-callout: none;
 }
 
-/* Разрешаем выделение текста в input полях */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Разрешаем селект в input */
 input,
-textarea {
+textarea,
+button,
+a {
   -webkit-user-select: text;
   user-select: text;
 }
-
 /* ========================================
    БАЗОВЫЕ СТИЛИ
    ======================================== */
