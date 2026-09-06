@@ -122,7 +122,7 @@ body {
   position: relative;
   padding: 16px;
   padding-top: 16px;
-  min-height: 100px;  ← Было 72px, теперь 100px
+  min-height: 110px;  ← Было 72px, теперь 100px
   background: var(--surface-0);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
