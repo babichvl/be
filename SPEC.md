@@ -3,6 +3,86 @@
 > **Для разработчика:** в начале каждой сессии прочитай этот файл и папку проекта на GitHub,
 > чтобы иметь актуальный контекст. Файлы фронтенда: 'app.js', 'calendar-scheduler.css', 'calendar-scheduler.js', 'clients-store.js', 'clients-ui.js', 'clients.css', 'index.html', 'style.css', 'triggers-store.js', 'triggers-store.js', 'workout-modal.css', 'workout-modal.js', 'workouts-store.js'.
 
+## Файлы проекта (GitHub: babichvl/be)
+
+### ОСНОВНОЕ ПРИЛОЖЕНИЕ
+```
+index.html                     | Основная разметка, структура, все вкладки, модальные окна
+app.js                         | Инициализация приложения, управление вкладками, Telegram WebApp
+style.css                      | Глобальные стили, переменные, адаптивность
+```
+
+### STORE'Ы (управление данными)
+```
+workouts-store.js             | Загрузка тренировок из Supabase, realtime-синхронизация
+clients-store.js              | CRUD операции с клиентами, связь trainer↔client
+triggers-store.js             | Загрузка 12 триггеров, сохранение настроек в trigger_settings
+```
+
+### UI-КОМПОНЕНТЫ (интерфейс, вкладки)
+```
+clients-ui.js                 | Вкладка "Клиенты": список клиентов, добавление, модальные окна
+clients.css                   | Стили для вкладки "Клиенты" и её элементов
+triggers-ui.js                | "Сообщения/Триггеры": 12 карточек, редактирование, модальные окна
+```
+
+### РАСПИСАНИЕ (вкладка "Расписание")
+```
+calendar-scheduler.js         | Сетка часов на день (08:00-22:00, 15-мин интервалы)
+calendar-scheduler.css        | Стили сетки, layout, ячейки, цвета тренировок
+```
+
+### МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ ТРЕНИРОВКИ
+```
+workout-modal.js              | Форма добавления тренировки (клиент, тип, время, проверка конфликтов)
+workout-modal.css             | Стили окна, overlay, анимация показа/скрытия
+```
+
+---
+
+## Порядок подключения скриптов в index.html
+
+```html
+<!-- 1. ОСНОВНОЕ -->
+<script src="app.js"></script>
+
+<!-- 2. STORE'Ы (ДАННЫЕ) -->
+<script src="workouts-store.js"></script>
+<script src="clients-store.js"></script>
+<script src="triggers-store.js"></script>
+
+<!-- 3. UI (ИНТЕРФЕЙС) -->
+<script src="clients-ui.js"></script>
+<script src="triggers-ui.js"></script>
+
+<!-- 4. КОМПОНЕНТЫ -->
+<script src="calendar-scheduler.js"></script>
+<script src="workout-modal.js"></script>
+```
+
+---
+
+## Структура по функциональности
+
+### Вкладка "Главная"
+- **HTML:** `index.html` (div#home-content)
+- **Стили:** `style.css`
+- **Логика:** `app.js` + `workouts-store.js`
+
+### Вкладка "Расписание"
+- **HTML:** `index.html` (div#schedule-content)
+- **Стили:** `style.css`, `calendar-scheduler.css`, `workout-modal.css`
+- **Логика:** `calendar-scheduler.js` + `workout-modal.js` + `workouts-store.js`
+
+### Вкладка "Клиенты"
+- **HTML:** `index.html` (div#clients-content)
+- **Стили:** `style.css`, `clients.css`
+- **Логика:** `clients-ui.js` + `clients-store.js` + `triggers-ui.js` + `triggers-store.js`
+
+### Вкладка "Программы"
+- **HTML:** `index.html` (div#programs-content)
+- **Логика:** TBD (заглушка)
+
 ---
 ## Инструкция для ИИ-разработчика (читать в начале каждой сессии)
 
