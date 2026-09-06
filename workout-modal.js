@@ -230,30 +230,29 @@ var WorkoutModal = (function() {
     });
   }
 
-  function open(options) {
-    options = options || {};
-    workoutDate = options.date || null;
-    workoutTime = options.time || null;
-    onSaveCallback = options.onSave || null;
+function open(options) {
+  options = options || {};
+  workoutDate = options.date || null;
+  workoutTime = options.time || null;
+  onSaveCallback = options.onSave || null;
 
-    selectedClient = null;
-    selectedType = 'personal';
+  selectedClient = null;
+  selectedType = 'personal';
 
-    // Подставляем дату и время в подзаголовок
-    updateSubtitle();
+  updateSubtitle();
+  resetForm();
+  loadClients();
 
-    // Сбрасываем форму
-    resetForm();
+  // ← ДОБАВЬ ЭТИ СТРОКИ:
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
 
-    // Загружаем клиентов
-    loadClients();
-
-    // Показываем
-    overlay.classList.add('active');
-    setTimeout(function() {
-      modal.classList.add('active');
-    }, 10);
-  }
+  overlay.classList.add('active');
+  setTimeout(function() {
+    modal.classList.add('active');
+  }, 10);
+}
 
   function close() {
     modal.classList.remove('active');
