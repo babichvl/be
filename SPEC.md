@@ -1,8 +1,7 @@
 # GymBro — Техническое задание и план разработки
 
 > **Для разработчика:** в начале каждой сессии прочитай этот файл и папку проекта на GitHub,
-> чтобы иметь актуальный контекст. Файлы фронтенда: `index.html`, `app.js`, `style.css`,
-> `workouts-store.js`, `clients-store.js`, `triggers-store.js`.
+> чтобы иметь актуальный контекст. Файлы фронтенда: 'app.js', 'calendar-scheduler.css', 'calendar-scheduler.js', 'clients-store.js', 'clients-ui.js', 'clients.css', 'index.html', 'style.css', 'triggers-store.js', 'triggers-store.js', 'workout-modal.css', 'workout-modal.js', 'workouts-store.js'.
 
 ---
 ## Инструкция для ИИ-разработчика (читать в начале каждой сессии)
