@@ -123,72 +123,69 @@ var TriggersStore = (function() {
     };
   }
 
-function loadAll() {
-  if (!trainerId || !window.sb) {
-    console.warn('[TriggersStore] trainerId или sb не инициализирован');
-    return;
-  }
+  function loadAll() {
+    if (!trainerId || !window.sb) {
+      console.warn('[TriggersStore] trainerId или sb не инициализирован');
+      return;
+    }
 
-  console.log('[TriggersStore] Загружаем триггеры для trainer_id:', trainerId);
+    console.log('[TriggersStore] Загружаем триггеры для trainer_id:', trainerId);
 
-  window.sb
-    .from('trigger_settings')
-    .select('*')
-    .eq('trainer_id', trainerId)
-    .then(function(res) {
-      if (res.error) {
-        console.error('[TriggersStore] Ошибка загрузки:', res.error);
-        items = createDefaultTriggers();
-        notify();
-        return;
-      }
-
-      if (!res.data) {
-        items = createDefaultTriggers();
-        notify();
-        return;
-      }
-
-      // Мержим: берём из БД, дополняем дефолтами
-      var dbTriggers = {};
-      res.data.forEach(function(row) {
-        dbTriggers[row.trigger_key] = row;
-      });
-
-      items = TRIGGER_DEFINITIONS.map(function(def) {
-        var dbData = dbTriggers[def.key];
-        
-        if (dbData) {
-          // Есть в БД — используем БД + дефолт
-          return Object.assign({}, def, dbData, { key: def.key, trigger_key: def.key });
-        } else {
-          // Нет в БД — создаём из дефолта
-          return {
-            key: def.key,
-            trigger_key: def.key,
-            trainer_id: trainerId,
-            icon: def.icon,
-            title: def.title,
-            description: def.description,
-            is_enabled: true,
-            bonus_type: def.defaultBonus.type,
-            bonus_value: def.defaultBonus.value,
-            message_text: def.defaultMessage,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          };
+    window.sb
+      .from('trigger_settings')
+      .select('*')
+      .eq('trainer_id', trainerId)
+      .then(function(res) {
+        if (res.error) {
+          console.error('[TriggersStore] Ошибка загрузки:', res.error);
+          items = createDefaultTriggers();
+          notify();
+          return;
         }
-      });
 
-      console.log('[TriggersStore] ✅ Загружены триггеры:', items.length);
-      notify();
-    })
-    .catch(function(err) {
-      console.error('[TriggersStore] Ошибка при запросе:', err);
-      items = createDefaultTriggers();
-      notify();
-    });
-}
+        if (!res.data) {
+          items = createDefaultTriggers();
+          notify();
+          return;
+        }
+
+        // Мержим: берём из БД, дополняем дефолтами
+        var dbTriggers = {};
+        res.data.forEach(function(row) {
+          dbTriggers[row.trigger_key] = row;
+        });
+
+        items = TRIGGER_DEFINITIONS.map(function(def) {
+          var dbData = dbTriggers[def.key];
+          
+          if (dbData) {
+            return Object.assign({}, def, dbData, { key: def.key, trigger_key: def.key });
+          } else {
+            return {
+              key: def.key,
+              trigger_key: def.key,
+              trainer_id: trainerId,
+              icon: def.icon,
+              title: def.title,
+              description: def.description,
+              is_enabled: true,
+              bonus_type: def.defaultBonus.type,
+              bonus_value: def.defaultBonus.value,
+              message_text: def.defaultMessage,
+              created_at: new Date().toISOString()
+            };
+          }
+        });
+
+        console.log('[TriggersStore] ✅ Загружены триггеры:', items.length);
+        notify();
+      })
+      .catch(function(err) {
+        console.error('[TriggersStore] Ошибка при запросе:', err);
+        items = createDefaultTriggers();
+        notify();
+      });
+  }
 
   function createDefaultTriggers() {
     return TRIGGER_DEFINITIONS.map(function(def) {
@@ -215,7 +212,7 @@ function loadAll() {
     return items.find(function(item) { return item.key === key; });
   }
 
-function update(key, data) {
+  function update(key, data) {
     return new Promise(function(resolve, reject) {
       if (!window.sb) {
         reject(new Error('Supabase не инициализирован'));
@@ -228,14 +225,40 @@ function update(key, data) {
         return;
       }
 
-      // Определи поля для обновления
       var updateData = {};
       if (data.is_enabled !== undefined) updateData.is_enabled = data.is_enabled;
       if (data.bonus_type !== undefined) updateData.bonus_type = data.bonus_type;
       if (data.bonus_value !== undefined) updateData.bonus_value = data.bonus_value;
       if (data.message_text !== undefined) updateData.message_text = data.message_text;
 
-      // НЕ добавляем updated_at - её нет в таблице!
+      console.log('[TriggersStore] Обновляю триггер:', key, updateData);
+
+      window.sb
+        .from('trigger_settings')
+        .update(updateData)
+        .eq('trainer_id', trainerId)
+        .eq('trigger_key', key)
+        .then(function(res) {
+          if (res.error) {
+            console.error('[TriggersStore] Ошибка обновления:', res.error);
+            reject(res.error);
+            return;
+          }
+
+          items = items.map(function(item) {
+            if (item.key === key) {
+              return Object.assign({}, item, updateData);
+            }
+            return item;
+          });
+
+          console.log('[TriggersStore] ✅ Триггер обновлён');
+          notify();
+          resolve();
+        })
+        .catch(reject);
+    });
+  }
 
   function startRealtime() {
     if (!trainerId || !window.sb || channel) return;
@@ -264,7 +287,6 @@ function update(key, data) {
     trainerId = tgId;
     console.log('[TriggersStore] Инициализация с trainerId:', trainerId);
 
-    // Подожди пока Supabase загрузится
     var attempt = 0;
     var checkSb = setInterval(function() {
       attempt++;
@@ -274,7 +296,6 @@ function update(key, data) {
         loadAll();
         startRealtime();
 
-        // Переload при видимости страницы
         document.addEventListener('visibilitychange', function() {
           if (document.visibilityState === 'visible') loadAll();
         });
