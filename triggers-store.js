@@ -215,7 +215,7 @@ function loadAll() {
     return items.find(function(item) { return item.key === key; });
   }
 
-  function update(key, data) {
+function update(key, data) {
     return new Promise(function(resolve, reject) {
       if (!window.sb) {
         reject(new Error('Supabase не инициализирован'));
@@ -235,37 +235,7 @@ function loadAll() {
       if (data.bonus_value !== undefined) updateData.bonus_value = data.bonus_value;
       if (data.message_text !== undefined) updateData.message_text = data.message_text;
 
-      updateData.updated_at = new Date().toISOString();
-
-      console.log('[TriggersStore] Обновляю триггер:', key, updateData);
-
-      window.sb
-        .from('trigger_settings')
-        .update(updateData)
-        .eq('trainer_id', trainerId)
-        .eq('trigger_key', key)
-        .then(function(res) {
-          if (res.error) {
-            console.error('[TriggersStore] Ошибка обновления:', res.error);
-            reject(res.error);
-            return;
-          }
-
-          // Обнови локальный стейт
-          items = items.map(function(item) {
-            if (item.key === key) {
-              return Object.assign({}, item, updateData);
-            }
-            return item;
-          });
-
-          console.log('[TriggersStore] ✅ Триггер обновлён');
-          notify();
-          resolve();
-        })
-        .catch(reject);
-    });
-  }
+      // НЕ добавляем updated_at - её нет в таблице!
 
   function startRealtime() {
     if (!trainerId || !window.sb || channel) return;
