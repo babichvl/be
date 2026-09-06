@@ -53,11 +53,6 @@ body {
   -webkit-touch-callout: none;
 }
 
-body {
-  -webkit-user-select: none;
-  user-select: none;
-}
-
 /* Разрешаем селект в input */
 input,
 textarea,
