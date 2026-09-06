@@ -1,7 +1,6 @@
 // ═══════════════════════════════════════════════════════════
-// CALENDAR SCHEDULER — ПАТЧ 1: Добавляем клик по пустым ячейкам
+// CALENDAR SCHEDULER — День вид с перетаскиванием событий
 // ═══════════════════════════════════════════════════════════
-// Добавить в конец calendar-scheduler.js
 
 var CalendarScheduler = (function() {
   var container = null;
@@ -160,7 +159,7 @@ var CalendarScheduler = (function() {
         eventEl.addEventListener('touchstart', onEventTouchStart);
       });
 
-      // ═══ НОВОЕ: Клик по пустой области сетки ═══
+      // Клик по пустой области сетки
       var grid = document.getElementById('calendar-grid');
       if (grid) {
         grid.addEventListener('click', onGridClick);
@@ -168,7 +167,7 @@ var CalendarScheduler = (function() {
     }
   }
 
-  // ═══ НОВАЯ ФУНКЦИЯ: Обработка клика по сетке ═══
+  // Обработка клика по сетке для создания новой тренировки
   function onGridClick(e) {
     // Игнорируем клик по событию
     if (e.target.closest('.calendar-event')) return;
@@ -194,9 +193,8 @@ var CalendarScheduler = (function() {
         date: dateStr,
         time: timeStr,
         onSave: function(workoutData) {
-          // Сохранение через WorkoutsStore
           if (window.WorkoutsStore) {
-            WorkoutsStore.createWorkout(workoutData);
+            return WorkoutsStore.createWorkout(workoutData);
           }
         }
       });
@@ -273,60 +271,51 @@ var CalendarScheduler = (function() {
     document.removeEventListener('touchend', onTouchEnd);
   }
 
-═══════════════════════════════════════════════════════════
-// КРИТИЧНО: finishDrag() в calendar-scheduler.js
-// Убедись, что обновляется updated_at_supabase при перемещении!
-// ═══════════════════════════════════════════════════════════
+  function finishDrag() {
+    if (!draggedEvent) return;
 
-function finishDrag() {
-  if (!draggedEvent) return;
+    var newTopPx = parseInt(draggedEvent.el.style.top, 10);
+    var newHours = Math.floor(newTopPx / 60);
+    var newMinutes = (newTopPx % 60);
 
-  var newTopPx = parseInt(draggedEvent.el.style.top, 10);
-  var newHours = Math.floor(newTopPx / 60);
-  var newMinutes = (newTopPx % 60);
+    newMinutes = Math.round(newMinutes / 15) * 15;
+    if (newMinutes === 60) {
+      newHours++;
+      newMinutes = 0;
+    }
 
-  newMinutes = Math.round(newMinutes / 15) * 15;
-  if (newMinutes === 60) {
-    newHours++;
-    newMinutes = 0;
-  }
+    var newTime = String(newHours).padStart(2, '0') + ':' + String(newMinutes).padStart(2, '0') + ':00';
+    var correctTopPx = newHours * 60 + newMinutes;
 
-  var newTime = String(newHours).padStart(2, '0') + ':' + String(newMinutes).padStart(2, '0') + ':00';
-  var correctTopPx = newHours * 60 + newMinutes;
+    draggedEvent.el.classList.remove('dragging');
+    draggedEvent.el.style.top = correctTopPx + 'px';
 
-  draggedEvent.el.classList.remove('dragging');
-  draggedEvent.el.style.top = correctTopPx + 'px';
+    var workoutId = draggedEvent.id;
+    var oldTopPx = draggedEvent.startTop;
 
-  var workoutId = draggedEvent.id;
-  var oldTopPx = draggedEvent.startTop;
-
-  if (workoutId && sb) {
-    // ✅ КРИТИЧНО: ОБНОВЛЯЕМ updated_at_supabase!
-    // Это сообщает google_sync.py что данные в Supabase свежее
-    sb.from('workouts')
-      .update({
-        start_time: newTime,
-        updated_at_supabase: new Date().toISOString()  // ← ЭТОТ СТРОКА ОБЯЗАТЕЛЬНА!
-      })
-      .eq('id', workoutId)
-      .then(function(res) {
-        if (!res.error) {
-          console.log('[Drag] ✅ Тренировка перемещена:', workoutId, newTime);
-        } else {
-          console.error('[Drag] ❌ Ошибка обновления:', res.error);
+    if (workoutId && window.sb) {
+      window.sb.from('workouts')
+        .update({
+          start_time: newTime,
+          updated_at_supabase: new Date().toISOString()
+        })
+        .eq('id', workoutId)
+        .then(function(res) {
+          if (!res.error) {
+            console.log('[Drag] Тренировка перемещена:', workoutId, newTime);
+          } else {
+            console.error('[Drag] Ошибка обновления:', res.error);
+            draggedEvent.el.style.top = oldTopPx + 'px';
+          }
+        })
+        .catch(function(error) {
+          console.error('[Drag] Ошибка:', error);
           draggedEvent.el.style.top = oldTopPx + 'px';
-          alert('Ошибка при перемещении тренировки');
-        }
-      })
-      .catch(function(error) {
-        console.error('[Drag] ❌ Ошибка:', error);
-        draggedEvent.el.style.top = oldTopPx + 'px';
-        alert('Ошибка сети при перемещении тренировки');
-      });
-  }
+        });
+    }
 
-  draggedEvent = null;
-}
+    draggedEvent = null;
+  }
 
   function startResize(eventEl, e) {
     resizedEvent = {
@@ -380,44 +369,41 @@ function finishDrag() {
     document.removeEventListener('touchend', onTouchEndResize);
   }
 
-function finishResize() {
-  if (!resizedEvent) return;
+  function finishResize() {
+    if (!resizedEvent) return;
 
-  var newHeightPx = parseInt(resizedEvent.el.style.height, 10);
-  var newDuration = Math.max(15, Math.round(newHeightPx / 15) * 15);
+    var newHeightPx = parseInt(resizedEvent.el.style.height, 10);
+    var newDuration = Math.max(15, Math.round(newHeightPx / 15) * 15);
 
-  resizedEvent.el.classList.remove('resizing');
-  resizedEvent.el.style.height = newDuration + 'px';
+    resizedEvent.el.classList.remove('resizing');
+    resizedEvent.el.style.height = newDuration + 'px';
 
-  var workoutId = resizedEvent.id;
-  var oldHeightPx = resizedEvent.startHeight;
+    var workoutId = resizedEvent.id;
+    var oldHeightPx = resizedEvent.startHeight;
 
-  if (workoutId && sb) {
-    // ✅ КРИТИЧНО: ОБНОВЛЯЕМ updated_at_supabase!
-    sb.from('workouts')
-      .update({
-        duration: newDuration,
-        updated_at_supabase: new Date().toISOString()  // ← ЭТОТ СТРОКА ОБЯЗАТЕЛЬНА!
-      })
-      .eq('id', workoutId)
-      .then(function(res) {
-        if (!res.error) {
-          console.log('[Resize] ✅ Длительность изменена:', workoutId, newDuration);
-        } else {
-          console.error('[Resize] ❌ Ошибка обновления:', res.error);
+    if (workoutId && window.sb) {
+      window.sb.from('workouts')
+        .update({
+          duration: newDuration,
+          updated_at_supabase: new Date().toISOString()
+        })
+        .eq('id', workoutId)
+        .then(function(res) {
+          if (!res.error) {
+            console.log('[Resize] Длительность изменена:', workoutId, newDuration);
+          } else {
+            console.error('[Resize] Ошибка обновления:', res.error);
+            resizedEvent.el.style.height = oldHeightPx + 'px';
+          }
+        })
+        .catch(function(error) {
+          console.error('[Resize] Ошибка:', error);
           resizedEvent.el.style.height = oldHeightPx + 'px';
-          alert('Ошибка при изменении длительности');
-        }
-      })
-      .catch(function(error) {
-        console.error('[Resize] ❌ Ошибка:', error);
-        resizedEvent.el.style.height = oldHeightPx + 'px';
-        alert('Ошибка сети при изменении длительности');
-      });
-  }
+        });
+    }
 
-  resizedEvent = null;
-}
+    resizedEvent = null;
+  }
 
   function updateWorkouts(workouts) {
     currentWorkouts = workouts || [];
