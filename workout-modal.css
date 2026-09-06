@@ -44,7 +44,7 @@
 
 /* Режимы: quick (быстрый) / full (полный) */
 .workout-modal.quick {
-  max-height: 40vh;
+  max-height: 50vh;
 }
 
 .workout-modal.full {
