@@ -8,104 +8,19 @@ var TriggersStore = (function() {
   var channel = null;
   var listeners = [];
 
-  // 12 триггеров с метаданными
   var TRIGGER_DEFINITIONS = [
-    {
-      key: 'birthday',
-      icon: '🎂',
-      title: 'День рождения',
-      description: 'Поздравление + скидка 10%',
-      defaultBonus: { type: 'discount_percent', value: 10 },
-      defaultMessage: 'С днём рождения! 🎉 Специально для вас скидка 10% на следующую тренировку!'
-    },
-    {
-      key: 'inactive_14d',
-      icon: '⏰',
-      title: 'Давно не посещал',
-      description: 'Не был 14+ дней → скидка 15%',
-      defaultBonus: { type: 'discount_percent', value: 15 },
-      defaultMessage: 'Мы скучаем! Возвращайтесь в течение 48 часов и получите скидку 15%'
-    },
-    {
-      key: 'subscription_ending',
-      icon: '📅',
-      title: 'Абонемент заканчивается',
-      description: '1-2 тренировки осталось → скидка 20%',
-      defaultBonus: { type: 'discount_percent', value: 20 },
-      defaultMessage: 'Ваш абонемент заканчивается! Продлите сейчас со скидкой 20% + 50 баллов'
-    },
-    {
-      key: 'streak_5',
-      icon: '🔥',
-      title: 'Серия 5 тренировок',
-      description: '100 баллов + запрос отзыва',
-      defaultBonus: { type: 'points', value: 100 },
-      defaultMessage: 'Отличная работа! 5 тренировок подряд — вот ваши 100 баллов! Оставьте отзыв?'
-    },
-    {
-      key: 'streak_10',
-      icon: '⭐',
-      title: 'Серия 10 тренировок',
-      description: 'Скидка 10% + 150 баллов',
-      defaultBonus: { type: 'discount_percent', value: 10 },
-      defaultMessage: '10 тренировок! Вы супер! Скидка 10% на следующий месяц + 150 баллов'
-    },
-    {
-      key: 'streak_15',
-      icon: '💎',
-      title: 'Серия 15 тренировок',
-      description: 'Скидка 15% + 150 баллов',
-      defaultBonus: { type: 'discount_percent', value: 15 },
-      defaultMessage: '15 тренировок подряд! Вы чемпион! Скидка 15% + 150 баллов'
-    },
-    {
-      key: 'streak_20',
-      icon: '👑',
-      title: 'Серия 20 тренировок',
-      description: 'Скидка 25% + 150 баллов',
-      defaultBonus: { type: 'discount_percent', value: 25 },
-      defaultMessage: '20 тренировок! Легенда! Скидка 25% на месяц + 150 баллов'
-    },
-    {
-      key: 'activity_decreased',
-      icon: '📉',
-      title: 'Снизил активность',
-      description: 'Мотивационное сообщение',
-      defaultBonus: { type: 'none', value: 0 },
-      defaultMessage: 'Заметили, что активность снизилась. Мини-задача на неделю: 3 тренировки!'
-    },
-    {
-      key: 'new_lead',
-      icon: '👤',
-      title: 'Новый лид',
-      description: 'Уведомление тренеру + 50 баллов',
-      defaultBonus: { type: 'points', value: 50 },
-      defaultMessage: 'Добро пожаловать! После первой тренировки вы получите 50 баллов'
-    },
-    {
-      key: 'referral',
-      icon: '🤝',
-      title: 'Пригласил друга',
-      description: '200 баллов + бесплатная тренировка другу',
-      defaultBonus: { type: 'points', value: 200 },
-      defaultMessage: 'Спасибо за друга! Вам 200 баллов, другу — бесплатная тренировка + 100 баллов'
-    },
-    {
-      key: 'review_left',
-      icon: '⭐',
-      title: 'Оставил отзыв',
-      description: '50 баллов',
-      defaultBonus: { type: 'points', value: 50 },
-      defaultMessage: 'Спасибо за отзыв! Вот ваши 50 баллов'
-    },
-    {
-      key: 'unpaid_workout',
-      icon: '💳',
-      title: 'Неоплаченная тренировка',
-      description: 'Вежливое напоминание',
-      defaultBonus: { type: 'none', value: 0 },
-      defaultMessage: 'Напоминаем об оплате тренировки. Спасибо!'
-    }
+    { key: 'birthday', icon: '🎂', title: 'День рождения', description: 'Поздравление + скидка 10%', defaultBonus: { type: 'discount_percent', value: 10 }, defaultMessage: 'С днём рождения! 🎉 Специально для вас скидка 10% на следующую тренировку!' },
+    { key: 'inactive_14d', icon: '⏰', title: 'Давно не посещал', description: 'Не был 14+ дней → скидка 15%', defaultBonus: { type: 'discount_percent', value: 15 }, defaultMessage: 'Мы скучаем! Возвращайтесь в течение 48 часов и получите скидку 15%' },
+    { key: 'subscription_ending', icon: '📅', title: 'Абонемент заканчивается', description: '1-2 тренировки осталось → скидка 20%', defaultBonus: { type: 'discount_percent', value: 20 }, defaultMessage: 'Ваш абонемент заканчивается! Продлите сейчас со скидкой 20% + 50 баллов' },
+    { key: 'streak_5', icon: '🔥', title: 'Серия 5 тренировок', description: '100 баллов + запрос отзыва', defaultBonus: { type: 'points', value: 100 }, defaultMessage: 'Отличная работа! 5 тренировок подряд — вот ваши 100 баллов! Оставьте отзыв?' },
+    { key: 'streak_10', icon: '⭐', title: 'Серия 10 тренировок', description: 'Скидка 10% + 150 баллов', defaultBonus: { type: 'discount_percent', value: 10 }, defaultMessage: '10 тренировок! Вы супер! Скидка 10% на следующий месяц + 150 баллов' },
+    { key: 'streak_15', icon: '💎', title: 'Серия 15 тренировок', description: 'Скидка 15% + 150 баллов', defaultBonus: { type: 'discount_percent', value: 15 }, defaultMessage: '15 тренировок подряд! Вы чемпион! Скидка 15% + 150 баллов' },
+    { key: 'streak_20', icon: '👑', title: 'Серия 20 тренировок', description: 'Скидка 25% + 150 баллов', defaultBonus: { type: 'discount_percent', value: 25 }, defaultMessage: '20 тренировок! Легенда! Скидка 25% на месяц + 150 баллов' },
+    { key: 'activity_decreased', icon: '📉', title: 'Снизил активность', description: 'Мотивационное сообщение', defaultBonus: { type: 'none', value: 0 }, defaultMessage: 'Заметили, что активность снизилась. Мини-задача на неделю: 3 тренировки!' },
+    { key: 'new_lead', icon: '👤', title: 'Новый лид', description: 'Уведомление тренеру + 50 баллов', defaultBonus: { type: 'points', value: 50 }, defaultMessage: 'Добро пожаловать! После первой тренировки вы получите 50 баллов' },
+    { key: 'referral', icon: '🤝', title: 'Пригласил друга', description: '200 баллов + бесплатная тренировка другу', defaultBonus: { type: 'points', value: 200 }, defaultMessage: 'Спасибо за друга! Вам 200 баллов, другу — бесплатная тренировка + 100 баллов' },
+    { key: 'review_left', icon: '⭐', title: 'Оставил отзыв', description: '50 баллов', defaultBonus: { type: 'points', value: 50 }, defaultMessage: 'Спасибо за отзыв! Вот ваши 50 баллов' },
+    { key: 'unpaid_workout', icon: '💳', title: 'Неоплаченная тренировка', description: 'Вежливое напоминание', defaultBonus: { type: 'none', value: 0 }, defaultMessage: 'Напоминаем об оплате тренировки. Спасибо!' }
   ];
 
   function notify() {
@@ -149,7 +64,6 @@ var TriggersStore = (function() {
           return;
         }
 
-        // Мержим: берём из БД, дополняем дефолтами
         var dbTriggers = {};
         res.data.forEach(function(row) {
           dbTriggers[row.trigger_key] = row;
@@ -157,7 +71,6 @@ var TriggersStore = (function() {
 
         items = TRIGGER_DEFINITIONS.map(function(def) {
           var dbData = dbTriggers[def.key];
-          
           if (dbData) {
             return Object.assign({}, def, dbData, { key: def.key, trigger_key: def.key });
           } else {
