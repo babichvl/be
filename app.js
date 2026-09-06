@@ -14,7 +14,7 @@ var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
 var sb = null;
 
-/ Инициализируем Supabase с повторными попытками
+// Инициализируем Supabase с повторными попытками
 function initSupabase() {
   console.log('[app.js] Попытка инициализации Supabase...', {
     'window.supabase': !!window.supabase,
