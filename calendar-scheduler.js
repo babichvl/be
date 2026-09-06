@@ -273,41 +273,60 @@ var CalendarScheduler = (function() {
     document.removeEventListener('touchend', onTouchEnd);
   }
 
-  function finishDrag() {
-    if (!draggedEvent) return;
+═══════════════════════════════════════════════════════════
+// КРИТИЧНО: finishDrag() в calendar-scheduler.js
+// Убедись, что обновляется updated_at_supabase при перемещении!
+// ═══════════════════════════════════════════════════════════
 
-    var newTopPx = parseInt(draggedEvent.el.style.top, 10);
-    var newHours = Math.floor(newTopPx / 60);
-    var newMinutes = (newTopPx % 60);
+function finishDrag() {
+  if (!draggedEvent) return;
 
-    newMinutes = Math.round(newMinutes / 15) * 15;
-    if (newMinutes === 60) {
-      newHours++;
-      newMinutes = 0;
-    }
+  var newTopPx = parseInt(draggedEvent.el.style.top, 10);
+  var newHours = Math.floor(newTopPx / 60);
+  var newMinutes = (newTopPx % 60);
 
-    var newTime = String(newHours).padStart(2, '0') + ':' + String(newMinutes).padStart(2, '0') + ':00';
-
-    draggedEvent.el.classList.remove('dragging');
-    draggedEvent.el.style.top = (newHours * 60 + newMinutes) + 'px';
-
-    var workoutId = draggedEvent.id;
-    if (workoutId && sb) {
-      sb.from('workouts')
-        .update({
-          start_time: newTime,
-          updated_at_supabase: new Date().toISOString()
-        })
-        .eq('id', workoutId)
-        .then(function(res) {
-          if (!res.error) {
-            // Успешно
-          }
-        });
-    }
-
-    draggedEvent = null;
+  newMinutes = Math.round(newMinutes / 15) * 15;
+  if (newMinutes === 60) {
+    newHours++;
+    newMinutes = 0;
   }
+
+  var newTime = String(newHours).padStart(2, '0') + ':' + String(newMinutes).padStart(2, '0') + ':00';
+  var correctTopPx = newHours * 60 + newMinutes;
+
+  draggedEvent.el.classList.remove('dragging');
+  draggedEvent.el.style.top = correctTopPx + 'px';
+
+  var workoutId = draggedEvent.id;
+  var oldTopPx = draggedEvent.startTop;
+
+  if (workoutId && sb) {
+    // ✅ КРИТИЧНО: ОБНОВЛЯЕМ updated_at_supabase!
+    // Это сообщает google_sync.py что данные в Supabase свежее
+    sb.from('workouts')
+      .update({
+        start_time: newTime,
+        updated_at_supabase: new Date().toISOString()  // ← ЭТОТ СТРОКА ОБЯЗАТЕЛЬНА!
+      })
+      .eq('id', workoutId)
+      .then(function(res) {
+        if (!res.error) {
+          console.log('[Drag] ✅ Тренировка перемещена:', workoutId, newTime);
+        } else {
+          console.error('[Drag] ❌ Ошибка обновления:', res.error);
+          draggedEvent.el.style.top = oldTopPx + 'px';
+          alert('Ошибка при перемещении тренировки');
+        }
+      })
+      .catch(function(error) {
+        console.error('[Drag] ❌ Ошибка:', error);
+        draggedEvent.el.style.top = oldTopPx + 'px';
+        alert('Ошибка сети при перемещении тренировки');
+      });
+  }
+
+  draggedEvent = null;
+}
 
   function startResize(eventEl, e) {
     resizedEvent = {
@@ -361,32 +380,44 @@ var CalendarScheduler = (function() {
     document.removeEventListener('touchend', onTouchEndResize);
   }
 
-  function finishResize() {
-    if (!resizedEvent) return;
+function finishResize() {
+  if (!resizedEvent) return;
 
-    var newHeightPx = parseInt(resizedEvent.el.style.height, 10);
-    var newDuration = Math.max(15, Math.round(newHeightPx / 15) * 15);
+  var newHeightPx = parseInt(resizedEvent.el.style.height, 10);
+  var newDuration = Math.max(15, Math.round(newHeightPx / 15) * 15);
 
-    resizedEvent.el.classList.remove('resizing');
-    resizedEvent.el.style.height = newDuration + 'px';
+  resizedEvent.el.classList.remove('resizing');
+  resizedEvent.el.style.height = newDuration + 'px';
 
-    var workoutId = resizedEvent.id;
-    if (workoutId && sb) {
-      sb.from('workouts')
-        .update({
-          duration: newDuration,
-          updated_at_supabase: new Date().toISOString()
-        })
-        .eq('id', workoutId)
-        .then(function(res) {
-          if (!res.error) {
-            // Успешно
-          }
-        });
-    }
+  var workoutId = resizedEvent.id;
+  var oldHeightPx = resizedEvent.startHeight;
 
-    resizedEvent = null;
+  if (workoutId && sb) {
+    // ✅ КРИТИЧНО: ОБНОВЛЯЕМ updated_at_supabase!
+    sb.from('workouts')
+      .update({
+        duration: newDuration,
+        updated_at_supabase: new Date().toISOString()  // ← ЭТОТ СТРОКА ОБЯЗАТЕЛЬНА!
+      })
+      .eq('id', workoutId)
+      .then(function(res) {
+        if (!res.error) {
+          console.log('[Resize] ✅ Длительность изменена:', workoutId, newDuration);
+        } else {
+          console.error('[Resize] ❌ Ошибка обновления:', res.error);
+          resizedEvent.el.style.height = oldHeightPx + 'px';
+          alert('Ошибка при изменении длительности');
+        }
+      })
+      .catch(function(error) {
+        console.error('[Resize] ❌ Ошибка:', error);
+        resizedEvent.el.style.height = oldHeightPx + 'px';
+        alert('Ошибка сети при изменении длительности');
+      });
   }
+
+  resizedEvent = null;
+}
 
   function updateWorkouts(workouts) {
     currentWorkouts = workouts || [];
