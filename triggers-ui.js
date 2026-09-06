@@ -9,15 +9,23 @@ var TriggersUI = (function() {
   var currentTrigger = null;
 
   function init() {
+    console.log('[TriggersUI] Инициализация...');
     gridContainer = document.getElementById('triggers-grid');
 
-    if (!gridContainer) return;
+    if (!gridContainer) {
+      console.error('[TriggersUI] Контейнер #triggers-grid не найден!');
+      return;
+    }
 
+    console.log('[TriggersUI] Контейнер найден, создаём модальное окно...');
     createEditorModal();
 
     // Подписываемся на изменения
     if (window.TriggersStore) {
       TriggersStore.subscribe(render);
+      console.log('[TriggersUI] Подписались на TriggersStore');
+    } else {
+      console.warn('[TriggersUI] TriggersStore не найден!');
     }
   }
 
@@ -65,31 +73,75 @@ var TriggersUI = (function() {
       </div>
 
       <div class="trigger-editor__footer">
-        <button class="trigger-editor__btn trigger-editor__btn--cancel" id="trigger-editor-cancel">Отмена</button>
-        <button class="trigger-editor__btn trigger-editor__btn--save" id="trigger-editor-save">Сохранить</button>
+        <button class="trigger-editor__btn trigger-editor__btn--cancel" id="trigger-editor-cancel" type="button">Отмена</button>
+        <button class="trigger-editor__btn trigger-editor__btn--save" id="trigger-editor-save" type="button">Сохранить</button>
       </div>
     `;
 
     document.body.appendChild(editorOverlay);
     document.body.appendChild(editor);
 
+    console.log('[TriggersUI] Модальное окно создано');
     attachEditorListeners();
   }
 
   function attachEditorListeners() {
-    document.getElementById('trigger-editor-close').addEventListener('click', closeEditor);
-    document.getElementById('trigger-editor-cancel').addEventListener('click', closeEditor);
-    document.getElementById('trigger-editor-save').addEventListener('click', saveTrigger);
+    // Найдём элементы (гарантированно они уже в DOM)
+    var closeBtn = document.getElementById('trigger-editor-close');
+    var cancelBtn = document.getElementById('trigger-editor-cancel');
+    var saveBtn = document.getElementById('trigger-editor-save');
+    var bonusTypeSelect = document.getElementById('trigger-bonus-type');
 
-    // Показываем/скрываем поле значения в зависимости от типа
-    document.getElementById('trigger-bonus-type').addEventListener('change', function() {
-      var valueField = document.getElementById('trigger-bonus-value-field');
-      if (this.value === 'none') {
-        valueField.style.display = 'none';
-      } else {
-        valueField.style.display = 'block';
-      }
+    console.log('[TriggersUI] Поиск кнопок:', {
+      closeBtn: !!closeBtn,
+      cancelBtn: !!cancelBtn,
+      saveBtn: !!saveBtn,
+      bonusTypeSelect: !!bonusTypeSelect
     });
+
+    // Закрыть по X
+    if (closeBtn) {
+      closeBtn.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[TriggersUI] Клик по close');
+        closeEditor();
+      };
+    }
+
+    // Закрыть по Отмена
+    if (cancelBtn) {
+      cancelBtn.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[TriggersUI] Клик по cancel');
+        closeEditor();
+      };
+    }
+
+    // Сохранить триггер
+    if (saveBtn) {
+      saveBtn.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[TriggersUI] ✅ КЛИК ПО СОХРАНИТЬ!');
+        saveTrigger();
+        return false;
+      };
+      console.log('[TriggersUI] ✅ Обработчик сохранения прикреплён');
+    } else {
+      console.error('[TriggersUI] ❌ Кнопка сохранения не найдена!');
+    }
+
+    // Переключение видимости поля бонуса
+    if (bonusTypeSelect) {
+      bonusTypeSelect.onchange = function() {
+        var valueField = document.getElementById('trigger-bonus-value-field');
+        if (valueField) {
+          valueField.style.display = this.value === 'none' ? 'none' : 'block';
+        }
+      };
+    }
   }
 
   function render(triggers) {
@@ -116,35 +168,47 @@ var TriggersUI = (function() {
       );
     }).join('');
 
-    // Обработчики
+    // Обработчики карточек
     gridContainer.querySelectorAll('.trigger-card').forEach(function(card) {
-      card.addEventListener('click', function(e) {
-        // Если клик по тумблеру — не открываем редактор
+      card.onclick = function(e) {
         if (e.target.classList.contains('trigger-card__toggle')) return;
         
         var key = this.dataset.triggerKey;
+        console.log('[TriggersUI] Открываем редактор для:', key);
         openEditor(key);
-      });
+      };
     });
 
+    // Обработчики тумблеров
     gridContainer.querySelectorAll('.trigger-card__toggle').forEach(function(toggle) {
-      toggle.addEventListener('click', function(e) {
+      toggle.onclick = function(e) {
         e.stopPropagation();
         var key = this.dataset.triggerKey;
+        console.log('[TriggersUI] Переключаем триггер:', key);
         toggleTrigger(key);
-      });
+      };
     });
   }
 
   function toggleTrigger(key) {
-    if (!window.TriggersStore) return;
+    if (!window.TriggersStore) {
+      console.error('[TriggersUI] TriggersStore не найден');
+      return;
+    }
 
     var trigger = TriggersStore.getByKey(key);
-    if (!trigger) return;
+    if (!trigger) {
+      console.error('[TriggersUI] Триггер не найден:', key);
+      return;
+    }
 
     var newState = !trigger.is_enabled;
+    console.log('[TriggersUI] Переключаю', key, 'на', newState);
 
     TriggersStore.update(key, { is_enabled: newState })
+      .then(function() {
+        console.log('[TriggersUI] ✅ Триггер обновлён');
+      })
       .catch(function(error) {
         console.error('[TriggersUI] Ошибка переключения:', error);
         alert('Ошибка сохранения');
@@ -152,24 +216,34 @@ var TriggersUI = (function() {
   }
 
   function openEditor(key) {
-    if (!window.TriggersStore) return;
+    if (!window.TriggersStore) {
+      console.error('[TriggersUI] TriggersStore не найден');
+      return;
+    }
 
     var trigger = TriggersStore.getByKey(key);
-    if (!trigger) return;
+    if (!trigger) {
+      console.error('[TriggersUI] Триггер не найден:', key);
+      return;
+    }
 
     currentTrigger = trigger;
+    console.log('[TriggersUI] Открыт редактор для:', trigger.key);
 
-    document.getElementById('trigger-editor-title').textContent = trigger.title;
-    document.getElementById('trigger-bonus-type').value = trigger.bonus_type || 'none';
-    document.getElementById('trigger-bonus-value').value = trigger.bonus_value || '';
-    document.getElementById('trigger-message').value = trigger.message_text || '';
+    var titleEl = document.getElementById('trigger-editor-title');
+    var typeEl = document.getElementById('trigger-bonus-type');
+    var valueEl = document.getElementById('trigger-bonus-value');
+    var messageEl = document.getElementById('trigger-message');
+
+    if (titleEl) titleEl.textContent = trigger.title;
+    if (typeEl) typeEl.value = trigger.bonus_type || 'none';
+    if (valueEl) valueEl.value = trigger.bonus_value || '';
+    if (messageEl) messageEl.value = trigger.message_text || '';
 
     // Показываем/скрываем поле значения
     var valueField = document.getElementById('trigger-bonus-value-field');
-    if (trigger.bonus_type === 'none') {
-      valueField.style.display = 'none';
-    } else {
-      valueField.style.display = 'block';
+    if (valueField) {
+      valueField.style.display = (trigger.bonus_type === 'none') ? 'none' : 'block';
     }
 
     // Блокируем скролл
@@ -184,6 +258,7 @@ var TriggersUI = (function() {
   }
 
   function closeEditor() {
+    console.log('[TriggersUI] Закрываем редактор');
     editor.classList.remove('active');
     setTimeout(function() {
       editorOverlay.classList.remove('active');
@@ -197,11 +272,36 @@ var TriggersUI = (function() {
   }
 
   function saveTrigger() {
-    if (!currentTrigger || !window.TriggersStore) return;
+    console.log('[TriggersUI] 🔴 СОХРАНЕНИЕ ТРИГГЕРА!');
+    console.log('[TriggersUI] currentTrigger:', currentTrigger);
+    console.log('[TriggersUI] TriggersStore:', !!window.TriggersStore);
 
-    var bonusType = document.getElementById('trigger-bonus-type').value;
-    var bonusValue = parseFloat(document.getElementById('trigger-bonus-value').value) || 0;
-    var message = document.getElementById('trigger-message').value;
+    if (!currentTrigger) {
+      console.error('[TriggersUI] currentTrigger не установлен!');
+      alert('Ошибка: триггер не выбран');
+      return;
+    }
+
+    if (!window.TriggersStore) {
+      console.error('[TriggersUI] TriggersStore не найден!');
+      alert('Ошибка: TriggersStore недоступен');
+      return;
+    }
+
+    var typeEl = document.getElementById('trigger-bonus-type');
+    var valueEl = document.getElementById('trigger-bonus-value');
+    var messageEl = document.getElementById('trigger-message');
+
+    var bonusType = typeEl ? typeEl.value : 'none';
+    var bonusValue = valueEl ? (parseFloat(valueEl.value) || 0) : 0;
+    var message = messageEl ? messageEl.value : '';
+
+    console.log('[TriggersUI] Данные для сохранения:', {
+      key: currentTrigger.key,
+      bonusType: bonusType,
+      bonusValue: bonusValue,
+      messageLength: message.length
+    });
 
     if (!message.trim()) {
       alert('Введите текст сообщения');
@@ -209,8 +309,10 @@ var TriggersUI = (function() {
     }
 
     var saveBtn = document.getElementById('trigger-editor-save');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Сохранение...';
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Сохранение...';
+    }
 
     TriggersStore.update(currentTrigger.key, {
       bonus_type: bonusType,
@@ -218,13 +320,16 @@ var TriggersUI = (function() {
       message_text: message
     })
       .then(function() {
+        console.log('[TriggersUI] ✅ Триггер успешно сохранён!');
         closeEditor();
       })
       .catch(function(error) {
-        console.error('[TriggersUI] Ошибка сохранения:', error);
-        alert('Ошибка сохранения: ' + (error.message || 'Неизвестная ошибка'));
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Сохранить';
+        console.error('[TriggersUI] ❌ Ошибка сохранения:', error);
+        alert('Ошибка сохранения: ' + (error.message || error.code || 'Неизвестная ошибка'));
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Сохранить';
+        }
       });
   }
 
