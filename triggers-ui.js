@@ -85,64 +85,68 @@ var TriggersUI = (function() {
     attachEditorListeners();
   }
 
-  function attachEditorListeners() {
-    // Найдём элементы (гарантированно они уже в DOM)
-    var closeBtn = document.getElementById('trigger-editor-close');
-    var cancelBtn = document.getElementById('trigger-editor-cancel');
-    var saveBtn = document.getElementById('trigger-editor-save');
-    var bonusTypeSelect = document.getElementById('trigger-bonus-type');
+function attachEditorListeners() {
+  var closeBtn = document.getElementById('trigger-editor-close');
+  var cancelBtn = document.getElementById('trigger-editor-cancel');
+  var saveBtn = document.getElementById('trigger-editor-save');
+  var bonusTypeSelect = document.getElementById('trigger-bonus-type');
 
-    console.log('[TriggersUI] Поиск кнопок:', {
-      closeBtn: !!closeBtn,
-      cancelBtn: !!cancelBtn,
-      saveBtn: !!saveBtn,
-      bonusTypeSelect: !!bonusTypeSelect
-    });
+  console.log('[TriggersUI] Поиск кнопок:', {
+    closeBtn: !!closeBtn,
+    cancelBtn: !!cancelBtn,
+    saveBtn: !!saveBtn,
+    bonusTypeSelect: !!bonusTypeSelect
+  });
 
-    // Закрыть по X
-    if (closeBtn) {
-      closeBtn.onclick = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('[TriggersUI] Клик по close');
-        closeEditor();
-      };
-    }
-
-    // Закрыть по Отмена
-    if (cancelBtn) {
-      cancelBtn.onclick = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('[TriggersUI] Клик по cancel');
-        closeEditor();
-      };
-    }
-
-    // Сохранить триггер
-    if (saveBtn) {
-      saveBtn.onclick = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('[TriggersUI] ✅ КЛИК ПО СОХРАНИТЬ!');
-        saveTrigger();
-        return false;
-      };
-      console.log('[TriggersUI] ✅ Обработчик сохранения прикреплён');
-    } else {
-      console.error('[TriggersUI] ❌ Кнопка сохранения не найдена!');
-    }
-
-    // Переключение видимости поля бонуса
-    if (bonusTypeSelect) {
-      bonusTypeSelect.onchange = function() {
-        var valueField = document.getElementById('trigger-bonus-value-field');
-        if (valueField) {
-          valueField.style.display = this.value === 'none' ? 'none' : 'block';
-        }
-      };
-    }
+  // Закрыть по X
+  if (closeBtn) {
+    closeBtn.onclick = null;  // ← УДАЛЯЕМ СТАРЫЙ ОБРАБОТЧИК!
+    closeBtn.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('[TriggersUI] Клик по close');
+      closeEditor();
+    };
   }
+
+  // Закрыть по Отмена
+  if (cancelBtn) {
+    cancelBtn.onclick = null;  // ← УДАЛЯЕМ СТАРЫЙ ОБРАБОТЧИК!
+    cancelBtn.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('[TriggersUI] Клик по cancel');
+      closeEditor();
+    };
+  }
+
+  // Сохранить триггер
+  if (saveBtn) {
+    saveBtn.disabled = false;  // ← УБЕДИСЬ ЧТО НЕ DISABLED!
+    saveBtn.onclick = null;  // ← УДАЛЯЕМ СТАРЫЙ ОБРАБОТЧИК!
+    saveBtn.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('[TriggersUI] ✅ КЛИК ПО СОХРАНИТЬ!');
+      saveTrigger();
+      return false;
+    };
+    console.log('[TriggersUI] ✅ Обработчик сохранения прикреплён');
+  } else {
+    console.error('[TriggersUI] ❌ Кнопка сохранения не найдена!');
+  }
+
+  // Переключение видимости поля бонуса
+  if (bonusTypeSelect) {
+    bonusTypeSelect.onchange = null;  // ← УДАЛЯЕМ СТАРЫЙ ОБРАБОТЧИК!
+    bonusTypeSelect.onchange = function() {
+      var valueField = document.getElementById('trigger-bonus-value-field');
+      if (valueField) {
+        valueField.style.display = this.value === 'none' ? 'none' : 'block';
+      }
+    };
+  }
+}
 
   function render(triggers) {
     if (!gridContainer) return;
