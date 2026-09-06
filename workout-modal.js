@@ -254,19 +254,23 @@ function open(options) {
   }, 10);
 }
 
-  function close() {
-    modal.classList.remove('active');
-    setTimeout(function() {
-      overlay.classList.remove('active');
-      
-      // Сбрасываем состояние кнопки
-      var saveBtn = document.getElementById('modal-save');
-      if (saveBtn) {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Сохранить';
-      }
-    }, 300);
-  }
+function close() {
+  modal.classList.remove('active');
+  setTimeout(function() {
+    overlay.classList.remove('active');
+    
+    // ← ДОБАВЬ ЭТИ СТРОКИ:
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    
+    var saveBtn = document.getElementById('modal-save');
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Сохранить';
+    }
+  }, 300);
+}
 
   function updateSubtitle() {
     var subtitle = document.getElementById('modal-subtitle');
