@@ -1,3 +1,7 @@
+// ═══════════════════════════════════════════════════════════
+// APP.JS — интеграция всех компонентов
+// ═══════════════════════════════════════════════════════════
+
 // ─── Telegram ──────────────────────────────────────
 var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { tg.expand(); tg.setHeaderColor('#F5F5F7'); }
@@ -8,9 +12,8 @@ var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ─── Локальный кэш изменений ──────────────────────
-// Защита от реалтайм-гонки: храним изменения до подтверждения из БДв
-var localDeletedIds = {};   // { id: true }
-var localDoneIds    = {};   // { id: true }
+var localDeletedIds = {};
+var localDoneIds    = {};
 
 // ─── ID тренера ────────────────────────────────────
 var trainerTgId = null;
@@ -49,9 +52,26 @@ navItems.forEach(function(btn) {
   btn.addEventListener('click', function() { switchTab(btn.dataset.tab); });
 });
 
+// ─── Подвкладки Клиентов ──────────────────────────
+var clientsTabs = document.querySelectorAll('.clients-tabs__tab');
+var clientsViews = document.querySelectorAll('.clients-view');
+
+clientsTabs.forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    var view = this.dataset.view;
+    
+    clientsTabs.forEach(function(t) { t.classList.remove('active'); });
+    this.classList.add('active');
+    
+    clientsViews.forEach(function(v) {
+      v.classList.toggle('active', v.id === 'clients-view-' + view);
+    });
+  });
+});
+
 // ─── FAB ───────────────────────────────────────────
 document.getElementById('fab-btn').addEventListener('click', function() {
-  alert('Добавить — в разработке');
+  alert('ИИ-ассистент — в разработке');
 });
 
 // ─── Расписание ────────────────────────────────────
@@ -244,22 +264,6 @@ function rebuildScheduleCalendar() {
   }, scheduleState, selectedScheduleDate);
 }
 
-// Стрелки календаря (теперь не используются)
-var arrowLeft = document.getElementById('schedule-arrow-left');
-var arrowRight = document.getElementById('schedule-arrow-right');
-if (arrowLeft) {
-  arrowLeft.addEventListener('click', function() {
-    scheduleState.offset--;
-    rebuildScheduleCalendar();
-  });
-}
-if (arrowRight) {
-  arrowRight.addEventListener('click', function() {
-    scheduleState.offset++;
-    rebuildScheduleCalendar();
-  });
-}
-
 // ─── Свайп ─────────────────────────────────────────
 var currentOpenCard = null;
 
@@ -308,7 +312,6 @@ function markDone(workoutId, itemEl) {
     .eq('id', workoutId)
     .then(function(res) {
       if (res.error) {
-        // ошибка обновления
       } else {
         delete localDoneIds[id];
       }
@@ -341,7 +344,6 @@ function deleteWorkout(workoutId, itemEl) {
     .eq('id', workoutId)
     .then(function(res) {
       if (res.error) {
-        // ошибка удаления
       } else {
         delete localDeletedIds[id];
       }
@@ -499,7 +501,7 @@ function renderScheduleWorkouts() {
   initSwipes(listEl);
 }
 
-// ─── Инициализация WorkoutsStore ──────────────────
+// ─── Инициализация ──────────────────────────────────
 if (trainerTgId && window.WorkoutsStore) {
   WorkoutsStore.subscribe(function(workouts) {
     allWorkouts = applyLocalCache(workouts);
@@ -507,22 +509,25 @@ if (trainerTgId && window.WorkoutsStore) {
     renderScheduleWorkouts();
   });
   WorkoutsStore.init(trainerTgId);
-} else {
-  var hint      = 'Откройте через Telegram';
-  var homeList  = document.getElementById('home-list');
-  var schedList = document.getElementById('schedule-list');
-  if (homeList)  homeList.innerHTML  = '<p class="placeholder-text">' + hint + '</p>';
-  if (schedList) schedList.innerHTML = '<p class="placeholder-text">' + hint + '</p>';
 }
+
 if (trainerTgId && window.ClientsStore) {
   ClientsStore.init(trainerTgId);
 }
 
-// ─── Инициализация календарей ──────────────────────
-buildHomeCalendar();
-rebuildScheduleCalendar();
+if (trainerTgId && window.TriggersStore) {
+  TriggersStore.init(trainerTgId);
+}
 
-// ─── Инициализация календаря-сетки ────────────────
+// Инициализация UI
+if (window.ClientsUI) {
+  ClientsUI.init();
+}
+
+if (window.TriggersUI) {
+  TriggersUI.init();
+}
+
 if (window.CalendarScheduler) {
   CalendarScheduler.init('calendar-scheduler', today);
   
@@ -536,7 +541,9 @@ if (window.CalendarScheduler) {
   }
 }
 
-// ─── Инициализация модального окна ────────────────
 if (window.WorkoutModal) {
   WorkoutModal.init();
 }
+
+buildHomeCalendar();
+rebuildScheduleCalendar();
