@@ -24,6 +24,22 @@
   --radius-full: 999px;
 }
 
+html,
+body,
+* {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Разрешаем выделение текста в input полях */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* ========================================
    БАЗОВЫЕ СТИЛИ
    ======================================== */
