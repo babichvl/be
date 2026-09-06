@@ -216,6 +216,7 @@ var TriggersUI = (function() {
   }
 
   function openEditor(key) {
+     attachEditorListeners();
     if (!window.TriggersStore) {
       console.error('[TriggersUI] TriggersStore не найден');
       return;
