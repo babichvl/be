@@ -539,57 +539,98 @@ function renderScheduleWorkouts() {
   initSwipes(listEl);
 }
 
-// ─── Инициализация хранилищ (с задержкой для Supabase) ────────────
-setTimeout(function() {
-  if (trainerTgId && window.WorkoutsStore) {
-    WorkoutsStore.subscribe(function(workouts) {
-      allWorkouts = applyLocalCache(workouts);
-      renderHomeWorkouts();
-      renderScheduleWorkouts();
-    });
-    WorkoutsStore.init(trainerTgId);
-    console.log('[app.js] ✅ WorkoutsStore инициализирован');
-  }
+// ─── Инициализация хранилищ (с гарантией загрузки) ────────────
+function initStores() {
+  var attempt = 0;
+  var maxAttempts = 50;
 
-  if (trainerTgId && window.ClientsStore) {
-    ClientsStore.init(trainerTgId);
-    console.log('[app.js] ✅ ClientsStore инициализирован');
-  }
-
-  if (trainerTgId && window.TriggersStore) {
-    TriggersStore.init(trainerTgId);
-    console.log('[app.js] ✅ TriggersStore инициализирован');
-  }
-
-  if (window.ClientsUI) {
-    ClientsUI.init();
-    console.log('[app.js] ✅ ClientsUI инициализирован');
-  }
-
-  if (window.TriggersUI) {
-    TriggersUI.init();
-    console.log('[app.js] ✅ TriggersUI инициализирован');
-  }
-
-  if (window.CalendarScheduler) {
-    CalendarScheduler.init('calendar-scheduler', today);
+  function checkAndInit() {
+    attempt++;
     
-    if (trainerTgId && window.WorkoutsStore) {
-      WorkoutsStore.subscribe(function(workouts) {
-        allWorkouts = applyLocalCache(workouts);
-        renderHomeWorkouts();
-        renderScheduleWorkouts();
-        CalendarScheduler.updateWorkouts(allWorkouts);
+    console.log('[app.js] Попытка инициализации ' + attempt + '/' + maxAttempts);
+    console.log('[app.js] Проверка:', {
+      'sb': !!window.sb,
+      'WorkoutsStore': !!window.WorkoutsStore,
+      'ClientsStore': !!window.ClientsStore,
+      'TriggersStore': !!window.TriggersStore
+    });
+
+    // Если все есть — инициализируем
+    if (window.sb && window.WorkoutsStore && window.ClientsStore && window.TriggersStore) {
+      console.log('[app.js] ✅ ВСЕ ЗАВИСИМОСТИ ГОТОВЫ!');
+      
+      if (trainerTgId && window.WorkoutsStore) {
+        WorkoutsStore.subscribe(function(workouts) {
+          allWorkouts = applyLocalCache(workouts);
+          renderHomeWorkouts();
+          renderScheduleWorkouts();
+        });
+        WorkoutsStore.init(trainerTgId);
+        console.log('[app.js] ✅ WorkoutsStore инициализирован');
+      }
+
+      if (trainerTgId && window.ClientsStore) {
+        ClientsStore.init(trainerTgId);
+        console.log('[app.js] ✅ ClientsStore инициализирован');
+      }
+
+      if (trainerTgId && window.TriggersStore) {
+        TriggersStore.init(trainerTgId);
+        console.log('[app.js] ✅ TriggersStore инициализирован');
+      }
+
+      if (window.ClientsUI) {
+        ClientsUI.init();
+        console.log('[app.js] ✅ ClientsUI инициализирован');
+      }
+
+      if (window.TriggersUI) {
+        TriggersUI.init();
+        console.log('[app.js] ✅ TriggersUI инициализирован');
+      }
+
+      if (window.CalendarScheduler) {
+        CalendarScheduler.init('calendar-scheduler', today);
+        
+        if (trainerTgId && window.WorkoutsStore) {
+          WorkoutsStore.subscribe(function(workouts) {
+            allWorkouts = applyLocalCache(workouts);
+            renderHomeWorkouts();
+            renderScheduleWorkouts();
+            CalendarScheduler.updateWorkouts(allWorkouts);
+          });
+        }
+        console.log('[app.js] ✅ CalendarScheduler инициализирован');
+      }
+
+      if (window.WorkoutModal) {
+        WorkoutModal.init();
+        console.log('[app.js] ✅ WorkoutModal инициализирован');
+      }
+
+      console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ПОЛНОСТЬЮ ИНИЦИАЛИЗИРОВАНО');
+      return;
+    }
+
+    // Если не все загружено — повторяем
+    if (attempt < maxAttempts) {
+      setTimeout(checkAndInit, 100);
+    } else {
+      console.error('[app.js] ❌ ОШИБКА: Не удалось загрузить все зависимости!');
+      console.log('[app.js] Финальное состояние:', {
+        'sb': !!window.sb,
+        'WorkoutsStore': !!window.WorkoutsStore,
+        'ClientsStore': !!window.ClientsStore,
+        'TriggersStore': !!window.TriggersStore
       });
     }
-    console.log('[app.js] ✅ CalendarScheduler инициализирован');
   }
 
-  if (window.WorkoutModal) {
-    WorkoutModal.init();
-    console.log('[app.js] ✅ WorkoutModal инициализирован');
-  }
-}, 200);
+  checkAndInit();
+}
+
+// Запуск после загрузки DOM
+setTimeout(initStores, 200);
 
 // ─── Построение календарей ─────────────────────────
 buildHomeCalendar();
