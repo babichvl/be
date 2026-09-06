@@ -14,17 +14,35 @@ var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
 var sb = null;
 
-// Инициализируем Supabase в фоне (без блокировки интерфейса)
-setTimeout(function() {
-  if (window.supabase) {
+// Инициализируем Supabase с повторными попытками
+function initSupabase() {
+  if (window.supabase && window.supabase.createClient) {
     try {
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log('[app.js] ✅ Supabase инициализирован');
+      console.log('[app.js] ✅ Supabase инициализирован успешно');
+      return true;
     } catch (e) {
-      console.error('[app.js] Ошибка Supabase:', e);
+      console.error('[app.js] Ошибка инициализации Supabase:', e);
+      return false;
     }
-  } else {
-    console.warn('[app.js] Supabase SDK не загрузился');
+  }
+  return false;
+}
+
+// Первая попытка через 100ms
+setTimeout(function() {
+  if (!initSupabase()) {
+    // Вторая попытка через 500ms
+    setTimeout(function() {
+      if (!initSupabase()) {
+        // Третья попытка через 1s
+        setTimeout(function() {
+          if (!initSupabase()) {
+            console.error('[app.js] ❌ Не удалось инициализировать Supabase после 3 попыток');
+          }
+        }, 1000);
+      }
+    }, 500);
   }
 }, 100);
 
@@ -495,56 +513,57 @@ function renderScheduleWorkouts() {
   initSwipes(listEl);
 }
 
-// ─── Инициализация хранилищ ────────────────────────
-if (trainerTgId && window.WorkoutsStore) {
-  WorkoutsStore.subscribe(function(workouts) {
-    allWorkouts = applyLocalCache(workouts);
-    renderHomeWorkouts();
-    renderScheduleWorkouts();
-  });
-  WorkoutsStore.init(trainerTgId);
-  console.log('[app.js] ✅ WorkoutsStore инициализирован');
-}
-
-if (trainerTgId && window.ClientsStore) {
-  ClientsStore.init(trainerTgId);
-  console.log('[app.js] ✅ ClientsStore инициализирован');
-}
-
-if (trainerTgId && window.TriggersStore) {
-  TriggersStore.init(trainerTgId);
-  console.log('[app.js] ✅ TriggersStore инициализирован');
-}
-
-// ─── Инициализация UI ──────────────────────────────
-if (window.ClientsUI) {
-  ClientsUI.init();
-  console.log('[app.js] ✅ ClientsUI инициализирован');
-}
-
-if (window.TriggersUI) {
-  TriggersUI.init();
-  console.log('[app.js] ✅ TriggersUI инициализирован');
-}
-
-if (window.CalendarScheduler) {
-  CalendarScheduler.init('calendar-scheduler', today);
-  
+// ─── Инициализация хранилищ (с задержкой для Supabase) ────────────
+setTimeout(function() {
   if (trainerTgId && window.WorkoutsStore) {
     WorkoutsStore.subscribe(function(workouts) {
       allWorkouts = applyLocalCache(workouts);
       renderHomeWorkouts();
       renderScheduleWorkouts();
-      CalendarScheduler.updateWorkouts(allWorkouts);
     });
+    WorkoutsStore.init(trainerTgId);
+    console.log('[app.js] ✅ WorkoutsStore инициализирован');
   }
-  console.log('[app.js] ✅ CalendarScheduler инициализирован');
-}
 
-if (window.WorkoutModal) {
-  WorkoutModal.init();
-  console.log('[app.js] ✅ WorkoutModal инициализирован');
-}
+  if (trainerTgId && window.ClientsStore) {
+    ClientsStore.init(trainerTgId);
+    console.log('[app.js] ✅ ClientsStore инициализирован');
+  }
+
+  if (trainerTgId && window.TriggersStore) {
+    TriggersStore.init(trainerTgId);
+    console.log('[app.js] ✅ TriggersStore инициализирован');
+  }
+
+  if (window.ClientsUI) {
+    ClientsUI.init();
+    console.log('[app.js] ✅ ClientsUI инициализирован');
+  }
+
+  if (window.TriggersUI) {
+    TriggersUI.init();
+    console.log('[app.js] ✅ TriggersUI инициализирован');
+  }
+
+  if (window.CalendarScheduler) {
+    CalendarScheduler.init('calendar-scheduler', today);
+    
+    if (trainerTgId && window.WorkoutsStore) {
+      WorkoutsStore.subscribe(function(workouts) {
+        allWorkouts = applyLocalCache(workouts);
+        renderHomeWorkouts();
+        renderScheduleWorkouts();
+        CalendarScheduler.updateWorkouts(allWorkouts);
+      });
+    }
+    console.log('[app.js] ✅ CalendarScheduler инициализирован');
+  }
+
+  if (window.WorkoutModal) {
+    WorkoutModal.init();
+    console.log('[app.js] ✅ WorkoutModal инициализирован');
+  }
+}, 200);
 
 // ─── Построение календарей ─────────────────────────
 buildHomeCalendar();
