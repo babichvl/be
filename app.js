@@ -673,7 +673,7 @@ function initHomeCalendarSwipes() {
     }
   }, { passive: true });
 }
-// ─── Построение календарей ─────────────────────────
+
 buildHomeCalendar();
 initHomeCalendarSwipes();
 rebuildScheduleCalendar();
