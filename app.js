@@ -257,13 +257,38 @@ function initHomeCalendarSwipes() {
     var activeEl = wrap.querySelector('.home-cal-day.active');
     if (!activeEl) return;
 
+    var targetEl = null;
+
     if (delta > threshold) {
-      var next = activeEl.nextElementSibling;
-      if (next) next.click();
+      // Свайп влево → следующий день
+      targetEl = activeEl.nextElementSibling;
     } else if (delta < -threshold) {
-      var prev = activeEl.previousElementSibling;
-      if (prev) prev.click();
+      // Свайп вправо → предыдущий день
+      targetEl = activeEl.previousElementSibling;
     }
+
+    if (!targetEl) return;
+
+    // Обновляем дату напрямую БЕЗ клика
+    var newDate = targetEl.dataset.date;
+    selectedHomeDate = newDate;
+
+    // Обновляем активный класс
+    wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
+      el.classList.remove('active');
+    });
+    targetEl.classList.add('active');
+
+    // Раскрываем домашний экран
+    homeExpanded = true;
+    var expand = document.getElementById('home-expand');
+    if (expand) expand.classList.add('expanded');
+
+    // Рендерим тренировки
+    renderHomeWorkouts();
+
+    // МОМЕНТАЛЬНОЕ центрирование (БЕЗ requestAnimationFrame)
+    targetEl.scrollIntoView({ inline: 'center', block: 'nearest' });
   }, { passive: true });
 }
 
