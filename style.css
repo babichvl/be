@@ -24,33 +24,11 @@
   --radius-full: 999px;
 }
 
-:root {
-  --surface-0: #F5F5F7;
-  --surface-1: #FFFFFF;
-  --surface-2: #FAFAFA;
-  --text-primary: #1C1C1E;
-  --text-secondary: #8E8E93;
-  --accent: #7B7BFF;
-  --accent-hover: #6B6BEF;
-  --border: rgba(0, 0, 0, 0.06);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-active: 0 12px 32px rgba(91, 91, 255, 0.35);
-  --sp-8: 8px;
-  --sp-12: 12px;
-  --sp-16: 16px;
-  --sp-20: 20px;
-  --sp-24: 24px;
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-full: 999px;
-}
-
 html,
 body {
   touch-action: manipulation;
   -webkit-touch-callout: none;
+  padding-top: max(0px, env(safe-area-inset-top));
 }
 
 /* Разрешаем селект в input */
@@ -122,7 +100,7 @@ body {
   position: relative;
   padding: 16px;
   padding-top: 16px;
-  min-height: 110px;  ← Было 72px, теперь 100px
+  min-height: 110px;
   background: var(--surface-0);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -176,8 +154,6 @@ body {
 .screen#screen-home {
   flex-direction: column;
 }
-
-
 
 /* ========================================
    ГОРИЗОНТАЛЬНЫЙ КАЛЕНДАРЬ (ГЛАВНАЯ)
