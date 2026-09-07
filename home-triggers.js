@@ -91,19 +91,7 @@ var HomeTriggers = (function() {
       }
 
       return false;
-    },
-
-    // Placeholder для остальных триггеров (добавим позже)
-    subscription_ending: () => false,
-    streak_5: () => false,
-    streak_10: () => false,
-    streak_15: () => false,
-    streak_20: () => false,
-    activity_decreased: () => false,
-    new_lead: () => false,
-    referral: () => false,
-    review_left: () => false,
-    unpaid_workout: () => false,
+    }
   };
 
   /**
@@ -393,31 +381,6 @@ var HomeTriggers = (function() {
   }
 
   /**
-   * Методы для фильтрации (в будущем)
-   */
-  
-  /**
-   * Показать триггеры, которые требуют внимания
-   * (В будущем это будет заполнено условиями от событий)
-   */
-  function filterByStatus(status) {
-    // TODO: Реализовать фильтрацию по статусу
-    // status может быть: 'all', 'active', 'inactive', 'requires_attention'
-    console.log('[HomeTriggers] Фильтр по статусу:', status);
-    render();
-  }
-
-  /**
-   * Показать только те триггеры, которые сработали
-   */
-  function filterByEvent(eventKey) {
-    // TODO: Реализовать фильтрацию по событиям
-    // eventKey может быть: 'birthday', 'inactive_14d', 'streak_5' и т.д.
-    console.log('[HomeTriggers] Фильтр по событию:', eventKey);
-    render();
-  }
-
-  /**
    * Скрыть триггер (например, после просмотра)
    */
   function hideTrigger(triggerId) {
@@ -443,8 +406,6 @@ var HomeTriggers = (function() {
 
   return {
     init: init,
-    filterByStatus: filterByStatus,
-    filterByEvent: filterByEvent,
     hideTrigger: hideTrigger,
     showAll: showAll,
   };
