@@ -310,8 +310,17 @@ var HomeTriggers = (function() {
 })();
 
 // Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-  HomeTriggers.init();
-});
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[HomeTriggers] DOMContentLoaded, инициализируем...');
+    setTimeout(() => HomeTriggers.init(), 500);
+  });
+} else {
+  // DOM уже загружен
+  console.log('[HomeTriggers] DOM уже загружен, инициализируем...');
+  setTimeout(() => HomeTriggers.init(), 500);
+}
+
+window.HomeTriggers = HomeTriggers;
 
 window.HomeTriggers = HomeTriggers;
