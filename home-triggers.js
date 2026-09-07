@@ -104,7 +104,6 @@ var HomeTriggers = (function() {
     referral: () => false,
     review_left: () => false,
     unpaid_workout: () => false,
-    inactive_7d: () => false,  // Alias если нужен
   };
 
   /**
