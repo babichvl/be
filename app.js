@@ -2,11 +2,13 @@
 // APP.JS — интерфейс НЕЗАВИСИМ от БД
 // ═══════════════════════════════════════════════════════════
 
-// ─── Telegram ──────────────────────────────────────
+// ─── Telegram ──────────────────────────────────────────────────────────
 var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { 
   tg.expand(); 
-  tg.setHeaderColor('#F5F5F7'); 
+  tg.setHeaderColor('#F5F5F7');
+  // Отключаем вертикальный свайп для закрытия приложения
+  tg.disableVerticalSwipes();
 }
 
 // ─── Supabase (инициализируется в фоне) ────────────
@@ -559,6 +561,16 @@ function initStores() {
     if (window.sb && window.WorkoutsStore && window.ClientsStore && window.TriggersStore) {
       console.log('[app.js] ✅ ВСЕ ЗАВИСИМОСТИ ГОТОВЫ!');
       
+      if (trainerTgId && window.WorkoutsStore) {
+        WorkoutsStore.subscribe(function(workouts) {
+          allWorkouts = applyLocalCache(workouts);
+          renderHomeWorkouts();
+          renderScheduleWorkouts();
+        });
+        WorkoutsStore.init(trainerTgId);
+        console.log('[app.js] ✅ WorkoutsStore инициализирован');
+      }
+
       if (trainerTgId && window.ClientsStore) {
         ClientsStore.init(trainerTgId);
         console.log('[app.js] ✅ ClientsStore инициализирован');
@@ -581,26 +593,21 @@ function initStores() {
 
       if (window.CalendarScheduler) {
         CalendarScheduler.init('calendar-scheduler', today);
+        
+        if (trainerTgId && window.WorkoutsStore) {
+          WorkoutsStore.subscribe(function(workouts) {
+            allWorkouts = applyLocalCache(workouts);
+            renderHomeWorkouts();
+            renderScheduleWorkouts();
+            CalendarScheduler.updateWorkouts(allWorkouts);
+          });
+        }
         console.log('[app.js] ✅ CalendarScheduler инициализирован');
       }
 
       if (window.WorkoutModal) {
         WorkoutModal.init();
         console.log('[app.js] ✅ WorkoutModal инициализирован');
-      }
-
-      // ✅ ЕДИНСТВЕННЫЙ SUBSCRIBE на WorkoutsStore
-      if (trainerTgId && window.WorkoutsStore) {
-        WorkoutsStore.subscribe(function(workouts) {
-          allWorkouts = applyLocalCache(workouts);
-          renderHomeWorkouts();
-          renderScheduleWorkouts();
-          if (window.CalendarScheduler) {
-            CalendarScheduler.updateWorkouts(allWorkouts);
-          }
-        });
-        WorkoutsStore.init(trainerTgId);
-        console.log('[app.js] ✅ WorkoutsStore инициализирован (с единственной подпиской)');
       }
 
       console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ПОЛНОСТЬЮ ИНИЦИАЛИЗИРОВАНО');
