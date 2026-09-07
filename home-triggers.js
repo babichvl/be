@@ -95,8 +95,11 @@ var HomeTriggers = (function() {
   /**
    * Проверка должен ли триггер быть показан
    */
-  function shouldShowTrigger(trigger) {
-    const condition = TriggerConditions[trigger.key];
+function shouldShowTrigger(trigger) {
+  if (!trigger.is_enabled) {
+    return false;
+  }
+  const condition = TriggerConditions[trigger.key];
     if (!condition) {
       return false;
     }
