@@ -238,23 +238,28 @@ function initHomeCalendarSwipes() {
 
   var startX = 0;
   var isDragging = false;
+  var hasProcessedSwipe = false; // ✅ Флаг обработки
 
   wrap.addEventListener('touchstart', function(e) {
     startX = e.touches[0].clientX;
     isDragging = true;
-    wrap.dataset.swiping = 'true'; // ✅ Флаг свайпа
+    hasProcessedSwipe = false; // ✅ Сброс флага в начале
+    wrap.dataset.swiping = 'true';
   }, { passive: true });
 
   wrap.addEventListener('touchend', function(e) {
     if (!isDragging) return;
     isDragging = false;
 
+    if (hasProcessedSwipe) return; // ✅ Уже обработали - выходим
+    hasProcessedSwipe = true;
+
     var endX = e.changedTouches[0].clientX;
     var delta = startX - endX;
     var threshold = 30;
 
     if (Math.abs(delta) < threshold) {
-      wrap.dataset.swiping = 'false'; // Свайпа не было
+      wrap.dataset.swiping = 'false';
       return;
     }
 
@@ -290,9 +295,15 @@ function initHomeCalendarSwipes() {
     if (expand) expand.classList.add('expanded');
 
     renderHomeWorkouts();
-    targetEl.scrollIntoView({ inline: 'center', block: 'nearest' });
+
+    var offsetLeft = targetEl.offsetLeft;
+    var containerWidth = wrap.clientWidth;
+    var elementWidth = targetEl.clientWidth;
+    var targetScroll = offsetLeft - (containerWidth / 2) + (elementWidth / 2);
     
-    wrap.dataset.swiping = 'false'; // ✅ Конец свайпа
+    wrap.scrollLeft = targetScroll;
+
+    wrap.dataset.swiping = 'false';
   }, { passive: true });
 }
 
