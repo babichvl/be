@@ -10,6 +10,121 @@ var HomeTriggers = (function() {
   var triggersData = [];
 
   /**
+   * TRIGGER CONDITIONS - Логика для проверки когда показывать триггер
+   * Каждая функция возвращает true если триггер должен быть активен
+   */
+  var TriggerConditions = {
+    /**
+     * INACTIVE_7D - Последняя тренировка более 7 дней назад
+     */
+    inactive_7d: function() {
+      const clients = ClientsStore.getAll();
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      // Проверяем каждого клиента
+      for (let client of clients) {
+        const workouts = WorkoutsStore.forClient(client.id);
+        
+        // Если нет тренировок - клиент точно неактивен
+        if (workouts.length === 0) {
+          console.log(`[TriggerConditions] Клиент ${client.name} без тренировок`);
+          return true;
+        }
+
+        // Берем последнюю тренировку
+        const lastWorkout = workouts[workouts.length - 1];
+        const lastWorkoutDate = new Date(lastWorkout.workout_date);
+
+        // Если последняя тренировка > 7 дней назад
+        if (lastWorkoutDate < sevenDaysAgo) {
+          console.log(`[TriggerConditions] Клиент ${client.name} неактивен с ${lastWorkout.workout_date}`);
+          return true;
+        }
+      }
+
+      return false;
+    },
+
+    /**
+     * BIRTHDAY - День рождения сегодня или ±7 дней
+     */
+    birthday: function() {
+      const clients = ClientsStore.getAll();
+      const today = new Date();
+      const todayMonth = today.getMonth();
+      const todayDate = today.getDate();
+
+      // Вычисляем диапазон (±7 дней для проверки)
+      const sevenDaysLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      for (let client of clients) {
+        // Пропускаем если нет даты рождения
+        if (!client.birth_date) {
+          continue;
+        }
+
+        const birthDate = new Date(client.birth_date);
+        const birthMonth = birthDate.getMonth();
+        const birthDate_day = birthDate.getDate();
+
+        // Проверяем дату рождения
+        // 1. Точно сегодня
+        if (birthMonth === todayMonth && birthDate_day === todayDate) {
+          console.log(`[TriggerConditions] ДЕНЬ РОЖДЕНИЯ: ${client.name} - СЕГОДНЯ!`);
+          return true;
+        }
+
+        // 2. В течение 7 дней (учитывая переход месяца/года)
+        const upcomingBirthday = new Date(today.getFullYear(), birthMonth, birthDate_day);
+        
+        // Если дата уже прошла в этом году - берем следующий год
+        if (upcomingBirthday < today) {
+          upcomingBirthday.setFullYear(today.getFullYear() + 1);
+        }
+
+        // Если дата рождения в ближайшие 7 дней
+        if (upcomingBirthday >= today && upcomingBirthday <= sevenDaysLater) {
+          const daysLeft = Math.ceil((upcomingBirthday - today) / (1000 * 60 * 60 * 24));
+          console.log(`[TriggerConditions] День рождения ${client.name} через ${daysLeft} дней (${upcomingBirthday.toLocaleDateString()})`);
+          return true;
+        }
+      }
+
+      return false;
+    },
+
+    // Placeholder для остальных триггеров (добавим позже)
+    subscription_ending: () => false,
+    streak_5: () => false,
+    streak_10: () => false,
+    streak_15: () => false,
+    streak_20: () => false,
+    activity_decreased: () => false,
+    new_lead: () => false,
+    referral: () => false,
+    review_left: () => false,
+    unpaid_workout: () => false,
+  };
+
+  /**
+   * Проверка должен ли триггер быть показан
+   */
+  function shouldShowTrigger(trigger) {
+    const condition = TriggerConditions[trigger.key];
+    if (!condition) {
+      console.warn(`[HomeTriggers] Нет условия для триггера: ${trigger.key}`);
+      return false;
+    }
+
+    try {
+      return condition();
+    } catch (error) {
+      console.error(`[HomeTriggers] Ошибка при проверке триггера ${trigger.key}:`, error);
+      return false;
+    }
+  }
+
+  /**
    * Инициализация компонента
    */
   function init() {
@@ -23,10 +138,27 @@ var HomeTriggers = (function() {
       return;
     }
 
+    console.log('[HomeTriggers] ✅ Инициализация успешна');
+
     // Подписываемся на изменения триггеров
     TriggersStore.subscribe((triggers) => {
       onTriggersUpdate(triggers);
     });
+
+    // Также подписываемся на изменения клиентов и тренировок (для обновления условий)
+    if (ClientsStore && ClientsStore.subscribe) {
+      ClientsStore.subscribe(() => {
+        console.log('[HomeTriggers] Клиенты обновились - перепроверяем условия');
+        render();
+      });
+    }
+
+    if (WorkoutsStore && WorkoutsStore.subscribe) {
+      WorkoutsStore.subscribe(() => {
+        console.log('[HomeTriggers] Тренировки обновились - перепроверяем условия');
+        render();
+      });
+    }
 
     // Создаём модальное окно
     createModal();
@@ -42,20 +174,29 @@ var HomeTriggers = (function() {
   }
 
   /**
-   * Рендеринг карусели
+   * Рендеринг карусели с фильтрацией по условиям
    */
   function render() {
     if (!scrollContainer) return;
 
     scrollContainer.innerHTML = '';
+    let visibleCount = 0;
 
-    // Отображаем все триггеры (в будущем будем фильтровать по условиям)
+    // Отображаем только триггеры, которые прошли проверку условий
     triggersData.forEach((trigger) => {
+      // Проверяем должен ли триггер быть показан
+      if (!shouldShowTrigger(trigger)) {
+        console.log(`[HomeTriggers] Триггер ${trigger.key} скрыт (условие не выполнено)`);
+        return; // Пропускаем этот триггер
+      }
+
+      console.log(`[HomeTriggers] ✅ Триггер ${trigger.key} активен - показываем`);
       const card = createTriggerCard(trigger);
       scrollContainer.appendChild(card);
+      visibleCount++;
     });
 
-    console.log('[HomeTriggers] Отрендерено карточек:', triggersData.length);
+    console.log(`[HomeTriggers] Отрендерено активных карточек: ${visibleCount} из ${triggersData.length}`);
   }
 
   /**
@@ -310,17 +451,8 @@ var HomeTriggers = (function() {
 })();
 
 // Инициализация при загрузке
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    console.log('[HomeTriggers] DOMContentLoaded, инициализируем...');
-    setTimeout(() => HomeTriggers.init(), 500);
-  });
-} else {
-  // DOM уже загружен
-  console.log('[HomeTriggers] DOM уже загружен, инициализируем...');
-  setTimeout(() => HomeTriggers.init(), 500);
-}
-
-window.HomeTriggers = HomeTriggers;
+document.addEventListener('DOMContentLoaded', () => {
+  HomeTriggers.init();
+});
 
 window.HomeTriggers = HomeTriggers;
