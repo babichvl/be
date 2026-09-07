@@ -112,7 +112,7 @@ var HomeTriggers = (function() {
   function shouldShowTrigger(trigger) {
     const condition = TriggerConditions[trigger.key];
     if (!condition) {
-      //console.warn(`[HomeTriggers] Нет условия для триггера: ${trigger.key}`);
+      // console.warn(`[HomeTriggers] Нет условия для триггера: ${trigger.key}`);
       return false;
     }
 
@@ -128,7 +128,7 @@ var HomeTriggers = (function() {
    * Инициализация компонента
    */
   function init() {
-    //console.log('[HomeTriggers] Инициализация...');
+    console.log('[HomeTriggers] Инициализация...');
 
     scrollContainer = document.getElementById('home-triggers-scroll');
     carousel = document.getElementById('home-triggers-carousel');
@@ -186,7 +186,7 @@ var HomeTriggers = (function() {
     triggersData.forEach((trigger) => {
       // Проверяем должен ли триггер быть показан
       if (!shouldShowTrigger(trigger)) {
-        console.log(`[HomeTriggers] Триггер ${trigger.key} скрыт (условие не выполнено)`);
+        // console.log(`[HomeTriggers] Триггер ${trigger.key} скрыт (условие не выполнено)`);
         return; // Пропускаем этот триггер
       }
 
