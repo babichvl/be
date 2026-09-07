@@ -9,6 +9,31 @@ if (tg) {
   tg.setHeaderColor('#F5F5F7'); 
 }
 
+// ─── Уменьшаем чувствительность свайпа ────────────
+var touchStartY = 0;
+var touchStartX = 0;
+var swipeThreshold = 120; // минимальное расстояние для свайпа (в пикселях)
+
+document.addEventListener('touchstart', function(e) {
+  touchStartY = e.touches[0].clientY;
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+
+document.addEventListener('touchmove', function(e) {
+  var touchCurrentY = e.touches[0].clientY;
+  var touchCurrentX = e.touches[0].clientX;
+  
+  var deltaY = Math.abs(touchCurrentY - touchStartY);
+  var deltaX = Math.abs(touchCurrentX - touchStartX);
+  
+  // Если свайп меньше порога - предотвращаем его
+  if (deltaY < swipeThreshold && deltaX < swipeThreshold) {
+    if (tg && tg.disableVerticalSwipes) {
+      tg.disableVerticalSwipes();
+    }
+  }
+}, { passive: true });
+
 // ─── Supabase (инициализируется в фоне) ────────────
 var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
