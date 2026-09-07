@@ -248,7 +248,6 @@ function initHomeCalendarSwipes() {
     isDragging = true;
     hasProcessedSwipe = false;
     wrap.dataset.swiping = 'true';
-    console.log('[swipe] touchstart:', startX);
   }, { passive: true });
 
   wrap.addEventListener('touchmove', function(e) {
@@ -258,15 +257,12 @@ function initHomeCalendarSwipes() {
     
     if (Math.abs(delta) > 10) {
       e.preventDefault();
-      console.log('[swipe] touchmove delta:', delta);
     }
   }, { passive: false });
 
   wrap.addEventListener('touchend', function(e) {
     if (!isDragging) return;
     isDragging = false;
-
-    console.log('[swipe] touchend, hasProcessedSwipe:', hasProcessedSwipe);
     
     if (hasProcessedSwipe) {
       console.log('[swipe] ❌ Уже обработали, выходим');
@@ -277,8 +273,6 @@ function initHomeCalendarSwipes() {
     var delta = startX - currentX;
     var threshold = 30;
 
-    console.log('[swipe] final delta:', delta, 'threshold:', threshold);
-
     if (Math.abs(delta) < threshold) {
       console.log('[swipe] ❌ Дельта слишком малая');
       wrap.dataset.swiping = 'false';
@@ -286,7 +280,6 @@ function initHomeCalendarSwipes() {
     }
 
     var activeEl = wrap.querySelector('.home-cal-day.active');
-    console.log('[swipe] activeEl date:', activeEl ? activeEl.dataset.date : 'none');
 
     if (!activeEl) {
       wrap.dataset.swiping = 'false';
@@ -299,14 +292,12 @@ var daysToMove = Math.max(1, Math.round(Math.abs(delta) / dayWidth));
 var targetEl = activeEl;
 
 if (delta > threshold) {
-  console.log('[swipe] → Свайп на ' + daysToMove + ' дней');
   for (var j = 0; j < daysToMove; j++) {
     if (targetEl.nextElementSibling) {
       targetEl = targetEl.nextElementSibling;
     }
   }
 } else if (delta < -threshold) {
-  console.log('[swipe] ← Свайп на ' + daysToMove + ' дней');
   for (var j = 0; j < daysToMove; j++) {
     if (targetEl.previousElementSibling) {
       targetEl = targetEl.previousElementSibling;
@@ -315,12 +306,9 @@ if (delta > threshold) {
 }
 
     if (!targetEl) {
-      console.log('[swipe] ❌ targetEl не найден');
       wrap.dataset.swiping = 'false';
       return;
     }
-
-    console.log('[swipe] targetEl date:', targetEl.dataset.date);
 
     var newDate = targetEl.dataset.date;
     selectedHomeDate = newDate;
@@ -349,7 +337,6 @@ if (delta > threshold) {
 
   wrap.addEventListener('click', function(e) {
     if (Date.now() < blockClicksUntil) {
-      console.log('[swipe] 🚫 Блокируем клик после свайпа');
       e.stopPropagation();
       e.preventDefault();
       return false;
