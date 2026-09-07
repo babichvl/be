@@ -238,21 +238,11 @@ function initHomeCalendarSwipes() {
 
   var startX = 0;
   var isDragging = false;
-  var swipeStarted = false;
 
   wrap.addEventListener('touchstart', function(e) {
     startX = e.touches[0].clientX;
     isDragging = true;
-    swipeStarted = false;
-  }, { passive: true });
-
-  wrap.addEventListener('touchmove', function(e) {
-    if (!isDragging) return;
-    var currentX = e.touches[0].clientX;
-    var delta = startX - currentX;
-    if (Math.abs(delta) > 10) {
-      swipeStarted = true; // Флаг: идёт активный свайп
-    }
+    wrap.dataset.swiping = 'true'; // ✅ Флаг свайпа
   }, { passive: true });
 
   wrap.addEventListener('touchend', function(e) {
@@ -263,10 +253,16 @@ function initHomeCalendarSwipes() {
     var delta = startX - endX;
     var threshold = 30;
 
-    if (Math.abs(delta) < threshold) return;
+    if (Math.abs(delta) < threshold) {
+      wrap.dataset.swiping = 'false'; // Свайпа не было
+      return;
+    }
 
     var activeEl = wrap.querySelector('.home-cal-day.active');
-    if (!activeEl) return;
+    if (!activeEl) {
+      wrap.dataset.swiping = 'false';
+      return;
+    }
 
     var targetEl = null;
 
@@ -276,7 +272,10 @@ function initHomeCalendarSwipes() {
       targetEl = activeEl.previousElementSibling;
     }
 
-    if (!targetEl) return;
+    if (!targetEl) {
+      wrap.dataset.swiping = 'false';
+      return;
+    }
 
     var newDate = targetEl.dataset.date;
     selectedHomeDate = newDate;
@@ -292,15 +291,9 @@ function initHomeCalendarSwipes() {
 
     renderHomeWorkouts();
     targetEl.scrollIntoView({ inline: 'center', block: 'nearest' });
+    
+    wrap.dataset.swiping = 'false'; // ✅ Конец свайпа
   }, { passive: true });
-
-  // Отключаем клик при свайпе
-  wrap.addEventListener('click', function(e) {
-    if (swipeStarted) {
-      e.stopPropagation();
-      swipeStarted = false;
-    }
-  }, true); // Capture phase!
 }
 
 // ─── Главная: горизонтальный календарь ────────────
@@ -314,20 +307,6 @@ function centerDay(element) {
   setTimeout(function() { isScrollingProgrammatically = false; }, 50);
 }
 
-function buildHomeCalendar() {
-  var wrap = document.getElementById('home-cal-days');
-  if (!wrap) return;
-
-  wrap.innerHTML = '';
-  // ... весь код ...
-
-  var activeEl = wrap.querySelector('.home-cal-day.active');
-  if (activeEl) {
-    requestAnimationFrame(function() { centerDay(activeEl); });
-  }
-  
-  initHomeCalendarSwipes(); // ✅ ВЫЗОВ В КОНЦЕ
-}
 
 function buildHomeCalendar() {
   var wrap = document.getElementById('home-cal-days');
@@ -363,22 +342,25 @@ function buildHomeCalendar() {
     chip.appendChild(nameEl);
     chip.appendChild(icon);
 
-    chip.addEventListener('click', (function(isoDate, element) {
-      return function() {
-        selectedHomeDate = isoDate;
-        wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
-          el.classList.remove('active');
-        });
-        element.classList.add('active');
-        homeExpanded = true;
-        var expand = document.getElementById('home-expand');
-        if (expand) expand.classList.add('expanded');
-        renderHomeWorkouts();
-        requestAnimationFrame(function() {
-          requestAnimationFrame(function() { centerDay(element); });
-        });
-      };
-    })(iso, chip));
+chip.addEventListener('click', (function(isoDate, element) {
+  return function() {
+    var wrap = document.getElementById('home-cal-days');
+    if (wrap.dataset.swiping === 'true') return; // ✅ Игнорируем клик при свайпе
+
+    selectedHomeDate = isoDate;
+    wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
+      el.classList.remove('active');
+    });
+    element.classList.add('active');
+    homeExpanded = true;
+    var expand = document.getElementById('home-expand');
+    if (expand) expand.classList.add('expanded');
+    renderHomeWorkouts();
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { centerDay(element); });
+    });
+  };
+})(iso, chip));
 
     wrap.appendChild(chip);
   }
