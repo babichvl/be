@@ -232,6 +232,67 @@ function centerDay(element) {
   setTimeout(function() { isScrollingProgrammatically = false; }, 50);
 }
 
+function initHomeCalendarSwipes() {
+  var wrap = document.getElementById('home-cal-days');
+  if (!wrap) return;
+
+  var startX = 0;
+  var isDragging = false;
+
+  wrap.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    isDragging = true;
+  }, { passive: true });
+
+  wrap.addEventListener('touchend', function(e) {
+    if (!isDragging) return;
+    isDragging = false;
+
+    var endX = e.changedTouches[0].clientX;
+    var delta = startX - endX;
+    var threshold = 30;
+
+    if (Math.abs(delta) < threshold) return;
+
+    var activeEl = wrap.querySelector('.home-cal-day.active');
+    if (!activeEl) return;
+
+    if (delta > threshold) {
+      var next = activeEl.nextElementSibling;
+      if (next) next.click();
+    } else if (delta < -threshold) {
+      var prev = activeEl.previousElementSibling;
+      if (prev) prev.click();
+    }
+  }, { passive: true });
+}
+
+// ─── Главная: горизонтальный календарь ────────────
+var homeExpanded = false;
+var isScrollingProgrammatically = false;
+
+function centerDay(element) {
+  if (!element) return;
+  isScrollingProgrammatically = true;
+  element.scrollIntoView({ inline: 'center', block: 'nearest' });
+  setTimeout(function() { isScrollingProgrammatically = false; }, 50);
+}
+
+function buildHomeCalendar() {
+  var wrap = document.getElementById('home-cal-days');
+  if (!wrap) return;
+
+  wrap.innerHTML = '';
+  // ... весь код ...
+
+  var activeEl = wrap.querySelector('.home-cal-day.active');
+  if (activeEl) {
+    requestAnimationFrame(function() { centerDay(activeEl); });
+  }
+  
+  initHomeCalendarSwipes(); // ✅ ВЫЗОВ В КОНЦЕ
+}
+
 function buildHomeCalendar() {
   var wrap = document.getElementById('home-cal-days');
   if (!wrap) return;
@@ -290,6 +351,8 @@ function buildHomeCalendar() {
   if (activeEl) {
     requestAnimationFrame(function() { centerDay(activeEl); });
   }
+
+  initHomeCalendarSwipes(); // ✅ ЭТА СТРОКА
 }
 
 // ─── Расписание: календарь ─────────────────────────
