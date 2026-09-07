@@ -167,7 +167,6 @@ var ClientsUI = (function() {
 
     var statusText = client.status === 'active' ? 'Подключён' : 'Не подключён';
     var createdDate = client.created_at ? new Date(client.created_at).toLocaleDateString('ru-RU') : '—';
-    var birthDate = client.birth_date ? new Date(client.birth_date).toLocaleDateString('ru-RU') : 'Не указан';
 
     var html = '';
 
@@ -180,10 +179,6 @@ var ClientsUI = (function() {
     html += '  <div class="client-profile__info-row">';
     html += '    <span class="client-profile__info-label">Телефон</span>';
     html += '    <span class="client-profile__info-value">' + (client.phone || '—') + '</span>';
-    html += '  </div>';
-    html += '  <div class="client-profile__info-row">';
-    html += '    <span class="client-profile__info-label">День рождения</span>';
-    html += '    <span class="client-profile__info-value" id="birth-date-display" style="cursor: pointer; color: #667eea;">' + birthDate + '</span>';
     html += '  </div>';
     html += '  <div class="client-profile__info-row">';
     html += '    <span class="client-profile__info-label">Дата добавления</span>';
@@ -219,148 +214,6 @@ var ClientsUI = (function() {
     }
 
     contentEl.innerHTML = html;
-
-    // Обработчик клика на день рождения
-    var displayEl = document.getElementById('birth-date-display');
-    if (displayEl) {
-      displayEl.addEventListener('click', function() {
-        showBirthDateForm(client);
-      });
-    }
-  }
-
-  function showBirthDateForm(client) {
-    var displayEl = document.getElementById('birth-date-display');
-    var row = displayEl.parentElement;
-    
-    var day = '', month = '', year = '';
-    if (client.birth_date) {
-      var parts = client.birth_date.split('-');
-      if (parts.length === 3) {
-        year = parts[0];
-        month = parts[1];
-        day = parts[2];
-      }
-    }
-
-    var formHTML = '<div class="birth-date-form-container">' +
-      '<div class="birth-date-form">' +
-      '<div class="birth-date-field">' +
-      '<input type="text" class="birth-day" placeholder="ДД" maxlength="2" value="' + day + '">' +
-      '<label>День</label>' +
-      '</div>' +
-      '<span class="birth-date-separator">/</span>' +
-      '<div class="birth-date-field">' +
-      '<input type="text" class="birth-month" placeholder="МM" maxlength="2" value="' + month + '">' +
-      '<label>Месяц</label>' +
-      '</div>' +
-      '<span class="birth-date-separator">/</span>' +
-      '<div class="birth-date-field">' +
-      '<input type="text" class="birth-year" placeholder="ГГГГ" maxlength="4" value="' + year + '">' +
-      '<label>Год</label>' +
-      '</div>' +
-      '</div>' +
-      '<div class="birth-date-buttons">' +
-      '<button class="birth-date-btn save">Сохранить</button>' +
-      '<button class="birth-date-btn cancel">Отмена</button>' +
-      '</div>' +
-      '</div>';
-
-    row.innerHTML = formHTML;
-
-    var dayInput = row.querySelector('.birth-day');
-    var monthInput = row.querySelector('.birth-month');
-    var yearInput = row.querySelector('.birth-year');
-    var saveBtn = row.querySelector('.birth-date-btn.save');
-    var cancelBtn = row.querySelector('.birth-date-btn.cancel');
-
-    // Автоматический переход между полями
-    dayInput.addEventListener('input', function() {
-      this.value = this.value.replace(/[^0-9]/g, '');
-      if (this.value.length === 2) monthInput.focus();
-    });
-
-    monthInput.addEventListener('input', function() {
-      this.value = this.value.replace(/[^0-9]/g, '');
-      if (this.value.length === 2) yearInput.focus();
-    });
-
-    monthInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Backspace' && this.value.length === 0) dayInput.focus();
-    });
-
-    yearInput.addEventListener('input', function() {
-      this.value = this.value.replace(/[^0-9]/g, '');
-    });
-
-    yearInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Backspace' && this.value.length === 0) monthInput.focus();
-    });
-
-    // Сохранение
-    saveBtn.addEventListener('click', function() {
-      var d = dayInput.value.trim();
-      var m = monthInput.value.trim();
-      var y = yearInput.value.trim();
-
-      if (!d || !m || !y) {
-        alert('Заполните все поля');
-        return;
-      }
-
-      var dayNum = parseInt(d);
-      var monthNum = parseInt(m);
-      var yearNum = parseInt(y);
-
-      if (dayNum < 1 || dayNum > 31) {
-        alert('День: 1-31');
-        return;
-      }
-      if (monthNum < 1 || monthNum > 12) {
-        alert('Месяц: 1-12');
-        return;
-      }
-      if (yearNum < 1900 || yearNum > new Date().getFullYear()) {
-        alert('Год: 1900-' + new Date().getFullYear());
-        return;
-      }
-
-      var dateStr = yearNum + '-' + String(monthNum).padStart(2, '0') + '-' + String(dayNum).padStart(2, '0');
-      saveBirthDate(client.id, dateStr);
-    });
-
-    // Отмена
-    cancelBtn.addEventListener('click', function() {
-      openProfile(client.id);
-    });
-
-    dayInput.focus();
-  }
-
-  function saveBirthDate(clientId, birthDate) {
-    if (!window.sb) return;
-    
-    console.log('[ClientsUI] Сохраняем дату рождения:', birthDate);
-
-    sb.from('clients')
-      .update({ birth_date: birthDate })
-      .eq('id', clientId)
-      .then(function(result) {
-        if (result.error) {
-          console.error('[ClientsUI] Ошибка:', result.error);
-          alert('Ошибка: ' + result.error.message);
-          return;
-        }
-        console.log('[ClientsUI] ✅ Дата рождения сохранена');
-        
-        if (currentClient) {
-          currentClient.birth_date = birthDate;
-        }
-        
-        setTimeout(function() {
-          openProfile(clientId);
-        }, 300);
-      });
   }
 
   return {
