@@ -8,6 +8,7 @@ var HomeTriggers = (function() {
   var modalOverlay = null;
   var currentTriggerId = null;
   var triggersData = [];
+  var renderTimeout = null; // Дебаунс для избежания множественных render
 
   /**
    * TRIGGER CONDITIONS - Логика для проверки когда показывать триггер
@@ -125,6 +126,20 @@ var HomeTriggers = (function() {
   }
 
   /**
+   * Планирует render с дебаунсом (50ms) для объединения множественных изменений
+   */
+  function scheduleRender() {
+    if (renderTimeout) {
+      clearTimeout(renderTimeout);
+    }
+    
+    renderTimeout = setTimeout(() => {
+      render();
+      renderTimeout = null;
+    }, 50);
+  }
+
+  /**
    * Инициализация компонента
    */
   function init() {
@@ -145,18 +160,19 @@ var HomeTriggers = (function() {
       onTriggersUpdate(triggers);
     });
 
-    // Также подписываемся на изменения клиентов и тренировок (для обновления условий)
+    // Подписываемся на изменения клиентов (для обновления условий типа birthday, inactive_7d)
     if (ClientsStore && ClientsStore.subscribe) {
       ClientsStore.subscribe(() => {
         console.log('[HomeTriggers] Клиенты обновились - перепроверяем условия');
-        render();
+        scheduleRender();
       });
     }
 
+    // Подписываемся на изменения тренировок (для обновления условий типа inactive_7d, streak)
     if (WorkoutsStore && WorkoutsStore.subscribe) {
       WorkoutsStore.subscribe(() => {
         console.log('[HomeTriggers] Тренировки обновились - перепроверяем условия');
-        render();
+        scheduleRender();
       });
     }
 
@@ -170,7 +186,7 @@ var HomeTriggers = (function() {
   function onTriggersUpdate(triggers) {
     console.log('[HomeTriggers] Получены триггеры:', triggers.length);
     triggersData = triggers;
-    render();
+    scheduleRender();
   }
 
   /**
@@ -404,7 +420,7 @@ var HomeTriggers = (function() {
     // TODO: Реализовать фильтрацию по статусу
     // status может быть: 'all', 'active', 'inactive', 'requires_attention'
     console.log('[HomeTriggers] Фильтр по статусу:', status);
-    render();
+    scheduleRender();
   }
 
   /**
@@ -414,7 +430,7 @@ var HomeTriggers = (function() {
     // TODO: Реализовать фильтрацию по событиям
     // eventKey может быть: 'birthday', 'inactive_14d', 'streak_5' и т.д.
     console.log('[HomeTriggers] Фильтр по событию:', eventKey);
-    render();
+    scheduleRender();
   }
 
   /**
