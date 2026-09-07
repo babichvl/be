@@ -15,29 +15,23 @@ var HomeTriggers = (function() {
    */
   var TriggerConditions = {
     /**
-     * INACTIVE_7D - Последняя тренировка более 7 дней назад
+     * INACTIVE_14D - Последняя тренировка более 14 дней назад
      */
-    inactive_7d: function() {
+    inactive_14d: function() {
       const clients = ClientsStore.getAll();
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
 
-      // Проверяем каждого клиента
       for (let client of clients) {
         const workouts = WorkoutsStore.forClient(client.id);
         
-        // Если нет тренировок - клиент точно неактивен
         if (workouts.length === 0) {
-          console.log(`[TriggerConditions] Клиент ${client.name} без тренировок`);
           return true;
         }
 
-        // Берем последнюю тренировку
         const lastWorkout = workouts[workouts.length - 1];
         const lastWorkoutDate = new Date(lastWorkout.workout_date);
 
-        // Если последняя тренировка > 7 дней назад
-        if (lastWorkoutDate < sevenDaysAgo) {
-          console.log(`[TriggerConditions] Клиент ${client.name} неактивен с ${lastWorkout.workout_date}`);
+        if (lastWorkoutDate < fourteenDaysAgo) {
           return true;
         }
       }
@@ -54,11 +48,9 @@ var HomeTriggers = (function() {
       const todayMonth = today.getMonth();
       const todayDate = today.getDate();
 
-      // Вычисляем диапазон (±7 дней для проверки)
       const sevenDaysLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
       for (let client of clients) {
-        // Пропускаем если нет даты рождения
         if (!client.birth_date) {
           continue;
         }
@@ -68,24 +60,17 @@ var HomeTriggers = (function() {
         const birthDate_day = birthDate.getDate();
 
         // Проверяем дату рождения
-        // 1. Точно сегодня
         if (birthMonth === todayMonth && birthDate_day === todayDate) {
-          console.log(`[TriggerConditions] ДЕНЬ РОЖДЕНИЯ: ${client.name} - СЕГОДНЯ!`);
           return true;
         }
 
-        // 2. В течение 7 дней (учитывая переход месяца/года)
         const upcomingBirthday = new Date(today.getFullYear(), birthMonth, birthDate_day);
         
-        // Если дата уже прошла в этом году - берем следующий год
         if (upcomingBirthday < today) {
           upcomingBirthday.setFullYear(today.getFullYear() + 1);
         }
 
-        // Если дата рождения в ближайшие 7 дней
         if (upcomingBirthday >= today && upcomingBirthday <= sevenDaysLater) {
-          const daysLeft = Math.ceil((upcomingBirthday - today) / (1000 * 60 * 60 * 24));
-          console.log(`[TriggerConditions] День рождения ${client.name} через ${daysLeft} дней (${upcomingBirthday.toLocaleDateString()})`);
           return true;
         }
       }
@@ -93,7 +78,7 @@ var HomeTriggers = (function() {
       return false;
     },
 
-    // Placeholder для остальных триггеров (добавим позже)
+    // Placeholder для остальных триггеров
     subscription_ending: () => false,
     streak_5: () => false,
     streak_10: () => false,
@@ -104,6 +89,7 @@ var HomeTriggers = (function() {
     referral: () => false,
     review_left: () => false,
     unpaid_workout: () => false,
+    inactive_7d: () => false,
   };
 
   /**
@@ -112,14 +98,12 @@ var HomeTriggers = (function() {
   function shouldShowTrigger(trigger) {
     const condition = TriggerConditions[trigger.key];
     if (!condition) {
-      // console.warn(`[HomeTriggers] Нет условия для триггера: ${trigger.key}`);
       return false;
     }
 
     try {
       return condition();
     } catch (error) {
-      console.error(`[HomeTriggers] Ошибка при проверке триггера ${trigger.key}:`, error);
       return false;
     }
   }
@@ -128,33 +112,33 @@ var HomeTriggers = (function() {
    * Инициализация компонента
    */
   function init() {
-    console.log('[HomeTriggers] Инициализация...');
-
     scrollContainer = document.getElementById('home-triggers-scroll');
     carousel = document.getElementById('home-triggers-carousel');
 
     if (!scrollContainer || !carousel) {
-      console.warn('[HomeTriggers] Контейнер не найден');
       return;
     }
 
-    console.log('[HomeTriggers] ✅ Инициализация успешна');
-
-    // Подписываемся ТОЛЬКО на изменения конфигурации триггеров из TriggersStore
-    // Условия проверяются "на лету" берут свежие данные из ClientsStore и WorkoutsStore
     TriggersStore.subscribe((triggers) => {
       onTriggersUpdate(triggers);
     });
 
-    // Создаём модальное окно
+    if (ClientsStore && ClientsStore.subscribe) {
+      ClientsStore.subscribe(() => {
+        render();
+      });
+    }
+
+    if (WorkoutsStore && WorkoutsStore.subscribe) {
+      WorkoutsStore.subscribe(() => {
+        render();
+      });
+    }
+
     createModal();
   }
 
-  /**
-   * Обновление при изменении конфигурации триггеров
-   */
   function onTriggersUpdate(triggers) {
-    console.log('[HomeTriggers] Получены триггеры:', triggers.length);
     triggersData = triggers;
     render();
   }
@@ -166,23 +150,25 @@ var HomeTriggers = (function() {
     if (!scrollContainer) return;
 
     scrollContainer.innerHTML = '';
-    let visibleCount = 0;
+    var activeTriggers = [];
 
     // Отображаем только триггеры, которые прошли проверку условий
     triggersData.forEach((trigger) => {
-      // Проверяем должен ли триггер быть показан
       if (!shouldShowTrigger(trigger)) {
-        // console.log(`[HomeTriggers] Триггер ${trigger.key} скрыт (условие не выполнено)`);
         return; // Пропускаем этот триггер
       }
 
-      console.log(`[HomeTriggers] ✅ Триггер ${trigger.key} активен - показываем`);
+      activeTriggers.push(trigger.key);
       const card = createTriggerCard(trigger);
       scrollContainer.appendChild(card);
-      visibleCount++;
     });
 
-    console.log(`[HomeTriggers] Отрендерено активных карточек: ${visibleCount} из ${triggersData.length}`);
+    // Единый лог с активными триггерами
+    if (activeTriggers.length > 0) {
+      console.log(`[HomeTriggers] Активные: ${activeTriggers.join(', ')} (${activeTriggers.length} из ${triggersData.length})`);
+    } else {
+      console.log(`[HomeTriggers] Нет активных триггеров (0 из ${triggersData.length})`);
+    }
   }
 
   /**
