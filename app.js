@@ -293,15 +293,26 @@ function initHomeCalendarSwipes() {
       return;
     }
 
-    var targetEl = null;
+var dayWidth = activeEl.offsetWidth;
+var daysToMove = Math.max(1, Math.round(Math.abs(delta) / dayWidth));
 
-    if (delta > threshold) {
-      console.log('[swipe] → Свайп ВЛЕВО (следующий)');
-      targetEl = activeEl.nextElementSibling;
-    } else if (delta < -threshold) {
-      console.log('[swipe] ← Свайп ВПРАВО (предыдущий)');
-      targetEl = activeEl.previousElementSibling;
+var targetEl = activeEl;
+
+if (delta > threshold) {
+  console.log('[swipe] → Свайп на ' + daysToMove + ' дней');
+  for (var j = 0; j < daysToMove; j++) {
+    if (targetEl.nextElementSibling) {
+      targetEl = targetEl.nextElementSibling;
     }
+  }
+} else if (delta < -threshold) {
+  console.log('[swipe] ← Свайп на ' + daysToMove + ' дней');
+  for (var j = 0; j < daysToMove; j++) {
+    if (targetEl.previousElementSibling) {
+      targetEl = targetEl.previousElementSibling;
+    }
+  }
+}
 
     if (!targetEl) {
       console.log('[swipe] ❌ targetEl не найден');
