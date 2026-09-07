@@ -633,9 +633,49 @@ function initStores() {
 
 // Запуск после загрузки DOM
 setTimeout(initStores, 200);
+function initHomeCalendarSwipes() {
+  var wrap = document.getElementById('home-cal-days');
+  if (!wrap) return;
 
+  var startX = 0;
+  var isDragging = false;
+
+  wrap.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    isDragging = true;
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', function(e) {
+    // Ничего не делаем, просто читаем
+  }, { passive: true });
+
+  wrap.addEventListener('touchend', function(e) {
+    if (!isDragging) return;
+    isDragging = false;
+
+    var endX = e.changedTouches[0].clientX;
+    var delta = startX - endX;
+    var threshold = 30;
+
+    if (Math.abs(delta) < threshold) return;
+
+    var activeEl = wrap.querySelector('.home-cal-day.active');
+    if (!activeEl) return;
+
+    if (delta > threshold) {
+      // Свайп влево → следующий день
+      var next = activeEl.nextElementSibling;
+      if (next) next.click();
+    } else if (delta < -threshold) {
+      // Свайп вправо → предыдущий день
+      var prev = activeEl.previousElementSibling;
+      if (prev) prev.click();
+    }
+  }, { passive: true });
+}
 // ─── Построение календарей ─────────────────────────
 buildHomeCalendar();
+initHomeCalendarSwipes();
 rebuildScheduleCalendar();
 
 console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ПОЛНОСТЬЮ ИНИЦИАЛИЗИРОВАНО');
