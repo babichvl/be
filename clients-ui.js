@@ -18,7 +18,6 @@ var ClientsUI = (function() {
     createProfileModal();
     attachEventListeners();
 
-    // Подписываемся на изменения
     if (window.ClientsStore) {
       ClientsStore.subscribe(render);
     }
@@ -82,7 +81,6 @@ var ClientsUI = (function() {
       );
     }).join('');
 
-    // Обработчики кликов
     listContainer.querySelectorAll('.client-card').forEach(function(card) {
       card.addEventListener('click', function() {
         var clientId = this.dataset.clientId;
@@ -115,12 +113,10 @@ var ClientsUI = (function() {
 
     document.getElementById('client-profile-title').textContent = client.name;
 
-    // Загружаем тренировки клиента
     loadClientWorkouts(clientId).then(function(workouts) {
       renderProfile(client, workouts);
     });
 
-    // Блокируем скролл основного контента
     document.body.style.overflow = 'hidden';
     document.body.style.position = 'fixed';
     document.body.style.width = '100%';
@@ -137,7 +133,6 @@ var ClientsUI = (function() {
       profileOverlay.classList.remove('active');
       currentClient = null;
 
-      // Восстанавливаем скролл
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
@@ -167,10 +162,10 @@ var ClientsUI = (function() {
 
     var statusText = client.status === 'active' ? 'Подключён' : 'Не подключён';
     var createdDate = client.created_at ? new Date(client.created_at).toLocaleDateString('ru-RU') : '—';
+    var birthDate = client.birth_date ? new Date(client.birth_date).toLocaleDateString('ru-RU') : 'Не указан';
 
     var html = '';
 
-    // Информация
     html += '<div class="client-profile__info">';
     html += '  <div class="client-profile__info-row">';
     html += '    <span class="client-profile__info-label">Статус</span>';
@@ -181,12 +176,15 @@ var ClientsUI = (function() {
     html += '    <span class="client-profile__info-value">' + (client.phone || '—') + '</span>';
     html += '  </div>';
     html += '  <div class="client-profile__info-row">';
+    html += '    <span class="client-profile__info-label">День рождения</span>';
+    html += '    <span class="client-profile__info-value" id="birth-date-display" style="cursor: pointer; color: #667eea;">' + birthDate + '</span>';
+    html += '  </div>';
+    html += '  <div class="client-profile__info-row">';
     html += '    <span class="client-profile__info-label">Дата добавления</span>';
     html += '    <span class="client-profile__info-value">' + createdDate + '</span>';
     html += '  </div>';
     html += '</div>';
 
-    // История тренировок
     html += '<div class="client-profile__section-title">История тренировок</div>';
 
     if (workouts.length === 0) {
@@ -214,6 +212,123 @@ var ClientsUI = (function() {
     }
 
     contentEl.innerHTML = html;
+
+    var displayEl = document.getElementById('birth-date-display');
+    if (displayEl) {
+      displayEl.addEventListener('click', function() {
+        showBirthDateForm(client);
+      });
+    }
+  }
+
+  function showBirthDateForm(client) {
+    var displayEl = document.getElementById('birth-date-display');
+    var row = displayEl.parentElement;
+    
+    var formattedDate = '';
+    if (client.birth_date) {
+      var parts = client.birth_date.split('-');
+      if (parts.length === 3) {
+        formattedDate = parts[2] + '/' + parts[1] + '/' + parts[0];
+      }
+    }
+
+    var formHTML = '<div class="birth-date-form-container">' +
+      '<div class="birth-date-form-single">' +
+      '<input type="text" class="birth-date-input-single" placeholder="дд/мм/гггг" maxlength="10" value="' + formattedDate + '">' +
+      '</div>' +
+      '<div class="birth-date-buttons">' +
+      '<button class="birth-date-btn save">Сохранить</button>' +
+      '<button class="birth-date-btn cancel">Отмена</button>' +
+      '</div>' +
+      '</div>';
+
+    row.innerHTML = formHTML;
+
+    var input = row.querySelector('.birth-date-input-single');
+    var saveBtn = row.querySelector('.birth-date-btn.save');
+    var cancelBtn = row.querySelector('.birth-date-btn.cancel');
+
+    input.addEventListener('input', function() {
+      var val = this.value.replace(/[^0-9]/g, '');
+      
+      if (val.length > 0) {
+        if (val.length <= 2) {
+          this.value = val;
+        } else if (val.length <= 4) {
+          this.value = val.slice(0, 2) + '/' + val.slice(2);
+        } else {
+          this.value = val.slice(0, 2) + '/' + val.slice(2, 4) + '/' + val.slice(4, 8);
+        }
+      }
+    });
+
+    saveBtn.addEventListener('click', function() {
+      var val = input.value.trim();
+      
+      if (val.length !== 10) {
+        alert('Введите дату в формате дд/мм/гггг');
+        return;
+      }
+
+      var parts = val.split('/');
+      if (parts.length !== 3) {
+        alert('Неверный формат');
+        return;
+      }
+
+      var dayNum = parseInt(parts[0]);
+      var monthNum = parseInt(parts[1]);
+      var yearNum = parseInt(parts[2]);
+
+      if (dayNum < 1 || dayNum > 31) {
+        alert('День: 1-31');
+        return;
+      }
+      if (monthNum < 1 || monthNum > 12) {
+        alert('Месяц: 1-12');
+        return;
+      }
+      if (yearNum < 1900 || yearNum > new Date().getFullYear()) {
+        alert('Год: 1900-' + new Date().getFullYear());
+        return;
+      }
+
+      var dateStr = yearNum + '-' + String(monthNum).padStart(2, '0') + '-' + String(dayNum).padStart(2, '0');
+      saveBirthDate(client.id, dateStr);
+    });
+
+    cancelBtn.addEventListener('click', function() {
+      openProfile(client.id);
+    });
+
+    input.focus();
+  }
+
+  function saveBirthDate(clientId, birthDate) {
+    if (!window.sb) return;
+    
+    console.log('[ClientsUI] Сохраняем дату рождения:', birthDate);
+
+    sb.from('clients')
+      .update({ birth_date: birthDate })
+      .eq('id', clientId)
+      .then(function(result) {
+        if (result.error) {
+          console.error('[ClientsUI] Ошибка:', result.error);
+          alert('Ошибка: ' + result.error.message);
+          return;
+        }
+        console.log('[ClientsUI] ✅ Дата рождения сохранена');
+        
+        if (currentClient) {
+          currentClient.birth_date = birthDate;
+        }
+        
+        setTimeout(function() {
+          openProfile(clientId);
+        }, 300);
+      });
   }
 
   return {
