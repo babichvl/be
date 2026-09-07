@@ -237,33 +237,57 @@ function initHomeCalendarSwipes() {
   if (!wrap) return;
 
   var startX = 0;
+  var currentX = 0;
   var isDragging = false;
-  var hasProcessedSwipe = false; // ✅ Флаг обработки
+  var hasProcessedSwipe = false;
+  var blockClicksUntil = 0;
 
   wrap.addEventListener('touchstart', function(e) {
     startX = e.touches[0].clientX;
+    currentX = startX;
     isDragging = true;
-    hasProcessedSwipe = false; // ✅ Сброс флага в начале
+    hasProcessedSwipe = false;
     wrap.dataset.swiping = 'true';
+    console.log('[swipe] touchstart:', startX);
   }, { passive: true });
+
+  wrap.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    currentX = e.touches[0].clientX;
+    var delta = startX - currentX;
+    
+    if (Math.abs(delta) > 10) {
+      e.preventDefault();
+      console.log('[swipe] touchmove delta:', delta);
+    }
+  }, { passive: false });
 
   wrap.addEventListener('touchend', function(e) {
     if (!isDragging) return;
     isDragging = false;
 
-    if (hasProcessedSwipe) return; // ✅ Уже обработали - выходим
+    console.log('[swipe] touchend, hasProcessedSwipe:', hasProcessedSwipe);
+    
+    if (hasProcessedSwipe) {
+      console.log('[swipe] ❌ Уже обработали, выходим');
+      return;
+    }
     hasProcessedSwipe = true;
 
-    var endX = e.changedTouches[0].clientX;
-    var delta = startX - endX;
+    var delta = startX - currentX;
     var threshold = 30;
 
+    console.log('[swipe] final delta:', delta, 'threshold:', threshold);
+
     if (Math.abs(delta) < threshold) {
+      console.log('[swipe] ❌ Дельта слишком малая');
       wrap.dataset.swiping = 'false';
       return;
     }
 
     var activeEl = wrap.querySelector('.home-cal-day.active');
+    console.log('[swipe] activeEl date:', activeEl ? activeEl.dataset.date : 'none');
+
     if (!activeEl) {
       wrap.dataset.swiping = 'false';
       return;
@@ -272,15 +296,20 @@ function initHomeCalendarSwipes() {
     var targetEl = null;
 
     if (delta > threshold) {
+      console.log('[swipe] → Свайп ВЛЕВО (следующий)');
       targetEl = activeEl.nextElementSibling;
     } else if (delta < -threshold) {
+      console.log('[swipe] ← Свайп ВПРАВО (предыдущий)');
       targetEl = activeEl.previousElementSibling;
     }
 
     if (!targetEl) {
+      console.log('[swipe] ❌ targetEl не найден');
       wrap.dataset.swiping = 'false';
       return;
     }
+
+    console.log('[swipe] targetEl date:', targetEl.dataset.date);
 
     var newDate = targetEl.dataset.date;
     selectedHomeDate = newDate;
@@ -304,7 +333,17 @@ function initHomeCalendarSwipes() {
     wrap.scrollLeft = targetScroll;
 
     wrap.dataset.swiping = 'false';
-  }, { passive: true });
+    blockClicksUntil = Date.now() + 300;
+  }, { passive: false });
+
+  wrap.addEventListener('click', function(e) {
+    if (Date.now() < blockClicksUntil) {
+      console.log('[swipe] 🚫 Блокируем клик после свайпа');
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }
+  }, true);
 }
 
 // ─── Главная: горизонтальный календарь ────────────
