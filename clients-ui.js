@@ -181,6 +181,10 @@ var ClientsUI = (function() {
     html += '    <span class="client-profile__info-value">' + (client.phone || '—') + '</span>';
     html += '  </div>';
     html += '  <div class="client-profile__info-row">';
+    html += '    <span class="client-profile__info-label">День рождения</span>';
+    html += '    <span class="client-profile__info-value" id="birth-date-display">' + (client.birth_date ? new Date(client.birth_date).toLocaleDateString('ru-RU') : 'Не указан') + '</span>';
+    html += '  </div>';
+    html += '  <div class="client-profile__info-row">';
     html += '    <span class="client-profile__info-label">Дата добавления</span>';
     html += '    <span class="client-profile__info-value">' + createdDate + '</span>';
     html += '  </div>';
