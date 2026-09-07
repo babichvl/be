@@ -181,10 +181,6 @@ var ClientsUI = (function() {
     html += '    <span class="client-profile__info-value">' + (client.phone || '—') + '</span>';
     html += '  </div>';
     html += '  <div class="client-profile__info-row">';
-    html += '    <span class="client-profile__info-label">День рождения</span>';
-    html += '    <span class="client-profile__info-value" id="birth-date-display">' + (client.birth_date ? new Date(client.birth_date).toLocaleDateString('ru-RU') : 'Не указан') + '</span>';
-    html += '  </div>';
-    html += '  <div class="client-profile__info-row">';
     html += '    <span class="client-profile__info-label">Дата добавления</span>';
     html += '    <span class="client-profile__info-value">' + createdDate + '</span>';
     html += '  </div>';
@@ -218,36 +214,8 @@ var ClientsUI = (function() {
     }
 
     contentEl.innerHTML = html;
-    
-        // Делаем дату редактируемой
-    var displayEl = document.getElementById('birth-date-display');
-    if (displayEl) {
-      displayEl.style.cursor = 'pointer';
-      displayEl.addEventListener('click', function() {
-        var newDate = prompt('Введите дату рождения (YYYY-MM-DD):', client.birth_date || '');
-        if (newDate) {
-          saveBirthDate(client.id, newDate);
-        }
-      });
-    }
   }
-  function saveBirthDate(clientId, birthDate) {
-    if (!window.sb) return;
-    
-    sb.from('clients')
-      .update({ birth_date: birthDate })
-      .eq('id', clientId)
-      .then(function(result) {
-        if (result.error) {
-          console.error('[ClientsUI] Ошибка:', result.error);
-          alert('Ошибка: ' + result.error.message);
-          return;
-        }
-        console.log('[ClientsUI] ✅ Дата рождения сохранена');
-        if (window.ClientsStore) ClientsStore.refresh();
-        openProfile(clientId);
-      });
-  }
+
   return {
     init: init
   };
