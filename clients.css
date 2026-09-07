@@ -175,8 +175,8 @@
 }
 
 .client-profile__header {
-  padding: 20px;
-  margin-top: 60px;
+  padding: 16px;
+  margin-top: 100px;
   background: var(--surface-1);
   border-bottom: 1px solid var(--border);
   display: flex;
