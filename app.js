@@ -238,10 +238,21 @@ function initHomeCalendarSwipes() {
 
   var startX = 0;
   var isDragging = false;
+  var swipeStarted = false;
 
   wrap.addEventListener('touchstart', function(e) {
     startX = e.touches[0].clientX;
     isDragging = true;
+    swipeStarted = false;
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    var currentX = e.touches[0].clientX;
+    var delta = startX - currentX;
+    if (Math.abs(delta) > 10) {
+      swipeStarted = true; // Флаг: идёт активный свайп
+    }
   }, { passive: true });
 
   wrap.addEventListener('touchend', function(e) {
@@ -260,36 +271,36 @@ function initHomeCalendarSwipes() {
     var targetEl = null;
 
     if (delta > threshold) {
-      // Свайп влево → следующий день
       targetEl = activeEl.nextElementSibling;
     } else if (delta < -threshold) {
-      // Свайп вправо → предыдущий день
       targetEl = activeEl.previousElementSibling;
     }
 
     if (!targetEl) return;
 
-    // Обновляем дату напрямую БЕЗ клика
     var newDate = targetEl.dataset.date;
     selectedHomeDate = newDate;
 
-    // Обновляем активный класс
     wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
       el.classList.remove('active');
     });
     targetEl.classList.add('active');
 
-    // Раскрываем домашний экран
     homeExpanded = true;
     var expand = document.getElementById('home-expand');
     if (expand) expand.classList.add('expanded');
 
-    // Рендерим тренировки
     renderHomeWorkouts();
-
-    // МОМЕНТАЛЬНОЕ центрирование (БЕЗ requestAnimationFrame)
     targetEl.scrollIntoView({ inline: 'center', block: 'nearest' });
   }, { passive: true });
+
+  // Отключаем клик при свайпе
+  wrap.addEventListener('click', function(e) {
+    if (swipeStarted) {
+      e.stopPropagation();
+      swipeStarted = false;
+    }
+  }, true); // Capture phase!
 }
 
 // ─── Главная: горизонтальный календарь ────────────
