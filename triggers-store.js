@@ -213,9 +213,7 @@ function loadAll() {
         loadAll();
         startRealtime();
 
-        document.addEventListener('visibilitychange', function() {
-          if (document.visibilityState === 'visible') loadAll();
-        });
+
       } else if (attempt > 20) {
         clearInterval(checkSb);
         console.error('[TriggersStore] Supabase не загружен');
