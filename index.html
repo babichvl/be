@@ -9,13 +9,11 @@
   <link rel="stylesheet" href="workout-modal.css">
   <link rel="stylesheet" href="clients.css">
   <link rel="stylesheet" href="home-triggers.css">
-  <link rel="stylesheet" href="trainer-profile.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="content">
-  <div id="triggersContainer" class="triggers-container hidden"></div>
 
     <!-- ========================================
          ГЛАВНАЯ
@@ -23,10 +21,9 @@
     <div class="screen active" id="screen-home">
       <div class="page-header">
         <h1 class="page-header__title">Главная</h1>
-  <button class="page-header__avatar" id="headerAvatarBtn">
-  <div class="page-header__avatar-img">В</div>
-  <div class="page-header__status"></div>
-</button>
+        <div class="page-header__avatar">
+          <div class="page-header__avatar-img">В</div>
+          <div class="page-header__status"></div>
         </div>
       </div>
 
@@ -58,10 +55,9 @@
     <div class="screen" id="screen-schedule">
       <div class="page-header">
         <h1 class="page-header__title">Расписание</h1>
-        <button class="page-header__avatar" id="headerAvatarBtn-schedule">
-  <div class="page-header__avatar-img">В</div>
-  <div class="page-header__status"></div>
-</button>
+        <div class="page-header__avatar">
+          <div class="page-header__avatar-img">В</div>
+          <div class="page-header__status"></div>
         </div>
       </div>
       <div id="calendar-scheduler"></div>
@@ -73,10 +69,9 @@
     <div class="screen" id="screen-clients">
       <div class="page-header">
         <h1 class="page-header__title">Клиенты</h1>
-        <button class="page-header__avatar" id="headerAvatarBtn-clients">
-  <div class="page-header__avatar-img">В</div>
-  <div class="page-header__status"></div>
-</button>
+        <div class="page-header__avatar">
+          <div class="page-header__avatar-img">В</div>
+          <div class="page-header__status"></div>
         </div>
       </div>
 
@@ -111,10 +106,9 @@
     <div class="screen" id="screen-programs">
       <div class="page-header">
         <h1 class="page-header__title">Программы</h1>
-        <button class="page-header__avatar" id="headerAvatarBtn-programs">
-  <div class="page-header__avatar-img">В</div>
-  <div class="page-header__status"></div>
-</button>
+        <div class="page-header__avatar">
+          <div class="page-header__avatar-img">В</div>
+          <div class="page-header__status"></div>
         </div>
       </div>
       <p class="placeholder-text">Программы — скоро</p>
@@ -159,8 +153,6 @@
   <script src="clients-ui.js"></script>
   <script src="triggers-ui.js"></script>
   <script src="home-triggers.js"></script>
-  <script src="trainer-profile.js"></script>
   <script src="app.js"></script>
-  
 </body>
 </html>
