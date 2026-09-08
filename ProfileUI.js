@@ -48,9 +48,6 @@ var ProfileUI = (function() {
   function init(userTgId) {
     console.log('[ProfileUI] Инициализирую ProfileUI с userTgId:', userTgId);
 
-    // Создаём DOM
-    initDOM();
-
     // Биндим события
     setupOverlayClick();
 
@@ -418,12 +415,6 @@ var ProfileUI = (function() {
     }
   }
 
-  // ─── Инициализация ────────────────────────────────────────────
-  function init() {
-    console.log('[ProfileUI] Инициализирую ProfileUI');
-
-    // Создаём DOM
-    initDOM();
 
     // Биндим события
     setupOverlayClick();
