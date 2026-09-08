@@ -170,7 +170,6 @@ function shouldShowTrigger(trigger) {
     if (activeTriggers.length > 0) {
       console.log(`[HomeTriggers] Активные: ${activeTriggers.join(', ')} (${activeTriggers.length} из ${triggersData.length})`);
     } else {
-      console.log(`[HomeTriggers] Нет активных триггеров (0 из ${triggersData.length})`);
     }
   }
 
