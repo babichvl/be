@@ -373,11 +373,11 @@ var ProfileUI = (function() {
     }
   }
 
-  // ─── Инициализация ────────────────────────────────────────────
-  function init() {
-    console.log('[ProfileUI] Инициализирую ProfileUI');
+// ─── Инициализация ────────────────────────────────────────────
+  function init(userTgId) {
+    console.log('[ProfileUI] init() вызван с userTgId:', userTgId);
 
-    // Создаём DOM
+    // ВАЖНО: Создаём DOM первым
     initDOM();
 
     // Биндим события
@@ -387,30 +387,33 @@ var ProfileUI = (function() {
     var avatarBtn = document.querySelector('.page-header__avatar');
     if (avatarBtn) {
       avatarBtn.addEventListener('click', open);
-      console.log('[ProfileUI] Avatar button готова');
     }
 
-    // Подписываемся на изменения профиля из ProfileStore
+    // Подписываемся на ProfileStore
     if (window.ProfileStore) {
+      console.log('[ProfileUI] Подписываемся на ProfileStore');
+      
       ProfileStore.subscribe(function(profile) {
+        console.log('[ProfileUI] Получили профиль из Store:', profile);
         currentProfile = profile;
         if (isOpen) {
           render(profile);
         }
       });
-      console.log('[ProfileUI] Подписаны на ProfileStore');
+      
+      if (userTgId) {
+        console.log('[ProfileUI] Вызываю ProfileStore.init(' + userTgId + ')');
+        ProfileStore.init(userTgId);
+      } else {
+        console.warn('[ProfileUI] ⚠️ userTgId не передан!');
+      }
     } else {
-      console.warn('[ProfileUI] ProfileStore не найден');
+      console.error('[ProfileUI] ❌ ProfileStore НЕ найден!');
     }
-// Инициализируем ProfileStore с userTgId
-if (userTgId && window.ProfileStore) {
-  console.log('[ProfileUI] Вызываю ProfileStore.init(' + userTgId + ')');
-  ProfileStore.init(userTgId);
-} else {
-  console.warn('[ProfileUI] ⚠️ userTgId или ProfileStore не найдены!');
-}
+
     console.log('[ProfileUI] ✅ Инициализирован');
   }
+
 
   // ─── API ───────────────────────────────────────────────────────
   return {
