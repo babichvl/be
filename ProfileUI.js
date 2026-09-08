@@ -26,6 +26,22 @@ var ProfileUI = (function() {
     `;
     return html;
   }
+    // ─── Инициализация DOM ─────────────────────────────────────────
+  function initDOM() {
+    var container = document.body;
+    var existing = document.getElementById('profile-overlay');
+    
+    if (!existing) {
+      var fragment = document.createElement('div');
+      fragment.innerHTML = createProfileHTML();
+      // Добавляем оба элемента (overlay и panel)
+      var overlay = fragment.firstElementChild;
+      var panel = fragment.lastElementChild;
+      container.appendChild(overlay);
+      container.appendChild(panel);
+      console.log('[ProfileUI] DOM инициализирован');
+    }
+  }
 
   // ─── Инициализация DOM ─────────────────────────────────────────
   // ─── Инициализация ────────────────────────────────────────
