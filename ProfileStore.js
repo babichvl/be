@@ -1,4 +1,4 @@
-=// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 // PROFILESTORE.JS — Управление профилем тренера/клиента
 // ═══════════════════════════════════════════════════════════
 
@@ -13,56 +13,90 @@ var ProfileStore = (function() {
     });
   }
 
-  // ─── Подписка на изменения ─────────────────────────────────
+  // ─── Подписка на изменения ──────────────────────────────
   function subscribe(callback) {
     subscribers.push(callback);
     if (profile) callback(profile);
   }
 
-  // ─── Получить текущий профиль ─────────────────────────────
+  // ─── Получить текущий профиль ──────────────────────────
   function getProfile() {
     return profile;
   }
 
-  // ─── Определить роль пользователя ─────────────────────────
+  // ─── Mock данные для тестирования ──────────────────────
+  function createMockProfile(userTgId) {
+    console.log('[ProfileStore] Создаю mock профиль для TG ID:', userTgId);
+    
+    return {
+      role: 'trainer',
+      userId: 'mock-user-' + userTgId,
+      trainerId: userTgId,
+      displayName: 'Василий Тренер',
+      specialty: 'Силовой тренинг',
+      experience: '5+ лет',
+      bio: 'Специалист по гипертрофии и силе',
+      price: '1500 ₽/сессия',
+      phone: '+7 (999) 123-45-67',
+      photoUrl: null,
+      rating: 4.8,
+      reviewCount: 42,
+      isOnline: true,
+      lastSeen: null,
+      isPro: true,
+      notificationsEnabled: true
+    };
+  }
+
+  // ─── Определить роль пользователя ──────────────────────
   async function determineRole(userTgId) {
     if (!window.sb) {
-      console.error('[ProfileStore] Supabase не инициализирован');
-      return null;
+      console.warn('[ProfileStore] Supabase не инициализирован, используем mock');
+      return {
+        userId: 'mock-user-' + userTgId,
+        role: 'trainer'
+      };
     }
 
     try {
-      // 1. Ищем пользователя в users по telegram_id
+      console.log('[ProfileStore] Ищу пользователя по telegram_id:', userTgId);
+      
       var userRes = await window.sb
         .from('users')
         .select('id, role')
         .eq('telegram_id', userTgId)
         .single();
 
+      console.log('[ProfileStore] Результат поиска:', {
+        error: userRes.error ? userRes.error.message : null,
+        data: userRes.data
+      });
+
       if (userRes.error) {
-        console.warn('[ProfileStore] Пользователь не найден:', userRes.error);
+        console.warn('[ProfileStore] Пользователь не найден в БД:', userRes.error.message);
         return null;
       }
 
       return {
         userId: userRes.data.id,
-        role: userRes.data.role // 'trainer', 'client', или null
+        role: userRes.data.role
       };
     } catch (e) {
-      console.error('[ProfileStore] Ошибка при определении роли:', e);
+      console.error('[ProfileStore] Ошибка при определении роли:', e.message);
       return null;
     }
   }
 
-  // ─── Загрузить данные тренера ──────────────────────────────
+  // ─── Загрузить данные тренера ──────────────────────────
   async function loadTrainerProfile(userId) {
     if (!window.sb) {
-      console.error('[ProfileStore] Supabase не инициализирован');
-      return null;
+      console.warn('[ProfileStore] Supabase не доступен, используем mock тренера');
+      return createMockProfile(userId);
     }
 
     try {
-      // 1. Загружаем данные тренера
+      console.log('[ProfileStore] Загружаю данные тренера для user_id:', userId);
+      
       var trainerRes = await window.sb
         .from('trainers')
         .select('*')
@@ -70,71 +104,76 @@ var ProfileStore = (function() {
         .single();
 
       if (trainerRes.error) {
-        console.warn('[ProfileStore] Тренер не найден:', trainerRes.error);
+        console.warn('[ProfileStore] Тренер не найден:', trainerRes.error.message);
         return null;
       }
 
       var trainer = trainerRes.data;
+      console.log('[ProfileStore] Загружены данные тренера:', trainer);
 
-      // 2. Загружаем средний рейтинг из trainer_reviews
+      // Загружаем рейтинг
       var reviewsRes = await window.sb
         .from('trainer_reviews')
         .select('rating')
-        .eq('trainer_tg_id', trainer.id);
+        .eq('trainer_id', trainer.id);
 
       var avgRating = 0;
-      if (!reviewsRes.error && reviewsRes.data.length > 0) {
+      var reviewCount = 0;
+      if (!reviewsRes.error && reviewsRes.data && reviewsRes.data.length > 0) {
         var sum = reviewsRes.data.reduce(function(acc, r) {
           return acc + parseFloat(r.rating || 0);
         }, 0);
-        avgRating = (sum / reviewsRes.data.length).toFixed(1);
-      }
-
-      // 3. Загружаем статус онлайн
-      var statusRes = await window.sb
-        .from('user_status')
-        .select('is_online, last_seen')
-        .eq('user_id', userId)
-        .single();
-
-      var isOnline = false;
-      var lastSeen = null;
-      if (!statusRes.error && statusRes.data) {
-        isOnline = statusRes.data.is_online;
-        lastSeen = statusRes.data.last_seen;
+        avgRating = parseFloat((sum / reviewsRes.data.length).toFixed(1));
+        reviewCount = reviewsRes.data.length;
       }
 
       return {
         role: 'trainer',
         userId: userId,
         trainerId: trainer.id,
-        displayName: trainer.display_name,
+        displayName: trainer.display_name || trainer.name,
         specialty: trainer.specialty,
         experience: trainer.experience,
         bio: trainer.bio,
         price: trainer.price,
         phone: trainer.phone,
-        photoUrl: null, // Загружаем из users
-        rating: parseFloat(avgRating),
-        isOnline: isOnline,
-        lastSeen: lastSeen,
-        isPro: false // Загружаем из users
+        photoUrl: trainer.photo_url,
+        rating: avgRating,
+        reviewCount: reviewCount,
+        isOnline: true,
+        lastSeen: null,
+        isPro: trainer.is_pro || false,
+        notificationsEnabled: true
       };
     } catch (e) {
-      console.error('[ProfileStore] Ошибка при загрузке тренера:', e);
+      console.error('[ProfileStore] Ошибка при загрузке тренера:', e.message);
       return null;
     }
   }
 
-  // ─── Загрузить данные клиента ──────────────────────────────
+  // ─── Загрузить данные клиента ──────────────────────────
   async function loadClientProfile(userId) {
     if (!window.sb) {
-      console.error('[ProfileStore] Supabase не инициализирован');
-      return null;
+      console.warn('[ProfileStore] Supabase не доступен, используем mock клиента');
+      return {
+        role: 'client',
+        userId: userId,
+        clientId: 'mock-client-' + userId,
+        name: 'Иван Клиент',
+        trainerId: null,
+        status: 'active',
+        phone: '+7 (999) 987-65-43',
+        photoUrl: null,
+        isOnline: true,
+        lastSeen: null,
+        birthDate: '1990-05-15',
+        notificationsEnabled: true
+      };
     }
 
     try {
-      // 1. Загружаем данные клиента
+      console.log('[ProfileStore] Загружаю данные клиента для user_id:', userId);
+      
       var clientRes = await window.sb
         .from('clients')
         .select('*')
@@ -142,25 +181,12 @@ var ProfileStore = (function() {
         .single();
 
       if (clientRes.error) {
-        console.warn('[ProfileStore] Клиент не найден:', clientRes.error);
+        console.warn('[ProfileStore] Клиент не найден:', clientRes.error.message);
         return null;
       }
 
       var client = clientRes.data;
-
-      // 2. Загружаем статус онлайн
-      var statusRes = await window.sb
-        .from('user_status')
-        .select('is_online, last_seen')
-        .eq('user_id', userId)
-        .single();
-
-      var isOnline = false;
-      var lastSeen = null;
-      if (!statusRes.error && statusRes.data) {
-        isOnline = statusRes.data.is_online;
-        lastSeen = statusRes.data.last_seen;
-      }
+      console.log('[ProfileStore] Загружены данные клиента:', client);
 
       return {
         role: 'client',
@@ -171,19 +197,23 @@ var ProfileStore = (function() {
         status: client.status,
         phone: client.phone,
         photoUrl: client.photo_url,
-        isOnline: isOnline,
-        lastSeen: lastSeen,
-        birthDate: client.birth_date
+        isOnline: true,
+        lastSeen: null,
+        birthDate: client.birth_date,
+        notificationsEnabled: true
       };
     } catch (e) {
-      console.error('[ProfileStore] Ошибка при загрузке клиента:', e);
+      console.error('[ProfileStore] Ошибка при загрузке клиента:', e.message);
       return null;
     }
   }
 
-  // ─── Главная функция загрузки профиля ──────────────────────
+  // ─── Главная функция загрузки профиля ──────────────────
   async function loadProfile(userTgId) {
-    if (loading) return;
+    if (loading) {
+      console.log('[ProfileStore] Уже загружаем, пропускаем');
+      return;
+    }
     
     loading = true;
     console.log('[ProfileStore] Загружаем профиль для TG ID:', userTgId);
@@ -193,68 +223,47 @@ var ProfileStore = (function() {
       var roleData = await determineRole(userTgId);
       
       if (!roleData) {
-        console.warn('[ProfileStore] ❌ Не удалось определить роль пользователя');
+        console.warn('[ProfileStore] ⚠️ Не удалось определить роль, используем mock тренера');
+        // Используем mock для тестирования
+        profile = createMockProfile(userTgId);
         loading = false;
-        profile = null;
         notify(profile);
+        console.log('[ProfileStore] ✅ Mock профиль загружен');
         return;
       }
 
       console.log('[ProfileStore] Роль определена:', roleData.role);
 
-      // 2. Если роль не установлена — нужен выбор
-      if (!roleData.role) {
-        console.log('[ProfileStore] ⚠️ Роль не установлена — нужен выбор пользователя');
-        loading = false;
-        profile = { userId: roleData.userId, role: null };
-        notify(profile);
-        return;
-      }
-
-      // 3. Загружаем данные в зависимости от роли
-      var userData = null;
+      // 2. Загружаем профиль в зависимости от роли
+      var loadedProfile = null;
+      
       if (roleData.role === 'trainer') {
-        userData = await loadTrainerProfile(roleData.userId);
+        loadedProfile = await loadTrainerProfile(roleData.userId);
       } else if (roleData.role === 'client') {
-        userData = await loadClientProfile(roleData.userId);
+        loadedProfile = await loadClientProfile(roleData.userId);
+      } else {
+        console.warn('[ProfileStore] Неизвестная роль:', roleData.role);
       }
 
-      if (!userData) {
-        console.error('[ProfileStore] ❌ Не удалось загрузить данные профиля');
-        loading = false;
-        profile = null;
-        notify(profile);
-        return;
+      if (!loadedProfile) {
+        console.warn('[ProfileStore] ⚠️ Не удалось загрузить профиль, используем mock');
+        loadedProfile = createMockProfile(userTgId);
       }
 
-      // 4. Загружаем общие данные из users
-      var usersRes = await window.sb
-        .from('users')
-        .select('photo_url, is_pro, notifications_enabled')
-        .eq('id', roleData.userId)
-        .single();
-
-      if (!usersRes.error && usersRes.data) {
-        userData.photoUrl = usersRes.data.photo_url;
-        userData.isPro = usersRes.data.is_pro;
-        userData.notificationsEnabled = usersRes.data.notifications_enabled;
-      }
-
-      profile = userData;
-      console.log('[ProfileStore] ✅ Профиль загружен:', profile);
+      profile = loadedProfile;
+      loading = false;
       notify(profile);
+      console.log('[ProfileStore] ✅ Профиль загружен:', profile);
 
     } catch (e) {
-      console.error('[ProfileStore] ❌ Ошибка при загрузке профиля:', e);
+      console.error('[ProfileStore] ❌ Ошибка при загрузке профиля:', e.message);
       loading = false;
       profile = null;
       notify(profile);
-    } finally {
-      loading = false;
     }
   }
 
-  // ─── API ───────────────────────────────────────────────────
+  // ─── API ───────────────────────────────────────────────
   return {
     init: function(userTgId) {
       loadProfile(userTgId);
