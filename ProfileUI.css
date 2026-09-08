@@ -46,7 +46,7 @@
   transform: translateY(0);
 }
 
-/* Dragging handle (для свайпов) */
+/* Dragging handle */
 .profile-panel__handle {
   width: 36px;
   height: 4px;
@@ -56,7 +56,7 @@
   opacity: 0.3;
 }
 
-/* ─── Header с кнопкой закрытия ───────────────────────────────────── */
+/* ─── Header ──────────────────────────────────────────────────────── */
 .profile-panel__header {
   display: flex;
   align-items: center;
@@ -96,7 +96,7 @@
   stroke-linejoin: round;
 }
 
-/* ─── Содержимое панели (скролл) ───────────────────────────────────── */
+/* ─── Содержимое (скролл) ─────────────────────────────────────────── */
 .profile-panel__content {
   flex: 1;
   overflow-y: auto;
@@ -105,7 +105,7 @@
   padding-bottom: var(--sp-16);
 }
 
-/* ─── Карточка профиля ─────────────────────────────────────────────── */
+/* ─── Карточка профиля ────────────────────────────────────────────── */
 .profile-card {
   background: var(--surface-1);
   border-radius: var(--radius-md);
@@ -119,7 +119,7 @@
   gap: var(--sp-16);
 }
 
-/* Аватар профиля */
+/* Аватар */
 .profile-card__avatar {
   position: relative;
   width: 80px;
@@ -144,8 +144,15 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Статус онлайн (зелёная точка) */
-.profile-card__status-badge {
+.profile-card__avatar-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+/* Статус онлайн */
+.profile-card__status {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -157,7 +164,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-.profile-card__status-badge.offline {
+.profile-card__status.offline {
   background: var(--text-secondary);
 }
 
@@ -181,7 +188,7 @@
   margin-bottom: var(--sp-12);
 }
 
-/* Для тренера: рейтинг */
+/* Рейтинг */
 .profile-card__rating {
   display: flex;
   align-items: center;
@@ -203,7 +210,7 @@
   margin-left: 4px;
 }
 
-/* Описание (для тренера) */
+/* Описание */
 .profile-card__bio {
   font-size: 14px;
   color: var(--text-secondary);
@@ -238,7 +245,7 @@
   flex-direction: column;
 }
 
-/* ─── Items (в секциях) ────────────────────────────────────────────── */
+/* ─── Items ────────────────────────────────────────────────────────── */
 .profile-item {
   display: flex;
   align-items: center;
@@ -286,6 +293,13 @@
   flex-shrink: 0;
 }
 
+.profile-item__arrow {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-left: var(--sp-12);
+  flex-shrink: 0;
+}
+
 /* Toggle switch */
 .profile-item__toggle {
   width: 48px;
@@ -298,6 +312,7 @@
   padding: 2px;
   transition: background 0.3s;
   -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
 .profile-item__toggle.active {
@@ -321,7 +336,7 @@
   left: calc(100% - 26px);
 }
 
-/* ─── Для клиента: информация о тренере ────────────────────────────── */
+/* ─── Trainer Card (для клиента) ──────────────────────────────────── */
 .profile-trainer-card {
   background: var(--surface-1);
   border-radius: var(--radius-md);
@@ -347,6 +362,13 @@
   color: white;
   flex-shrink: 0;
   object-fit: cover;
+}
+
+.profile-trainer-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .profile-trainer-card__info {
@@ -375,7 +397,7 @@
   justify-content: center;
 }
 
-/* ─── Кнопка (Action Button) ──────────────────────────────────────── */
+/* ─── Action Button ────────────────────────────────────────────────── */
 .profile-action-btn {
   margin: 0 var(--sp-16);
   margin-bottom: var(--sp-24);
@@ -389,7 +411,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Primary button (например, Logout) */
+/* Primary */
 .profile-action-btn.primary {
   background: linear-gradient(135deg, #7B7BFF 0%, #5B5BFF 100%);
   color: white;
@@ -401,7 +423,7 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Danger button (например, Delete Account) */
+/* Danger */
 .profile-action-btn.danger {
   background: #FF3B30;
   color: white;
@@ -413,7 +435,7 @@
   background: #E63B30;
 }
 
-/* Secondary button */
+/* Secondary */
 .profile-action-btn.secondary {
   background: var(--surface-2);
   color: var(--text-primary);
@@ -425,7 +447,7 @@
   background: #EFEFEF;
 }
 
-/* ─── Divider (разделитель) ─────────────────────────────────────────── */
+/* ─── Divider ──────────────────────────────────────────────────────── */
 .profile-divider {
   height: 1px;
   background: var(--border);
@@ -440,7 +462,7 @@
   font-size: 15px;
 }
 
-/* ─── Loading State ────────────────────────────────────────────────── */
+/* ─── Loading Skeleton ────────────────────────────────────────────── */
 .profile-skeleton {
   background: linear-gradient(
     90deg,
@@ -513,7 +535,7 @@
   }
 }
 
-/* ─── Safe Area (для notch) ────────────────────────────────────────– */
+/* ─── Safe Area ────────────────────────────────────────────────────── */
 @supports (padding: max(0px)) {
   .profile-panel {
     padding-bottom: max(0px, env(safe-area-inset-bottom));
