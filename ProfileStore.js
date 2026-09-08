@@ -8,15 +8,27 @@ var ProfileStore = (function() {
   var subscribers = [];
 
   function notify(data) {
+    console.log('[ProfileStore] notify() вызван с данными:', data);
+    console.log('[ProfileStore] Всего подписчиков:', subscribers.length);
     subscribers.forEach(function(cb) {
+      console.log('[ProfileStore] Вызываю callback...');
       cb(data);
     });
+    console.log('[ProfileStore] ✅ Все callback вызваны');
   }
 
   // ─── Подписка на изменения ─────────────────────────────────
   function subscribe(callback) {
+    console.log('[ProfileStore] subscribe() — добавляю callback');
+    console.log('[ProfileStore] Текущий профиль:', profile ? 'ЕСТЬ' : 'null');
     subscribers.push(callback);
-    if (profile) callback(profile);
+    console.log('[ProfileStore] Всего подписчиков теперь:', subscribers.length);
+    if (profile) {
+      console.log('[ProfileStore] Профиль уже есть, вызываю callback прямо сейчас');
+      callback(profile);
+    } else {
+      console.log('[ProfileStore] Профиля нет, callback будет вызван позже через notify()');
+    }
   }
 
   // ─── Получить текущий профиль ─────────────────────────────
@@ -26,13 +38,15 @@ var ProfileStore = (function() {
 
   // ─── Определить роль пользователя ─────────────────────────
   async function determineRole(userTgId) {
+    console.log('[ProfileStore] determineRole() вызван для TG ID:', userTgId);
+    
     if (!window.sb) {
-      console.error('[ProfileStore] Supabase не инициализирован');
+      console.warn('[ProfileStore] ⚠️ Supabase не инициализирован, возвращаю null');
       return null;
     }
 
     try {
-      // 1. Ищем пользователя в users по telegram_id
+      console.log('[ProfileStore] Ищу пользователя в users...');
       var userRes = await window.sb
         .from('users')
         .select('id, role')
@@ -40,29 +54,31 @@ var ProfileStore = (function() {
         .single();
 
       if (userRes.error) {
-        console.warn('[ProfileStore] Пользователь не найден:', userRes.error);
+        console.warn('[ProfileStore] ❌ Пользователь не найден:', userRes.error.message);
         return null;
       }
 
+      console.log('[ProfileStore] ✅ Пользователь найден, роль:', userRes.data.role);
       return {
         userId: userRes.data.id,
-        role: userRes.data.role // 'trainer', 'client', или null
+        role: userRes.data.role
       };
     } catch (e) {
-      console.error('[ProfileStore] Ошибка при определении роли:', e);
+      console.error('[ProfileStore] ❌ Ошибка determineRole:', e.message);
       return null;
     }
   }
 
   // ─── Загрузить данные тренера ──────────────────────────────
   async function loadTrainerProfile(userId) {
+    console.log('[ProfileStore] loadTrainerProfile() для user_id:', userId);
+    
     if (!window.sb) {
-      console.error('[ProfileStore] Supabase не инициализирован');
+      console.warn('[ProfileStore] ⚠️ Supabase не доступен');
       return null;
     }
 
     try {
-      // 1. Загружаем данные тренера
       var trainerRes = await window.sb
         .from('trainers')
         .select('*')
@@ -70,13 +86,13 @@ var ProfileStore = (function() {
         .single();
 
       if (trainerRes.error) {
-        console.warn('[ProfileStore] Тренер не найден:', trainerRes.error);
+        console.warn('[ProfileStore] ❌ Тренер не найден:', trainerRes.error.message);
         return null;
       }
 
       var trainer = trainerRes.data;
+      console.log('[ProfileStore] ✅ Тренер загружен:', trainer.display_name);
 
-      // 2. Загружаем средний рейтинг из trainer_reviews
       var reviewsRes = await window.sb
         .from('trainer_reviews')
         .select('rating')
@@ -90,7 +106,6 @@ var ProfileStore = (function() {
         avgRating = (sum / reviewsRes.data.length).toFixed(1);
       }
 
-      // 3. Загружаем статус онлайн
       var statusRes = await window.sb
         .from('user_status')
         .select('is_online, last_seen')
@@ -114,27 +129,29 @@ var ProfileStore = (function() {
         bio: trainer.bio,
         price: trainer.price,
         phone: trainer.phone,
-        photoUrl: null, // Загружаем из users
+        photoUrl: null,
         rating: parseFloat(avgRating),
         isOnline: isOnline,
         lastSeen: lastSeen,
-        isPro: false // Загружаем из users
+        isPro: false,
+        notificationsEnabled: true
       };
     } catch (e) {
-      console.error('[ProfileStore] Ошибка при загрузке тренера:', e);
+      console.error('[ProfileStore] ❌ Ошибка loadTrainerProfile:', e.message);
       return null;
     }
   }
 
   // ─── Загрузить данные клиента ──────────────────────────────
   async function loadClientProfile(userId) {
+    console.log('[ProfileStore] loadClientProfile() для user_id:', userId);
+    
     if (!window.sb) {
-      console.error('[ProfileStore] Supabase не инициализирован');
+      console.warn('[ProfileStore] ⚠️ Supabase не доступен');
       return null;
     }
 
     try {
-      // 1. Загружаем данные клиента
       var clientRes = await window.sb
         .from('clients')
         .select('*')
@@ -142,13 +159,13 @@ var ProfileStore = (function() {
         .single();
 
       if (clientRes.error) {
-        console.warn('[ProfileStore] Клиент не найден:', clientRes.error);
+        console.warn('[ProfileStore] ❌ Клиент не найден:', clientRes.error.message);
         return null;
       }
 
       var client = clientRes.data;
+      console.log('[ProfileStore] ✅ Клиент загружен:', client.name);
 
-      // 2. Загружаем статус онлайн
       var statusRes = await window.sb
         .from('user_status')
         .select('is_online, last_seen')
@@ -173,61 +190,65 @@ var ProfileStore = (function() {
         photoUrl: client.photo_url,
         isOnline: isOnline,
         lastSeen: lastSeen,
-        birthDate: client.birth_date
+        birthDate: client.birth_date,
+        notificationsEnabled: true
       };
     } catch (e) {
-      console.error('[ProfileStore] Ошибка при загрузке клиента:', e);
+      console.error('[ProfileStore] ❌ Ошибка loadClientProfile:', e.message);
       return null;
     }
   }
 
   // ─── Главная функция загрузки профиля ──────────────────────
   async function loadProfile(userTgId) {
-    if (loading) return;
+    console.log('[ProfileStore] ===== loadProfile() НАЧАЛО для TG ID:', userTgId, '=====');
+    
+    if (loading) {
+      console.log('[ProfileStore] ⚠️ Уже загружается, игнорирую');
+      return;
+    }
     
     loading = true;
-    console.log('[ProfileStore] Загружаем профиль для TG ID:', userTgId);
 
     try {
-      // 1. Определяем роль
       var roleData = await determineRole(userTgId);
       
       if (!roleData) {
-        console.warn('[ProfileStore] ❌ Не удалось определить роль пользователя');
+        console.warn('[ProfileStore] ❌ determineRole вернула null');
         loading = false;
         profile = null;
         notify(profile);
         return;
       }
 
-      console.log('[ProfileStore] Роль определена:', roleData.role);
+      console.log('[ProfileStore] Роль:', roleData.role);
 
-      // 2. Если роль не установлена — нужен выбор
       if (!roleData.role) {
-        console.log('[ProfileStore] ⚠️ Роль не установлена — нужен выбор пользователя');
+        console.log('[ProfileStore] ⚠️ Роль не установлена');
         loading = false;
         profile = { userId: roleData.userId, role: null };
         notify(profile);
         return;
       }
 
-      // 3. Загружаем данные в зависимости от роли
       var userData = null;
       if (roleData.role === 'trainer') {
+        console.log('[ProfileStore] Загружаю тренера...');
         userData = await loadTrainerProfile(roleData.userId);
       } else if (roleData.role === 'client') {
+        console.log('[ProfileStore] Загружаю клиента...');
         userData = await loadClientProfile(roleData.userId);
       }
 
       if (!userData) {
-        console.error('[ProfileStore] ❌ Не удалось загрузить данные профиля');
+        console.error('[ProfileStore] ❌ userData пуста');
         loading = false;
         profile = null;
         notify(profile);
         return;
       }
 
-      // 4. Загружаем общие данные из users
+      // Загружаем общие данные из users
       var usersRes = await window.sb
         .from('users')
         .select('photo_url, is_pro, notifications_enabled')
@@ -238,25 +259,30 @@ var ProfileStore = (function() {
         userData.photoUrl = usersRes.data.photo_url;
         userData.isPro = usersRes.data.is_pro;
         userData.notificationsEnabled = usersRes.data.notifications_enabled;
+        console.log('[ProfileStore] ✅ Дополнены данные из users');
       }
 
       profile = userData;
-      console.log('[ProfileStore] ✅ Профиль загружен:', profile);
+      console.log('[ProfileStore] ✅✅✅ ПРОФИЛЬ ГОТОВ:', profile);
+      console.log('[ProfileStore] ===== ВЫЗЫВАЮ notify() =====');
       notify(profile);
+      console.log('[ProfileStore] ===== notify() ЗАВЕРШЁН =====');
 
     } catch (e) {
-      console.error('[ProfileStore] ❌ Ошибка при загрузке профиля:', e);
+      console.error('[ProfileStore] ❌❌❌ ОШИБКА:', e.message);
       loading = false;
       profile = null;
       notify(profile);
     } finally {
       loading = false;
+      console.log('[ProfileStore] ===== loadProfile() КОНЕЦ =====');
     }
   }
 
   // ─── API ───────────────────────────────────────────────────
   return {
     init: function(userTgId) {
+      console.log('[ProfileStore] init() вызван с userTgId:', userTgId);
       loadProfile(userTgId);
     },
     subscribe: subscribe,
@@ -266,4 +292,4 @@ var ProfileStore = (function() {
   };
 })();
 
-console.log('[ProfileStore] ✅ Инициализирован');
+console.log('[ProfileStore] ✅ Загружен и готов');
