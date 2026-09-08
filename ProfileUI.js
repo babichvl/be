@@ -28,16 +28,45 @@ var ProfileUI = (function() {
   }
 
   // ─── Инициализация DOM ─────────────────────────────────────────
-  function initDOM() {
-    var container = document.body;
-    var existing = document.getElementById('profile-overlay');
-    
-    if (!existing) {
-      var fragment = document.createElement('div');
-      fragment.innerHTML = createProfileHTML();
-      container.appendChild(fragment.firstElementChild);
-      container.appendChild(fragment.firstElementChild);
+  // ─── Инициализация ────────────────────────────────────────
+  function init(userTgId) {
+    console.log('[ProfileUI] Инициализирую ProfileUI с userTgId:', userTgId);
+
+    // Создаём DOM
+    initDOM();
+
+    // Биндим события
+    setupOverlayClick();
+
+    // Биндим клик по аватару в хэдере
+    var avatarBtn = document.querySelector('.page-header__avatar');
+    if (avatarBtn) {
+      avatarBtn.addEventListener('click', open);
+      console.log('[ProfileUI] Avatar button готова');
     }
+
+    // Подписываемся на изменения профиля из ProfileStore
+    if (window.ProfileStore) {
+      console.log('[ProfileUI] ProfileStore найден, инициируем загрузку...');
+      
+      ProfileStore.subscribe(function(profile) {
+        console.log('[ProfileUI] Получили профиль от ProfileStore:', profile);
+        currentProfile = profile;
+        if (isOpen) {
+          render(profile);
+        }
+      });
+      
+      // Загружаем профиль через ProfileStore
+      if (userTgId) {
+        console.log('[ProfileUI] Вызываем ProfileStore.init(' + userTgId + ')');
+        ProfileStore.init(userTgId);
+      }
+    } else {
+      console.error('[ProfileUI] ❌ ProfileStore НЕ найден!');
+    }
+
+    console.log('[ProfileUI] ✅ Инициализирован');
   }
 
   // ─── Генерация HTML карточки профиля (тренер) ──────────────────
