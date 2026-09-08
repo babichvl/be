@@ -374,6 +374,8 @@ var ProfileUI = (function() {
     if (isOpen) return;
     
     isOpen = true;
+    console.log('[ProfileUI] currentProfile перед рендером:', currentProfile);
+    
     var overlay = document.getElementById('profile-overlay');
     var panel = document.getElementById('profile-panel');
     
@@ -383,8 +385,10 @@ var ProfileUI = (function() {
       
       // Рендерим текущий профиль если он загружен
       if (currentProfile) {
+        console.log('[ProfileUI] Рендеру с профилем:', currentProfile);
         render(currentProfile);
       } else {
+        console.log('[ProfileUI] currentProfile === null, рендеру placeholder');
         render(null);
       }
       
