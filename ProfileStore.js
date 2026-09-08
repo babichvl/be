@@ -36,7 +36,6 @@ var ProfileStore = (function() {
     return profile;
   }
 
-  // ─── Определить роль пользователя ─────────────────────────
 // ─── Определить роль пользователя ─────────────────────
 async function determineRole(userTgId) {
   console.log('[ProfileStore] determineRole() вызван для TG ID:', userTgId);
@@ -44,7 +43,7 @@ async function determineRole(userTgId) {
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не инициализирован, возвращаю mock');
     return {
-      userId: 'mock-user-' + userTgId,
+      userId: userTgId,
       role: 'trainer'
     };
   }
@@ -60,10 +59,10 @@ async function determineRole(userTgId) {
     console.log('[ProfileStore] userRes:', userRes);
 
     if (userRes.error) {
-      console.warn('[ProfileStore] ⚠️ Ошибка query:', userRes.error.message);
-      console.log('[ProfileStore] Возвращаю mock данные вместо ошибки');
+      console.warn('[ProfileStore] ⚠️ Ошибка или пользователь не найден:', userRes.error.message);
+      console.log('[ProfileStore] Возвращаю mock с telegram_id');
       return {
-        userId: 'mock-user-' + userTgId,
+        userId: userTgId,  // ← ИСПОЛЬЗУЕМ TELEGRAM_ID, НЕ "mock-user-..."
         role: 'trainer'
       };
     }
@@ -71,7 +70,7 @@ async function determineRole(userTgId) {
     if (!userRes.data) {
       console.warn('[ProfileStore] ⚠️ userRes.data пуста');
       return {
-        userId: 'mock-user-' + userTgId,
+        userId: userTgId,
         role: 'trainer'
       };
     }
@@ -83,86 +82,119 @@ async function determineRole(userTgId) {
     };
   } catch (e) {
     console.error('[ProfileStore] ❌ Exception в determineRole:', e.message);
-    console.log('[ProfileStore] Возвращаю mock данные вместо exception');
+    console.log('[ProfileStore] Возвращаю mock с telegram_id');
     return {
-      userId: 'mock-user-' + userTgId,
+      userId: userTgId,
       role: 'trainer'
     };
   }
 }
 
-  // ─── Загрузить данные тренера ──────────────────────────────
-  async function loadTrainerProfile(userId) {
-    console.log('[ProfileStore] loadTrainerProfile() для user_id:', userId);
-    
-    if (!window.sb) {
-      console.warn('[ProfileStore] ⚠️ Supabase не доступен');
-      return null;
-    }
-
-    try {
-      var trainerRes = await window.sb
-        .from('trainers')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-      if (trainerRes.error) {
-        console.warn('[ProfileStore] ❌ Тренер не найден:', trainerRes.error.message);
-        return null;
-      }
-
-      var trainer = trainerRes.data;
-      console.log('[ProfileStore] ✅ Тренер загружен:', trainer.display_name);
-
-      var reviewsRes = await window.sb
-        .from('trainer_reviews')
-        .select('rating')
-        .eq('trainer_tg_id', trainer.id);
-
-      var avgRating = 0;
-      if (!reviewsRes.error && reviewsRes.data.length > 0) {
-        var sum = reviewsRes.data.reduce(function(acc, r) {
-          return acc + parseFloat(r.rating || 0);
-        }, 0);
-        avgRating = (sum / reviewsRes.data.length).toFixed(1);
-      }
-
-      var statusRes = await window.sb
-        .from('user_status')
-        .select('is_online, last_seen')
-        .eq('user_id', userId)
-        .single();
-
-      var isOnline = false;
-      var lastSeen = null;
-      if (!statusRes.error && statusRes.data) {
-        isOnline = statusRes.data.is_online;
-        lastSeen = statusRes.data.last_seen;
-      }
-
-      return {
-        role: 'trainer',
-        userId: userId,
-        trainerId: trainer.id,
-        displayName: trainer.display_name,
-        specialty: trainer.specialty,
-        experience: trainer.experience,
-        bio: trainer.bio,
-        price: trainer.price,
-        phone: trainer.phone,
-        photoUrl: null,
-        rating: parseFloat(avgRating),
-        isOnline: isOnline,
-        lastSeen: lastSeen,
-        isPro: false,
-        notificationsEnabled: true
-      };
-    } catch (e) {
-      console.error('[ProfileStore] ❌ Ошибка loadTrainerProfile:', e.message);
-      return null;
-    }
+// ─── Загрузить данные тренера ──────────────────────────────
+async function loadTrainerProfile(userId) {
+  console.log('[ProfileStore] loadTrainerProfile() для user_id:', userId);
+  
+  if (!window.sb) {
+    console.warn('[ProfileStore] ⚠️ Supabase не доступен');
+    return createMockProfile(userId);
   }
+
+  try {
+    console.log('[ProfileStore] Ищу тренера по user_id:', userId);
+    
+    var trainerRes = await window.sb
+      .from('trainers')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (trainerRes.error) {
+      console.warn('[ProfileStore] ⚠️ Тренер не найден или ошибка:', trainerRes.error.message);
+      console.log('[ProfileStore] Возвращаю mock вместо ошибки');
+      return createMockProfile(userId);
+    }
+
+    if (!trainerRes.data) {
+      console.warn('[ProfileStore] ⚠️ trainerRes.data пуста');
+      return createMockProfile(userId);
+    }
+
+    var trainer = trainerRes.data;
+    console.log('[ProfileStore] ✅ Тренер загружен:', trainer.display_name);
+
+    var reviewsRes = await window.sb
+      .from('trainer_reviews')
+      .select('rating')
+      .eq('trainer_tg_id', trainer.id);
+
+    var avgRating = 0;
+    if (!reviewsRes.error && reviewsRes.data && reviewsRes.data.length > 0) {
+      var sum = reviewsRes.data.reduce(function(acc, r) {
+        return acc + parseFloat(r.rating || 0);
+      }, 0);
+      avgRating = (sum / reviewsRes.data.length).toFixed(1);
+    }
+
+    var statusRes = await window.sb
+      .from('user_status')
+      .select('is_online, last_seen')
+      .eq('user_id', userId)
+      .single();
+
+    var isOnline = false;
+    var lastSeen = null;
+    if (!statusRes.error && statusRes.data) {
+      isOnline = statusRes.data.is_online;
+      lastSeen = statusRes.data.last_seen;
+    }
+
+    return {
+      role: 'trainer',
+      userId: userId,
+      trainerId: trainer.id,
+      displayName: trainer.display_name,
+      specialty: trainer.specialty,
+      experience: trainer.experience,
+      bio: trainer.bio,
+      price: trainer.price,
+      phone: trainer.phone,
+      photoUrl: null,
+      rating: parseFloat(avgRating),
+      isOnline: isOnline,
+      lastSeen: lastSeen,
+      isPro: false,
+      notificationsEnabled: true
+    };
+  } catch (e) {
+    console.error('[ProfileStore] ❌ Exception в loadTrainerProfile:', e.message);
+    console.log('[ProfileStore] Возвращаю mock');
+    return createMockProfile(userId);
+  }
+}
+
+// ─── Create mock profile ───────────────────────────────────
+function createMockProfile(userId) {
+  console.log('[ProfileStore] createMockProfile() для userId:', userId);
+  
+  return {
+    role: 'trainer',
+    userId: userId,
+    trainerId: 'mock-trainer-' + userId,
+    displayName: 'Василий Тренер',
+    specialty: 'Силовой тренинг',
+    experience: '5+ лет',
+    bio: 'Специалист по гипертрофии и силе',
+    price: '1500 ₽/сессия',
+    phone: '+7 (999) 123-45-67',
+    photoUrl: null,
+    rating: 4.8,
+    reviewCount: 42,
+    isOnline: true,
+    lastSeen: null,
+    isPro: true,
+    notificationsEnabled: true
+  };
+}
 
   // ─── Загрузить данные клиента ──────────────────────────────
   async function loadClientProfile(userId) {
