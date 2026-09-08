@@ -708,6 +708,11 @@ function initStores() {
         console.log('[app.js] ✅ TriggersUI инициализирован');
       }
 
+      if (window.ProfileUI) {
+        ProfileUI.init();
+        console.log('[app.js] ✅ ProfileUI инициализирован');
+      }
+
       if (window.CalendarScheduler) {
         CalendarScheduler.init('calendar-scheduler', today);
         
