@@ -8,7 +8,7 @@ var ProfileUI = (function() {
 
   // ─── Создаём HTML структуру ────────────────────────────────────
   function createProfileHTML() {
-    var html = `
+    return `
       <div class="profile-overlay" id="profile-overlay"></div>
       <div class="profile-panel" id="profile-panel">
         <div class="profile-panel__handle"></div>
@@ -24,9 +24,9 @@ var ProfileUI = (function() {
         </div>
       </div>
     `;
-    return html;
   }
-    // ─── Инициализация DOM ─────────────────────────────────────────
+
+  // ─── Инициализация DOM ─────────────────────────────────────────
   function initDOM() {
     var container = document.body;
     var existing = document.getElementById('profile-overlay');
@@ -34,52 +34,17 @@ var ProfileUI = (function() {
     if (!existing) {
       var fragment = document.createElement('div');
       fragment.innerHTML = createProfileHTML();
-      // Добавляем оба элемента (overlay и panel)
-      var overlay = fragment.firstElementChild;
-      var panel = fragment.lastElementChild;
-      container.appendChild(overlay);
-      container.appendChild(panel);
+      container.appendChild(fragment.firstElementChild);
+      container.appendChild(fragment.lastElementChild);
       console.log('[ProfileUI] DOM инициализирован');
     }
   }
 
-  // ─── Инициализация DOM ─────────────────────────────────────────
-  // ─── Инициализация ────────────────────────────────────────
-  function init(userTgId) {
-    console.log('[ProfileUI] Инициализирую ProfileUI с userTgId:', userTgId);
-    initDOM();
-    // Биндим события
-    setupOverlayClick();
-
-    // Биндим клик по аватару в хэдере
-    var avatarBtn = document.querySelector('.page-header__avatar');
-    if (avatarBtn) {
-      avatarBtn.addEventListener('click', open);
-      console.log('[ProfileUI] Avatar button готова');
-    }
-
-    // Подписываемся на изменения профиля из ProfileStore
-    if (window.ProfileStore) {
-      console.log('[ProfileUI] ProfileStore найден, инициируем загрузку...');
-      
-      ProfileStore.subscribe(function(profile) {
-        console.log('[ProfileUI] Получили профиль от ProfileStore:', profile);
-        currentProfile = profile;
-        if (isOpen) {
-          render(profile);
-        }
-      });
-      
-      // Загружаем профиль через ProfileStore
-      if (userTgId) {
-        console.log('[ProfileUI] Вызываем ProfileStore.init(' + userTgId + ')');
-        ProfileStore.init(userTgId);
-      }
-    } else {
-      console.error('[ProfileUI] ❌ ProfileStore НЕ найден!');
-    }
-
-    console.log('[ProfileUI] ✅ Инициализирован');
+  // ─── Escape HTML ───────────────────────────────────────────────
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   // ─── Генерация HTML карточки профиля (тренер) ──────────────────
@@ -103,12 +68,7 @@ var ProfileUI = (function() {
     return `
       <div class="profile-card">
         <div class="profile-card__avatar">
-          <div class="profile-card__avatar-img">
-            ${profile.photoUrl 
-              ? `<img src="${profile.photoUrl}" alt="${profile.displayName}" style="width: 100%; height: 100%; object-fit: cover;">`
-              : initials
-            }
-          </div>
+          <div class="profile-card__avatar-img">${profile.photoUrl ? `<img src="${profile.photoUrl}" alt="${profile.displayName}" style="width: 100%; height: 100%; object-fit: cover;">` : initials}</div>
           <div class="profile-card__status-badge ${profile.isOnline ? '' : 'offline'}"></div>
         </div>
         <div class="profile-card__info">
@@ -119,84 +79,31 @@ var ProfileUI = (function() {
         </div>
       </div>
 
-      <!-- Account Section -->
       <div class="profile-section">
         <div class="profile-section__title">Аккаунт</div>
         <div class="profile-section__items">
-          ${profile.specialty ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">🎯</span>
-                <span>Специализация</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.specialty)}</div>
-            </div>
-          ` : ''}
-          ${profile.experience ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">💪</span>
-                <span>Опыт</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.experience)}</div>
-            </div>
-          ` : ''}
-          ${profile.phone ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">📱</span>
-                <span>Телефон</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.phone)}</div>
-            </div>
-          ` : ''}
-          ${profile.isPro ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">⭐</span>
-                <span>Статус</span>
-              </div>
-              <div class="profile-item__value">Pro</div>
-            </div>
-          ` : ''}
+          ${profile.specialty ? `<div class="profile-item"><div class="profile-item__label"><span class="profile-item__icon">🎯</span><span>Специализация</span></div><div class="profile-item__value">${escapeHtml(profile.specialty)}</div></div>` : ''}
+          ${profile.experience ? `<div class="profile-item"><div class="profile-item__label"><span class="profile-item__icon">💪</span><span>Опыт</span></div><div class="profile-item__value">${escapeHtml(profile.experience)}</div></div>` : ''}
+          ${profile.phone ? `<div class="profile-item"><div class="profile-item__label"><span class="profile-item__icon">📱</span><span>Телефон</span></div><div class="profile-item__value">${escapeHtml(profile.phone)}</div></div>` : ''}
+          ${profile.isPro ? `<div class="profile-item"><div class="profile-item__label"><span class="profile-item__icon">⭐</span><span>Статус</span></div><div class="profile-item__value">Pro</div></div>` : ''}
         </div>
       </div>
 
-      <!-- Notification Section -->
       <div class="profile-section">
         <div class="profile-section__title">Уведомления</div>
         <div class="profile-section__items">
           <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">🔔</span>
-              <span>Push-уведомления</span>
-            </div>
-            <button class="profile-item__toggle ${profile.notificationsEnabled ? 'active' : ''}" 
-                    id="profile-notifications-toggle"
-                    data-enabled="${profile.notificationsEnabled ? 'true' : 'false'}">
-            </button>
+            <div class="profile-item__label"><span class="profile-item__icon">🔔</span><span>Push-уведомления</span></div>
+            <button class="profile-item__toggle ${profile.notificationsEnabled ? 'active' : ''}" id="profile-notifications-toggle"></button>
           </div>
         </div>
       </div>
 
-      <!-- Other Section -->
       <div class="profile-section">
         <div class="profile-section__title">Другое</div>
         <div class="profile-section__items">
-          <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">ℹ️</span>
-              <span>О приложении</span>
-            </div>
-            <span class="profile-item__icon">›</span>
-          </div>
-          <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">⚙️</span>
-              <span>Настройки</span>
-            </div>
-            <span class="profile-item__icon">›</span>
-          </div>
+          <div class="profile-item"><div class="profile-item__label"><span class="profile-item__icon">ℹ️</span><span>О приложении</span></div></div>
+          <div class="profile-item"><div class="profile-item__label"><span class="profile-item__icon">⚙️</span><span>Настройки</span></div></div>
         </div>
       </div>
 
@@ -213,12 +120,7 @@ var ProfileUI = (function() {
     return `
       <div class="profile-card">
         <div class="profile-card__avatar">
-          <div class="profile-card__avatar-img">
-            ${profile.photoUrl 
-              ? `<img src="${profile.photoUrl}" alt="${profile.name}" style="width: 100%; height: 100%; object-fit: cover;">`
-              : initials
-            }
-          </div>
+          <div class="profile-card__avatar-img">${profile.photoUrl ? `<img src="${profile.photoUrl}" alt="${profile.name}" style="width: 100%; height: 100%; object-fit: cover;">` : initials}</div>
           <div class="profile-card__status-badge ${profile.isOnline ? '' : 'offline'}"></div>
         </div>
         <div class="profile-card__info">
@@ -227,97 +129,25 @@ var ProfileUI = (function() {
         </div>
       </div>
 
-      <!-- Trainer Info (если есть) -->
-      ${profile.trainerId ? `
-        <div class="profile-trainer-card">
-          <div class="profile-trainer-card__avatar">?</div>
-          <div class="profile-trainer-card__info">
-            <div class="profile-trainer-card__name">Мой тренер</div>
-            <div class="profile-trainer-card__label">Связь активна</div>
-          </div>
-          <div class="profile-trainer-card__chevron">›</div>
-        </div>
-      ` : `
-        <div class="profile-trainer-card">
-          <div class="profile-trainer-card__info">
-            <div class="profile-trainer-card__name">У вас ещё нет тренера</div>
-            <div class="profile-trainer-card__label">Пригласите его по коду</div>
-          </div>
-        </div>
-      `}
-
-      <!-- Account Section -->
       <div class="profile-section">
         <div class="profile-section__title">Аккаунт</div>
         <div class="profile-section__items">
-          ${profile.phone ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">📱</span>
-                <span>Телефон</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.phone)}</div>
-            </div>
-          ` : ''}
-          ${profile.birthDate ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">🎂</span>
-                <span>Дата рождения</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.birthDate)}</div>
-            </div>
-          ` : ''}
+          ${profile.phone ? `<div class="profile-item"><div class="profile-item__label"><span class="profile-item__icon">📱</span><span>Телефон</span></div><div class="profile-item__value">${escapeHtml(profile.phone)}</div></div>` : ''}
         </div>
       </div>
 
-      <!-- Notification Section -->
       <div class="profile-section">
         <div class="profile-section__title">Уведомления</div>
         <div class="profile-section__items">
           <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">🔔</span>
-              <span>Push-уведомления</span>
-            </div>
-            <button class="profile-item__toggle ${profile.notificationsEnabled ? 'active' : ''}" 
-                    id="profile-notifications-toggle"
-                    data-enabled="${profile.notificationsEnabled ? 'true' : 'false'}">
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Other Section -->
-      <div class="profile-section">
-        <div class="profile-section__title">Другое</div>
-        <div class="profile-section__items">
-          <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">ℹ️</span>
-              <span>О приложении</span>
-            </div>
-            <span class="profile-item__icon">›</span>
-          </div>
-          <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">⚙️</span>
-              <span>Настройки</span>
-            </div>
-            <span class="profile-item__icon">›</span>
+            <div class="profile-item__label"><span class="profile-item__icon">🔔</span><span>Push-уведомления</span></div>
+            <button class="profile-item__toggle ${profile.notificationsEnabled ? 'active' : ''}" id="profile-notifications-toggle"></button>
           </div>
         </div>
       </div>
 
       <button class="profile-action-btn danger" id="profile-logout-btn">Выход</button>
     `;
-  }
-
-  // ─── Escape HTML ───────────────────────────────────────────────
-  function escapeHtml(text) {
-    var div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 
   // ─── Рендер профиля ────────────────────────────────────────────
@@ -330,40 +160,24 @@ var ProfileUI = (function() {
       return;
     }
 
-    // Выбираем шаблон в зависимости от роли
     var html = profile.role === 'trainer' 
       ? renderTrainerProfile(profile)
       : renderClientProfile(profile);
 
     content.innerHTML = html;
-
-    // Биндим события
     bindEvents();
   }
 
   // ─── Биндим события в профиле ──────────────────────────────────
   function bindEvents() {
     var backBtn = document.getElementById('profile-back-btn');
-    if (backBtn) {
-      backBtn.addEventListener('click', close);
-    }
-
-    var notificationToggle = document.getElementById('profile-notifications-toggle');
-    if (notificationToggle) {
-      notificationToggle.addEventListener('click', function() {
-        this.classList.toggle('active');
-        var isEnabled = this.classList.contains('active');
-        console.log('[ProfileUI] Notifications toggled:', isEnabled);
-        // TODO: Сохранить в БД через ProfileStore
-      });
-    }
+    if (backBtn) backBtn.addEventListener('click', close);
 
     var logoutBtn = document.getElementById('profile-logout-btn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', function() {
         if (confirm('Вы уверены?')) {
           console.log('[ProfileUI] Logout clicked');
-          // TODO: Реализовать выход
         }
       });
     }
@@ -374,8 +188,6 @@ var ProfileUI = (function() {
     if (isOpen) return;
     
     isOpen = true;
-    console.log('[ProfileUI] currentProfile перед рендером:', currentProfile);
-    
     var overlay = document.getElementById('profile-overlay');
     var panel = document.getElementById('profile-panel');
     
@@ -383,16 +195,12 @@ var ProfileUI = (function() {
       overlay.classList.add('active');
       panel.classList.add('active');
       
-      // Рендерим текущий профиль если он загружен
       if (currentProfile) {
-        console.log('[ProfileUI] Рендеру с профилем:', currentProfile);
+        console.log('[ProfileUI] Открываю профиль:', currentProfile);
         render(currentProfile);
       } else {
-        console.log('[ProfileUI] currentProfile === null, рендеру placeholder');
         render(null);
       }
-      
-      console.log('[ProfileUI] Profile opened');
     }
   }
 
@@ -407,7 +215,6 @@ var ProfileUI = (function() {
     if (overlay && panel) {
       overlay.classList.remove('active');
       panel.classList.remove('active');
-      console.log('[ProfileUI] Profile closed');
     }
   }
 
@@ -419,6 +226,12 @@ var ProfileUI = (function() {
     }
   }
 
+  // ─── Инициализация ────────────────────────────────────────────
+  function init(userTgId) {
+    console.log('[ProfileUI] Инициализирую с userTgId:', userTgId);
+
+    // ВАЖНО: Создаём DOM первым
+    initDOM();
 
     // Биндим события
     setupOverlayClick();
@@ -427,20 +240,26 @@ var ProfileUI = (function() {
     var avatarBtn = document.querySelector('.page-header__avatar');
     if (avatarBtn) {
       avatarBtn.addEventListener('click', open);
-      console.log('[ProfileUI] Avatar button готова');
     }
 
-    // Подписываемся на изменения профиля из ProfileStore
+    // Подписываемся на ProfileStore
     if (window.ProfileStore) {
+      console.log('[ProfileUI] ProfileStore найден');
+      
       ProfileStore.subscribe(function(profile) {
+        console.log('[ProfileUI] Получили профиль:', profile);
         currentProfile = profile;
         if (isOpen) {
           render(profile);
         }
       });
-      console.log('[ProfileUI] Подписаны на ProfileStore');
+      
+      if (userTgId) {
+        console.log('[ProfileUI] Вызываем ProfileStore.init(' + userTgId + ')');
+        ProfileStore.init(userTgId);
+      }
     } else {
-      console.warn('[ProfileUI] ProfileStore не найден');
+      console.error('[ProfileUI] ❌ ProfileStore НЕ найден!');
     }
 
     console.log('[ProfileUI] ✅ Инициализирован');
