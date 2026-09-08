@@ -47,7 +47,7 @@ var ProfileUI = (function() {
   // ─── Инициализация ────────────────────────────────────────
   function init(userTgId) {
     console.log('[ProfileUI] Инициализирую ProfileUI с userTgId:', userTgId);
-
+    initDOM();
     // Биндим события
     setupOverlayClick();
 
