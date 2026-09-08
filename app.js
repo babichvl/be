@@ -7,25 +7,21 @@ var tg = window.Telegram && window.Telegram.WebApp;
 if (tg) { 
   tg.expand(); 
   tg.setHeaderColor('#F5F5F7');
-  // Отключаем вертикальный свайп для закрытия приложения
   tg.disableVerticalSwipes();
 }
 
-// ─── Supabase (инициализируется в фоне) ────────────
+// ─── Supabase ──────────────────────────────────────────────
 var SUPABASE_URL      = 'https://qhvtapqlyajkikgfacdo.supabase.co';
 var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
 var sb = null;
 
-// Инициализируем Supabase с повторными попытками
 function initSupabase() {
-  console.log('[app.js] Попытка инициализации Supabase...', {
-    'window.supabase': !!window.supabase,
-    'window.supabase.createClient': !!(window.supabase && window.supabase.createClient)
-  });
+  console.log('[app.js] Попытка инициализации Supabase...');
   
   if (window.supabase && window.supabase.createClient) {
     try {
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window.sb = sb;
       console.log('[app.js] ✅ Supabase инициализирован успешно');
       return true;
     } catch (e) {
@@ -36,14 +32,13 @@ function initSupabase() {
   return false;
 }
 
-// Агрессивные попытки загрузки
 var attemptCount = 0;
 var maxAttempts = 10;
 
 function tryInitSupabase() {
   attemptCount++;
   if (initSupabase()) {
-    return; // Успешно!
+    return;
   }
   
   if (attemptCount < maxAttempts) {
@@ -57,13 +52,10 @@ function tryInitSupabase() {
 
 tryInitSupabase();
 
-// Первая попытка через 100ms
 setTimeout(function() {
   if (!initSupabase()) {
-    // Вторая попытка через 500ms
     setTimeout(function() {
       if (!initSupabase()) {
-        // Третья попытка через 1s
         setTimeout(function() {
           if (!initSupabase()) {
             console.error('[app.js] ❌ Не удалось инициализировать Supabase после 3 попыток');
@@ -78,7 +70,7 @@ setTimeout(function() {
 var localDeletedIds = {};
 var localDoneIds    = {};
 
-// ─── ID тренера ────────────────────────────────────
+// ─── ID пользователя ───────────────────────────────
 var trainerTgId = null;
 
 function loadUser() {
@@ -96,15 +88,15 @@ function loadUser() {
     trainerTgId = urlId ? Number(urlId) : null;
   }
   if (!trainerTgId) trainerTgId = 786441589;
-  console.log('[app.js] Trainer ID:', trainerTgId);
+  console.log('[app.js] User ID:', trainerTgId);
 }
 loadUser();
 
 // ═══════════════════════════════════════════════════════════
-// ОСНОВНОЕ ПРИЛОЖЕНИЕ - ЗАПУСКАЕТСЯ СРАЗУ, БЕЗ ОЖИДАНИЯ БД
+// ОСНОВНОЕ ПРИЛОЖЕНИЕ
 // ═══════════════════════════════════════════════════════════
 
-// ─── Вкладки (главная навигация) ────────────────────
+// ─── Вкладки ───────────────────────────────────────
 var navItems = document.querySelectorAll('.bottomnav__item[data-tab]');
 var screens  = document.querySelectorAll('.screen');
 
@@ -129,9 +121,6 @@ console.log('[app.js] ✅ Вкладки инициализированы');
 // ─── Подвкладки Клиентов ──────────────────────────
 var clientsTabs = document.querySelectorAll('.clients-tab');
 var clientsSubtabs = document.querySelectorAll('.clients-subtab');
-
-console.log('[app.js] clients-tabs найдено:', clientsTabs.length);
-console.log('[app.js] clients-subtabs найдено:', clientsSubtabs.length);
 
 clientsTabs.forEach(function(tab) {
   tab.addEventListener('click', function() {
@@ -265,7 +254,6 @@ function initHomeCalendarSwipes() {
     isDragging = false;
     
     if (hasProcessedSwipe) {
-      console.log('[swipe] ❌ Уже обработали, выходим');
       return;
     }
     hasProcessedSwipe = true;
@@ -274,7 +262,6 @@ function initHomeCalendarSwipes() {
     var threshold = 30;
 
     if (Math.abs(delta) < threshold) {
-      console.log('[swipe] ❌ Дельта слишком малая');
       wrap.dataset.swiping = 'false';
       return;
     }
@@ -286,24 +273,24 @@ function initHomeCalendarSwipes() {
       return;
     }
 
-var dayWidth = activeEl.offsetWidth;
-var daysToMove = Math.max(1, Math.round(Math.abs(delta) / dayWidth));
+    var dayWidth = activeEl.offsetWidth;
+    var daysToMove = Math.max(1, Math.round(Math.abs(delta) / dayWidth));
 
-var targetEl = activeEl;
+    var targetEl = activeEl;
 
-if (delta > threshold) {
-  for (var j = 0; j < daysToMove; j++) {
-    if (targetEl.nextElementSibling) {
-      targetEl = targetEl.nextElementSibling;
+    if (delta > threshold) {
+      for (var j = 0; j < daysToMove; j++) {
+        if (targetEl.nextElementSibling) {
+          targetEl = targetEl.nextElementSibling;
+        }
+      }
+    } else if (delta < -threshold) {
+      for (var j = 0; j < daysToMove; j++) {
+        if (targetEl.previousElementSibling) {
+          targetEl = targetEl.previousElementSibling;
+        }
+      }
     }
-  }
-} else if (delta < -threshold) {
-  for (var j = 0; j < daysToMove; j++) {
-    if (targetEl.previousElementSibling) {
-      targetEl = targetEl.previousElementSibling;
-    }
-  }
-}
 
     if (!targetEl) {
       wrap.dataset.swiping = 'false';
@@ -378,25 +365,25 @@ function buildHomeCalendar() {
     chip.appendChild(nameEl);
     chip.appendChild(icon);
 
-chip.addEventListener('click', (function(isoDate, element) {
-  return function() {
-    var wrap = document.getElementById('home-cal-days');
-    if (wrap.dataset.swiping === 'true') return; // ✅ Игнорируем клик при свайпе
+    chip.addEventListener('click', (function(isoDate, element) {
+      return function() {
+        var wrap = document.getElementById('home-cal-days');
+        if (wrap.dataset.swiping === 'true') return;
 
-    selectedHomeDate = isoDate;
-    wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
-      el.classList.remove('active');
-    });
-    element.classList.add('active');
-    homeExpanded = true;
-    var expand = document.getElementById('home-expand');
-    if (expand) expand.classList.add('expanded');
-    renderHomeWorkouts();
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() { centerDay(element); });
-    });
-  };
-})(iso, chip));
+        selectedHomeDate = isoDate;
+        wrap.querySelectorAll('.home-cal-day').forEach(function(el) {
+          el.classList.remove('active');
+        });
+        element.classList.add('active');
+        homeExpanded = true;
+        var expand = document.getElementById('home-expand');
+        if (expand) expand.classList.add('expanded');
+        renderHomeWorkouts();
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() { centerDay(element); });
+        });
+      };
+    })(iso, chip));
 
     wrap.appendChild(chip);
   }
@@ -406,7 +393,7 @@ chip.addEventListener('click', (function(isoDate, element) {
     requestAnimationFrame(function() { centerDay(activeEl); });
   }
  
-  initHomeCalendarSwipes(); // ✅ ВСЕ РАВНО ДУБЛИРУЕТ, НО БУ НУЖНО В ФУНКЦИИ
+  initHomeCalendarSwipes();
 }
 
 // ─── Расписание: календарь ─────────────────────────
@@ -658,7 +645,7 @@ function renderScheduleWorkouts() {
   initSwipes(listEl);
 }
 
-// ─── Инициализация хранилищ (с гарантией загрузки) ────────────
+// ─── Инициализация хранилищ ────────────────────────
 function initStores() {
   var attempt = 0;
   var maxAttempts = 50;
@@ -668,14 +655,14 @@ function initStores() {
     
     console.log('[app.js] Попытка инициализации ' + attempt + '/' + maxAttempts);
     console.log('[app.js] Проверка:', {
-      'sb': !!window.sb,
+      'window.sb': !!window.sb,
       'WorkoutsStore': !!window.WorkoutsStore,
       'ClientsStore': !!window.ClientsStore,
-      'TriggersStore': !!window.TriggersStore
+      'TriggersStore': !!window.TriggersStore,
+      'ProfileUI': !!window.ProfileUI
     });
 
-    // Если все есть — инициализируем
-    if (window.sb && window.WorkoutsStore && window.ClientsStore && window.TriggersStore) {
+    if (window.sb && window.WorkoutsStore && window.ClientsStore && window.TriggersStore && window.ProfileUI) {
       console.log('[app.js] ✅ ВСЕ ЗАВИСИМОСТИ ГОТОВЫ!');
       
       if (trainerTgId && window.WorkoutsStore) {
@@ -708,7 +695,9 @@ function initStores() {
         console.log('[app.js] ✅ TriggersUI инициализирован');
       }
 
-      if (window.ProfileUI) {
+      // ✅ ИНИЦИАЛИЗИРУЕМ PROFILEUI С userTgId
+      if (window.ProfileUI && trainerTgId) {
+        console.log('[app.js] Инициализирую ProfileUI с trainerTgId:', trainerTgId);
         ProfileUI.init(trainerTgId);
         console.log('[app.js] ✅ ProfileUI инициализирован');
       }
@@ -736,27 +725,18 @@ function initStores() {
       return;
     }
 
-    // Если не все загружено — повторяем
     if (attempt < maxAttempts) {
       setTimeout(checkAndInit, 100);
     } else {
       console.error('[app.js] ❌ ОШИБКА: Не удалось загрузить все зависимости!');
-      console.log('[app.js] Финальное состояние:', {
-        'sb': !!window.sb,
-        'WorkoutsStore': !!window.WorkoutsStore,
-        'ClientsStore': !!window.ClientsStore,
-        'TriggersStore': !!window.TriggersStore
-      });
     }
   }
 
   checkAndInit();
 }
 
-// Запуск после загрузки DOM
 setTimeout(initStores, 200);
 buildHomeCalendar();
 rebuildScheduleCalendar();
 
-console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ПОЛНОСТЬЮ ИНИЦИАЛИЗИРОВАНО');
-console.log('[app.js] Интерфейс работает независимо от БД!');
+console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ЗАПУЩЕНО');
