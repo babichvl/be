@@ -709,7 +709,7 @@ function initStores() {
       }
 
       if (window.ProfileUI) {
-        ProfileUI.init();
+        ProfileUI.init(trainerTgId);
         console.log('[app.js] ✅ ProfileUI инициализирован');
       }
 
