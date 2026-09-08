@@ -754,34 +754,4 @@ buildHomeCalendar();
 rebuildScheduleCalendar();
 
 console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ПОЛНОСТЬЮ ИНИЦИАЛИЗИРОВАНО');
-
-// ═══════════════════════════════════════════════════════════
-// ФУНКЦИИ ДЛЯ ПРОФИЛЯ ТРЕНЕРА/КЛИЕНТА
-// ═══════════════════════════════════════════════════════════
-
-// ─── Открытие профиля по клику на аватар ───────────────────
-document.querySelectorAll('[id^="headerAvatarBtn"]').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    openProfile();
-  });
-});
-console.log('[app.js] ✅ Header avatar buttons инициализированы');
-
-// ─── Функция открытия профиля ───────────────────────────────
-function openProfile() {
-  if (!trainerTgId) {
-    console.warn('[app.js] ⚠️ Trainer ID не определен');
-    return;
-  }
-
-  // Проверяем, что компонент профиля загружен
-  if (window.TrainerProfile && window.TrainerProfile.open) {
-    console.log('[app.js] Открываем профиль:', trainerTgId);
-    window.TrainerProfile.open(trainerTgId, trainerTgId, 'trainer');
-  } else {
-    console.warn('[app.js] ⚠️ TrainerProfile компонент не загружен');
-  }
-}
-
-console.log('[app.js] ✅ Профиль функции добавлены');
 console.log('[app.js] Интерфейс работает независимо от БД!');
