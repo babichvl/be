@@ -754,19 +754,18 @@ buildHomeCalendar();
 rebuildScheduleCalendar();
 
 console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ПОЛНОСТЬЮ ИНИЦИАЛИЗИРОВАНО');
+
 // ═══════════════════════════════════════════════════════════
 // ФУНКЦИИ ДЛЯ ПРОФИЛЯ ТРЕНЕРА/КЛИЕНТА
 // ═══════════════════════════════════════════════════════════
-// Добавить в конец app.js (перед console.log на последней строке)
 
 // ─── Открытие профиля по клику на аватар ───────────────────
-var headerAvatarBtn = document.getElementById('headerAvatarBtn');
-if (headerAvatarBtn) {
-  headerAvatarBtn.addEventListener('click', function() {
+document.querySelectorAll('[id^="headerAvatarBtn"]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
     openProfile();
   });
-  console.log('[app.js] ✅ Header avatar button инициализирован');
-}
+});
+console.log('[app.js] ✅ Header avatar buttons инициализированы');
 
 // ─── Функция открытия профиля ───────────────────────────────
 function openProfile() {
