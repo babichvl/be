@@ -327,7 +327,7 @@ var ProfileUI = (function() {
     }
   }
 
-  // ─── Открыть профиль ───────────────────────────────────────────
+  // ─── Открыть профиль ───────────────────────────────────────
   function open() {
     if (isOpen) return;
     
@@ -338,6 +338,14 @@ var ProfileUI = (function() {
     if (overlay && panel) {
       overlay.classList.add('active');
       panel.classList.add('active');
+      
+      // Рендерим текущий профиль если он загружен
+      if (currentProfile) {
+        render(currentProfile);
+      } else {
+        render(null);
+      }
+      
       console.log('[ProfileUI] Profile opened');
     }
   }
