@@ -402,7 +402,13 @@ var ProfileUI = (function() {
     } else {
       console.warn('[ProfileUI] ProfileStore не найден');
     }
-
+// Инициализируем ProfileStore с userTgId
+if (userTgId && window.ProfileStore) {
+  console.log('[ProfileUI] Вызываю ProfileStore.init(' + userTgId + ')');
+  ProfileStore.init(userTgId);
+} else {
+  console.warn('[ProfileUI] ⚠️ userTgId или ProfileStore не найдены!');
+}
     console.log('[ProfileUI] ✅ Инициализирован');
   }
 
