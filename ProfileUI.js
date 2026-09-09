@@ -50,18 +50,20 @@ var ProfileUI = (function() {
   }
 
   // ─── Инициализация DOM ─────────────────────────────────────────
-  function initDOM() {
-    var container = document.body;
-    var existing = document.getElementById('role-selector-overlay');
+function initDOM() {
+  var container = document.body;
+  var existing = document.getElementById('role-selector-overlay');
+  
+  if (!existing) {
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = createProfileHTML();
     
-    if (!existing) {
-      var fragment = document.createElement('div');
-      fragment.innerHTML = createProfileHTML();
-      container.appendChild(fragment.firstElementChild);
-      container.appendChild(fragment.firstElementChild);
-      container.appendChild(fragment.firstElementChild);
+    // Перемещаем все дети
+    while (tempDiv.firstElementChild) {
+      container.appendChild(tempDiv.firstElementChild);
     }
   }
+}
 
   // ─── Показать/скрыть селектор роли ────────────────────────────
   function showRoleSelector() {
