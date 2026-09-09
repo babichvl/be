@@ -204,6 +204,7 @@ function initDOM() {
   </div>
 </div>
 
+
       <!-- Account Section -->
       <div class="profile-section">
         <div class="profile-section__title">Аккаунт</div>
