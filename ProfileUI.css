@@ -180,6 +180,13 @@
 }
 /* ─── Stats Modal ──────────────────────────────── */
 
+.stats-modal__input--large {
+  font-size: 18px;
+  padding: 16px;
+  min-height: 100px;
+  text-align: center;
+}
+
 .stats-modal-overlay {
   position: fixed;
   top: 0;
