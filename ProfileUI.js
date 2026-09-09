@@ -203,7 +203,6 @@ function initDOM() {
     </div>
   </div>
 </div>
-`;
 
 
       <!-- Account Section -->
