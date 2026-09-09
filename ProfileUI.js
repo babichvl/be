@@ -59,7 +59,7 @@ var ProfileUI = (function() {
           <div style="width: 24px;"></div>
         </div>
         <div class="stats-modal__content">
-          <input type="number" class="stats-modal__input stats-modal__input--large" id="experience-input" placeholder="0">
+          <input type="text" class="stats-modal__input stats-modal__input--large" id="experience-input" placeholder="0">
         </div>
         <div class="stats-modal__footer">
           <button class="stats-modal__btn stats-modal__btn--cancel" data-modal="experience">Отменить</button>
@@ -80,7 +80,7 @@ var ProfileUI = (function() {
           <div style="width: 24px;"></div>
         </div>
         <div class="stats-modal__content">
-          <input type="number" class="stats-modal__input stats-modal__input--large" id="specializations-input" placeholder="0">
+          <input type="text" class="stats-modal__input stats-modal__input--large" id="specializations-input" placeholder="0">
         </div>
         <div class="stats-modal__footer">
           <button class="stats-modal__btn stats-modal__btn--cancel" data-modal="specializations">Отменить</button>
@@ -101,7 +101,7 @@ var ProfileUI = (function() {
           <div style="width: 24px;"></div>
         </div>
         <div class="stats-modal__content">
-          <input type="number" class="stats-modal__input stats-modal__input--large" id="rating-input" placeholder="0.0" step="0.1" min="0" max="5">
+          <input type="text" class="stats-modal__input stats-modal__input--large" id="rating-input" placeholder="0.0" step="0.1" min="0" max="5">
         </div>
         <div class="stats-modal__footer">
           <button class="stats-modal__btn stats-modal__btn--cancel" data-modal="rating">Отменить</button>
