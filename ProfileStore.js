@@ -380,4 +380,5 @@ function createMockProfile(userTgId) {
   };
 })();
 
+window.ProfileStore = ProfileStore;
 console.log('[ProfileStore] ✅ Загружен и готов');
