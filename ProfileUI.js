@@ -208,6 +208,8 @@ function initDOM() {
   </div>
 </div>
 
+// ─── УТОЧНИТЬ? ──────────────────
+
       <!-- Account Section -->
       <div class="profile-section">
         <div class="profile-section__title">Аккаунт</div>
