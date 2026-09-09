@@ -166,23 +166,24 @@ function initDOM() {
       : '';
 
     return `
-      <div class="profile-card">
-        <div class="profile-card__avatar">
-          <div class="profile-card__avatar-img">
-            ${profile.photoUrl 
-              ? `<img src="${profile.photoUrl}" alt="${profile.displayName}" style="width: 100%; height: 100%; object-fit: cover;">`
-              : initials
-            }
-          </div>
-          <div class="profile-card__status ${profile.isOnline ? '' : 'offline'}"></div>
-        </div>
-        <div class="profile-card__info">
-          <div class="profile-card__name">${escapeHtml(profile.displayName || 'Тренер')}</div>
-          <div class="profile-card__role">Тренер</div>
-          ${ratingHTML}
-          ${bioHTML}
-        </div>
-      </div>
+     <div class="profile-card">
+  <div class="profile-card__avatar">
+    <div class="profile-card__avatar-img">
+      ${profile.photoUrl 
+        ? `<img src="${profile.photoUrl}" alt="${profile.displayName}" style="width: 100%; height: 100%; object-fit: cover;">`
+        : initials
+      }
+    </div>
+    <div class="profile-card__status ${profile.isOnline ? '' : 'offline'}"></div>
+  </div>
+  <div class="profile-card__info">
+    <div class="profile-card__name">${escapeHtml(profile.displayName || 'Тренер')}</div>
+    <div class="profile-card__role">Тренер</div>
+    ${ratingHTML}
+    ${bioHTML}
+  </div>
+  <button class="profile-card__pro-btn">PRO+</button>
+</div>
 
       <!-- Account Section -->
       <div class="profile-section">
