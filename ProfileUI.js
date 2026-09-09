@@ -6,7 +6,7 @@ var ProfileUI = (function() {
   var isOpen = false;
   var currentProfile = null;
 
-  // ─── Создаём HTML структуру ────────────────────────────────────
+// ─── Создаём HTML структуру ────────────────────────────────────
   function createProfileHTML() {
     var html = `
       <!-- Role Selector -->
@@ -28,7 +28,25 @@ var ProfileUI = (function() {
             </button>
           </div>
         </div>
-              <!-- Edit Stats Modal -->
+      </div>
+
+      <!-- Profile Panel -->
+      <div class="profile-overlay" id="profile-overlay"></div>
+      <div class="profile-panel" id="profile-panel">
+        <div class="profile-panel__handle"></div>
+        <div class="profile-panel__header">
+          <button class="profile-panel__back-btn" id="profile-back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+        </div>
+        <div class="profile-panel__content" id="profile-content">
+          <!-- Содержимое будет загружаться здесь -->
+        </div>
+      </div>
+
+      <!-- Edit Stats Modal -->
       <div class="stats-modal-overlay" id="stats-modal-overlay"></div>
       <div class="stats-modal" id="stats-modal">
         <div class="stats-modal__header">
@@ -63,27 +81,9 @@ var ProfileUI = (function() {
           <button class="stats-modal__btn stats-modal__btn--save" id="stats-modal-save">Сохранить</button>
         </div>
       </div>
-      </div>
-
-      <!-- Profile Panel -->
-      <div class="profile-overlay" id="profile-overlay"></div>
-      <div class="profile-panel" id="profile-panel">
-        <div class="profile-panel__handle"></div>
-        <div class="profile-panel__header">
-          <button class="profile-panel__back-btn" id="profile-back-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-          </button>
-        </div>
-        <div class="profile-panel__content" id="profile-content">
-          <!-- Содержимое будет загружаться здесь -->
-        </div>
-      </div>
     `;
     return html;
   }
-
   // ─── Инициализация DOM ─────────────────────────────────────────
 function initDOM() {
   var container = document.body;
