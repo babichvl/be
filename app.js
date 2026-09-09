@@ -80,15 +80,15 @@ function loadUser() {
     var userJson = params.get('user');
     if (userJson) {
       var u = JSON.parse(userJson);
-      trainerTgId = u.id || null;
+      userTgId = u.id || null;
     } else {
-      trainerTgId = urlId ? Number(urlId) : null;
+      userTgId = urlId ? Number(urlId) : null;
     }
   } catch (e) {
-    trainerTgId = urlId ? Number(urlId) : null;
+    userTgId = urlId ? Number(urlId) : null;
   }
-  if (!trainerTgId) trainerTgId = 786441589;
-  console.log('[app.js] User ID:', trainerTgId);
+  if (!userTgId) userTgId = 786441589;
+  console.log('[app.js] User ID:', userTgId);
 }
 loadUser();
 
@@ -665,23 +665,23 @@ function initStores() {
     if (window.sb && window.WorkoutsStore && window.ClientsStore && window.TriggersStore && window.ProfileUI) {
       console.log('[app.js] ✅ ВСЕ ЗАВИСИМОСТИ ГОТОВЫ!');
       
-      if (trainerTgId && window.WorkoutsStore) {
+      if (userTgId && window.WorkoutsStore) {
         WorkoutsStore.subscribe(function(workouts) {
           allWorkouts = applyLocalCache(workouts);
           renderHomeWorkouts();
           renderScheduleWorkouts();
         });
-        WorkoutsStore.init(trainerTgId);
+        WorkoutsStore.init(userTgId);
         console.log('[app.js] ✅ WorkoutsStore инициализирован');
       }
 
-      if (trainerTgId && window.ClientsStore) {
-        ClientsStore.init(trainerTgId);
+      if (userTgId && window.ClientsStore) {
+        ClientsStore.init(userTgId);
         console.log('[app.js] ✅ ClientsStore инициализирован');
       }
 
-      if (trainerTgId && window.TriggersStore) {
-        TriggersStore.init(trainerTgId);
+      if (userTgId && window.TriggersStore) {
+        TriggersStore.init(userTgId);
         console.log('[app.js] ✅ TriggersStore инициализирован');
       }
 
@@ -696,16 +696,16 @@ function initStores() {
       }
 
       // ✅ ИНИЦИАЛИЗИРУЕМ PROFILEUI С userTgId
-      if (window.ProfileUI && trainerTgId) {
-        console.log('[app.js] Инициализирую ProfileUI с trainerTgId:', trainerTgId);
-        ProfileUI.init(trainerTgId);
+      if (window.ProfileUI && userTgId) {
+        console.log('[app.js] Инициализирую ProfileUI с userTgId:', userTgId);
+        ProfileUI.init(userTgId);
         console.log('[app.js] ✅ ProfileUI инициализирован');
       }
 
       if (window.CalendarScheduler) {
         CalendarScheduler.init('calendar-scheduler', today);
         
-        if (trainerTgId && window.WorkoutsStore) {
+        if (userTgId && window.WorkoutsStore) {
           WorkoutsStore.subscribe(function(workouts) {
             allWorkouts = applyLocalCache(workouts);
             renderHomeWorkouts();
