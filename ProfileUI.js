@@ -155,18 +155,18 @@ function initDOM() {
     
     // ─── УТОЧНИТЬ? ──────────────────
     
-    var ratingHTML = profile.rating 
-      ? `<div class="profile-card__rating">
-           <span class="profile-card__rating-star">★</span>
-           <span>${profile.rating.toFixed(1)}</span>
-           <span class="profile-card__rating-count">(отзывы)</span>
-         </div>`
-      : '';
+    //var ratingHTML = profile.rating 
+    //  ? `<div class="profile-card__rating">
+    //       <span class="profile-card__rating-star">★</span>
+    //       <span>${profile.rating.toFixed(1)}</span>
+    //       <span class="profile-card__rating-count">(отзывы)</span>
+    //     </div>`
+    //  : '';
 
    // ─── УТОЧНИТЬ? ──────────────────
-    var bioHTML = profile.bio
-      ? `<div class="profile-card__bio">${escapeHtml(profile.bio)}</div>`
-      : '';
+   // var bioHTML = profile.bio
+   //   ? `<div class="profile-card__bio">${escapeHtml(profile.bio)}</div>`
+   //   : '';
 
     return `
     
