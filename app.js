@@ -71,7 +71,7 @@ var localDeletedIds = {};
 var localDoneIds    = {};
 
 // ─── ID пользователя ───────────────────────────────
-var trainerTgId = null;
+var userTgId = null;
 
 function loadUser() {
   var urlId = new URLSearchParams(window.location.search).get('tg_id');
