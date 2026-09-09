@@ -347,26 +347,23 @@ function createMockProfile(userTgId) {
     }
 }
 
-
-
-    
-
     profile = userData;
     console.log('[ProfileStore] ✅✅✅ ПРОФИЛЬ ГОТОВ:', profile);
     console.log('[ProfileStore] ===== ВЫЗЫВАЮ notify() =====');
     notify(profile);
     console.log('[ProfileStore] ===== notify() ЗАВЕРШЁН =====');
 
-  } catch (e) {
+  } 
+    catch (e) {
     console.error('[ProfileStore] ❌❌❌ ОШИБКА:', e.message);
     loading = false;
     profile = null;
     notify(profile);
-  } finally {
+
+   finally {
     loading = false;
     console.log('[ProfileStore] ===== loadProfile() КОНЕЦ =====');
-  }
-}
+  }}
 
   // ─── API ───────────────────────────────────────────────────
   return {
