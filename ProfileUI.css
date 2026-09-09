@@ -138,7 +138,7 @@
   left: 0;
   right: 0;
   max-height: calc(100vh - 60px);
-  min-height: 100vh;
+  min-height: 90vh;
   background: var(--surface-0);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   z-index: 1001;
@@ -193,8 +193,8 @@
 }
 
 .profile-panel__back-btn svg {
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
   stroke: currentColor;
   fill: none;
   stroke-width: 2;
