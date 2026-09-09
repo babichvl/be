@@ -293,8 +293,9 @@
 }
 
 .profile-card__info {
-  text-align: center;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-left: -12px;
 }
 
 .profile-card__name {
