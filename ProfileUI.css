@@ -224,10 +224,10 @@
 }
 
 .profile-card__avatar {
-  position: relative;
-  width: 80px;
-  height: 80px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
+  position: relative;
 }
 
 .profile-card__avatar-img {
@@ -468,10 +468,12 @@
     padding: var(--sp-20);
   }
 
-  .profile-card__avatar {
-    width: 72px;
-    height: 72px;
-  }
+.profile-card__avatar {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  position: relative;
+}
 
   .profile-card__name {
     font-size: 17px;
