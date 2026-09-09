@@ -512,8 +512,10 @@ var ProfileUI = (function() {
   // ─── API ───────────────────────────────────────────────────────
   return {
     init: init,
-    open: open,
-    close: close
+    openModal: open,  // ← Было openModal: openModal
+    closeModal: close,
+    updateProfile: updateProfile,
+    editProfile: editProfile
   };
 })();
 window.ProfileUI = ProfileUI;
