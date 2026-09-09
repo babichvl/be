@@ -46,39 +46,66 @@ var ProfileUI = (function() {
         </div>
       </div>
 
-      <!-- Edit Stats Modal -->
-      <div class="stats-modal-overlay" id="stats-modal-overlay"></div>
-      <div class="stats-modal" id="stats-modal">
+<!-- Edit Experience Modal -->
+      <div class="stats-modal-overlay" id="experience-modal-overlay"></div>
+      <div class="stats-modal" id="experience-modal">
         <div class="stats-modal__header">
-          <button class="stats-modal__close" id="stats-modal-close">
+          <button class="stats-modal__close" data-modal="experience">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>
-          <h2 class="stats-modal__title">Редактировать</h2>
+          <h2 class="stats-modal__title">Опыт</h2>
           <div style="width: 24px;"></div>
         </div>
-
         <div class="stats-modal__content">
-          <div class="stats-modal__field">
-            <label class="stats-modal__label">Опыт (лет)</label>
-            <input type="number" class="stats-modal__input" id="stats-input-experience" placeholder="0">
-          </div>
-
-          <div class="stats-modal__field">
-            <label class="stats-modal__label">Специализация (типов)</label>
-            <input type="number" class="stats-modal__input" id="stats-input-specializations" placeholder="0">
-          </div>
-
-          <div class="stats-modal__field">
-            <label class="stats-modal__label">Рейтинг</label>
-            <input type="number" class="stats-modal__input" id="stats-input-rating" placeholder="0.0" step="0.1" min="0" max="5">
-          </div>
+          <input type="number" class="stats-modal__input stats-modal__input--large" id="experience-input" placeholder="0">
         </div>
-
         <div class="stats-modal__footer">
-          <button class="stats-modal__btn stats-modal__btn--cancel" id="stats-modal-cancel">Отменить</button>
-          <button class="stats-modal__btn stats-modal__btn--save" id="stats-modal-save">Сохранить</button>
+          <button class="stats-modal__btn stats-modal__btn--cancel" data-modal="experience">Отменить</button>
+          <button class="stats-modal__btn stats-modal__btn--save" data-save="experience">Сохранить</button>
+        </div>
+      </div>
+
+      <!-- Edit Specializations Modal -->
+      <div class="stats-modal-overlay" id="specializations-modal-overlay"></div>
+      <div class="stats-modal" id="specializations-modal">
+        <div class="stats-modal__header">
+          <button class="stats-modal__close" data-modal="specializations">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+          <h2 class="stats-modal__title">Специализация</h2>
+          <div style="width: 24px;"></div>
+        </div>
+        <div class="stats-modal__content">
+          <input type="number" class="stats-modal__input stats-modal__input--large" id="specializations-input" placeholder="0">
+        </div>
+        <div class="stats-modal__footer">
+          <button class="stats-modal__btn stats-modal__btn--cancel" data-modal="specializations">Отменить</button>
+          <button class="stats-modal__btn stats-modal__btn--save" data-save="specializations">Сохранить</button>
+        </div>
+      </div>
+
+      <!-- Edit Rating Modal -->
+      <div class="stats-modal-overlay" id="rating-modal-overlay"></div>
+      <div class="stats-modal" id="rating-modal">
+        <div class="stats-modal__header">
+          <button class="stats-modal__close" data-modal="rating">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+          <h2 class="stats-modal__title">Рейтинг</h2>
+          <div style="width: 24px;"></div>
+        </div>
+        <div class="stats-modal__content">
+          <input type="number" class="stats-modal__input stats-modal__input--large" id="rating-input" placeholder="0.0" step="0.1" min="0" max="5">
+        </div>
+        <div class="stats-modal__footer">
+          <button class="stats-modal__btn stats-modal__btn--cancel" data-modal="rating">Отменить</button>
+          <button class="stats-modal__btn stats-modal__btn--save" data-save="rating">Сохранить</button>
         </div>
       </div>
     `;
