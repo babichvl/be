@@ -332,11 +332,7 @@ function createMockProfile(userTgId) {
   
   loading = false;
   console.log('[ProfileStore] ===== loadProfile() КОНЕЦ =====');
-}
-
-
-
-    // Загружаем общие данные из users
+  // Загружаем общие данные из users
     var usersRes = await window.sb
       .from('users')
       .select('photo_url, is_pro, notifications_enabled')
@@ -349,6 +345,11 @@ function createMockProfile(userTgId) {
       userData.notificationsEnabled = usersRes.data.notifications_enabled;
       console.log('[ProfileStore] ✅ Дополнены данные из users');
     }
+}
+
+
+
+    
 
     profile = userData;
     console.log('[ProfileStore] ✅✅✅ ПРОФИЛЬ ГОТОВ:', profile);
