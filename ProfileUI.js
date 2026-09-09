@@ -153,6 +153,8 @@ function initDOM() {
       ? profile.displayName.split(' ').map(n => n[0]).join('') 
       : 'T';
     
+    // ─── УТОЧНИТЬ? ──────────────────
+    
     var ratingHTML = profile.rating 
       ? `<div class="profile-card__rating">
            <span class="profile-card__rating-star">★</span>
@@ -161,11 +163,15 @@ function initDOM() {
          </div>`
       : '';
 
+   // ─── УТОЧНИТЬ? ──────────────────
     var bioHTML = profile.bio
       ? `<div class="profile-card__bio">${escapeHtml(profile.bio)}</div>`
       : '';
 
     return `
+    
+    // ─── Аватар/Имя/Кнопка ПРО ──────────────────
+    
      <div class="profile-card">
   <div class="profile-card__avatar">
     <div class="profile-card__avatar-img">
@@ -183,6 +189,23 @@ function initDOM() {
     ${bioHTML}
   </div>
   <button class="profile-card__pro-btn">PRO</button>
+</div>
+
+ // ─── Специализация/опыт/рейтинг ──────────────────
+ 
+<div class="profile-stats">
+  <div class="profile-stats__item">
+    <div class="profile-stats__value">${profile.experience || '0'} лет</div>
+    <div class="profile-stats__label">Опыт</div>
+  </div>
+  <div class="profile-stats__item">
+    <div class="profile-stats__value">${profile.specializations || '0'} типов</div>
+    <div class="profile-stats__label">Специализация</div>
+  </div>
+  <div class="profile-stats__item">
+    <div class="profile-stats__value">${profile.rating || '0.0'}</div>
+    <div class="profile-stats__label">Рейтинг</div>
+  </div>
 </div>
 
       <!-- Account Section -->
