@@ -265,8 +265,7 @@ function initDOM() {
         </div>
       </div>
 
-      <button class="profile-action-btn danger" id="profile-logout-btn">Выход</button>
-    `;
+    ;
   }
 
   // ─── Генерация HTML карточки профиля (клиент) ──────────────────
