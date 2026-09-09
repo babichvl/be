@@ -28,6 +28,41 @@ var ProfileUI = (function() {
             </button>
           </div>
         </div>
+              <!-- Edit Stats Modal -->
+      <div class="stats-modal-overlay" id="stats-modal-overlay"></div>
+      <div class="stats-modal" id="stats-modal">
+        <div class="stats-modal__header">
+          <button class="stats-modal__close" id="stats-modal-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+          <h2 class="stats-modal__title">Редактировать</h2>
+          <div style="width: 24px;"></div>
+        </div>
+
+        <div class="stats-modal__content">
+          <div class="stats-modal__field">
+            <label class="stats-modal__label">Опыт (лет)</label>
+            <input type="number" class="stats-modal__input" id="stats-input-experience" placeholder="0">
+          </div>
+
+          <div class="stats-modal__field">
+            <label class="stats-modal__label">Специализация (типов)</label>
+            <input type="number" class="stats-modal__input" id="stats-input-specializations" placeholder="0">
+          </div>
+
+          <div class="stats-modal__field">
+            <label class="stats-modal__label">Рейтинг</label>
+            <input type="number" class="stats-modal__input" id="stats-input-rating" placeholder="0.0" step="0.1" min="0" max="5">
+          </div>
+        </div>
+
+        <div class="stats-modal__footer">
+          <button class="stats-modal__btn stats-modal__btn--cancel" id="stats-modal-cancel">Отменить</button>
+          <button class="stats-modal__btn stats-modal__btn--save" id="stats-modal-save">Сохранить</button>
+        </div>
+      </div>
       </div>
 
       <!-- Profile Panel -->
