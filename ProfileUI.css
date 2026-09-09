@@ -296,7 +296,7 @@
 .profile-card__info {
   display: flex;
   flex-direction: column;
-  margin-left: -1px;
+  margin-left: 4px;
 }
 
 .profile-card__name {
