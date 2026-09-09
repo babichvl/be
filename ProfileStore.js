@@ -43,8 +43,9 @@ async function determineRole(userTgId) {
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не инициализирован, возвращаю mock');
     return {
-      userId: userTgId,
-      role: 'trainer'
+      userId: 'mock-' + userTgId,  // mock ID, но явно отмечено как mock
+      role: 'trainer',
+      isRealUser: false
     };
   }
 
@@ -60,36 +61,41 @@ async function determineRole(userTgId) {
 
     if (userRes.error) {
       console.warn('[ProfileStore] ⚠️ Ошибка или пользователь не найден:', userRes.error.message);
-      console.log('[ProfileStore] Возвращаю mock с telegram_id');
+      console.log('[ProfileStore] Возвращаю mock с mock-id');
       return {
-        userId: userTgId,  // ← ИСПОЛЬЗУЕМ TELEGRAM_ID, НЕ "mock-user-..."
-        role: 'trainer'
+        userId: 'mock-' + userTgId,  // mock UUID
+        role: 'trainer',
+        isRealUser: false
       };
     }
 
     if (!userRes.data) {
       console.warn('[ProfileStore] ⚠️ userRes.data пуста');
       return {
-        userId: userTgId,
-        role: 'trainer'
+        userId: 'mock-' + userTgId,
+        role: 'trainer',
+        isRealUser: false
       };
     }
 
-    console.log('[ProfileStore] ✅ Пользователь найден, роль:', userRes.data.role);
+    console.log('[ProfileStore] ✅ Пользователь найден, ID:', userRes.data.id, 'Роль:', userRes.data.role);
+    
+    // ✅ ПРАВИЛЬНО: Возвращаем реальный UUID из БД
     return {
-      userId: userRes.data.id,
-      role: userRes.data.role
+      userId: userRes.data.id,  // ← UUID из users.id
+      role: userRes.data.role,
+      isRealUser: true
     };
   } catch (e) {
     console.error('[ProfileStore] ❌ Exception в determineRole:', e.message);
-    console.log('[ProfileStore] Возвращаю mock с telegram_id');
+    console.log('[ProfileStore] Возвращаю mock');
     return {
-      userId: userTgId,
-      role: 'trainer'
+      userId: 'mock-' + userTgId,
+      role: 'trainer',
+      isRealUser: false
     };
   }
 }
-
 // ─── Загрузить данные тренера ──────────────────────────────
 async function loadTrainerProfile(userId) {
   console.log('[ProfileStore] loadTrainerProfile() для user_id:', userId);
