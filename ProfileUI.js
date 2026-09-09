@@ -516,5 +516,5 @@ var ProfileUI = (function() {
     close: close
   };
 })();
-
+window.ProfileUI = ProfileUI;
 console.log('[ProfileUI] ✅ Загружен');
