@@ -402,11 +402,19 @@ var ProfileUI = (function() {
 
   // ─── Открыть профиль ───────────────────────────────────────
   function open() {
-    if (isOpen) return;
+    console.log('[ProfileUI] open() вызвана, isOpen=', isOpen);
+    
+    if (isOpen) {
+      console.log('[ProfileUI] ⚠️ Уже открыта');
+      return;
+    }
     
     isOpen = true;
     var overlay = document.getElementById('profile-overlay');
     var panel = document.getElementById('profile-panel');
+    
+    console.log('[ProfileUI] overlay найден?', !!overlay);
+    console.log('[ProfileUI] panel найден?', !!panel);
     
     if (overlay && panel) {
       overlay.classList.add('active');
@@ -418,7 +426,9 @@ var ProfileUI = (function() {
         render(null);
       }
       
-      console.log('[ProfileUI] Profile opened');
+      console.log('[ProfileUI] ✅ Profile opened successfully');
+    } else {
+      console.error('[ProfileUI] ❌ overlay или panel не найдены!');
     }
   }
 
@@ -448,43 +458,16 @@ var ProfileUI = (function() {
     if (roleSelectorOverlay) {
       roleSelectorOverlay.addEventListener('click', function(e) {
         if (e.target === roleSelectorOverlay) {
-          // Не закрываем селектор при клике на фон
           console.log('[ProfileUI] Role selector should stay open');
         }
       });
     }
   }
 
-function open() {
-  console.log('[ProfileUI] open() вызвана, isOpen=', isOpen);
-  
-  if (isOpen) {
-    console.log('[ProfileUI] ⚠️ Уже открыта');
-    return;
-  }
-  
-  isOpen = true;
-  var overlay = document.getElementById('profile-overlay');
-  var panel = document.getElementById('profile-panel');
-  
-  console.log('[ProfileUI] overlay найден?', !!overlay);
-  console.log('[ProfileUI] panel найден?', !!panel);
-  
-  if (overlay && panel) {
-    overlay.classList.add('active');
-    panel.classList.add('active');
-    
-    if (currentProfile) {
-      render(currentProfile);
-    } else {
-      render(null);
-    }
-    
-    console.log('[ProfileUI] ✅ Profile opened successfully');
-  } else {
-    console.error('[ProfileUI] ❌ overlay или panel не найдены!');
-  }
-}
+  // ─── Инициализация ────────────────────────────────────────────
+  function init(userTgId) {
+    console.log('[ProfileUI] init() вызван с userTgId:', userTgId);
+
     // Создаём DOM первым
     initDOM();
 
@@ -494,11 +477,18 @@ function open() {
     // Биндим события селектора роли
     bindRoleSelectorEvents(userTgId);
 
-    // Биндим клик по аватару в хэдере
-    var avatarBtn = document.querySelector('.page-header__avatar');
-    if (avatarBtn) {
-      avatarBtn.addEventListener('click', open);
-    }
+    // ✅ Привязываем ко ВСЕМ кнопкам аватара
+    var avatarBtns = document.querySelectorAll('.page-header__avatar');
+    console.log('[ProfileUI] 🔍 Найдено кнопок аватара:', avatarBtns.length);
+    
+    avatarBtns.forEach(function(btn, index) {
+      console.log('[ProfileUI] 🔗 Привязываю клик к кнопке #' + index);
+      btn.addEventListener('click', function(e) {
+        console.log('[ProfileUI] 🎯 КЛИК ПО АВАТАРУ!');
+        e.preventDefault();
+        open();
+      });
+    });
 
     // Подписываемся на ProfileStore
     if (window.ProfileStore) {
@@ -538,10 +528,8 @@ function open() {
   // ─── API ───────────────────────────────────────────────────────
   return {
     init: init,
-    openModal: open,  // ← Было openModal: openModal
-    closeModal: close,
-    //updateProfile: updateProfile,
-    //editProfile: editProfile
+    openModal: open,
+    closeModal: close
   };
 })();
 window.ProfileUI = ProfileUI;
