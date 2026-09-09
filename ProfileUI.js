@@ -170,8 +170,6 @@ function initDOM() {
 
     return `
     
-    // ─── Аватар/Имя/Кнопка ПРО ──────────────────
-    
      <div class="profile-card">
   <div class="profile-card__avatar">
     <div class="profile-card__avatar-img">
@@ -190,8 +188,6 @@ function initDOM() {
   </div>
   <button class="profile-card__pro-btn">PRO</button>
 </div>
-
- // ─── Специализация/опыт/рейтинг ──────────────────
  
 <div class="profile-stats">
   <div class="profile-stats__item">
@@ -207,8 +203,6 @@ function initDOM() {
     <div class="profile-stats__label">Рейтинг</div>
   </div>
 </div>
-
-// ─── УТОЧНИТЬ? ──────────────────
 
       <!-- Account Section -->
       <div class="profile-section">
