@@ -114,11 +114,29 @@ body {
 }
 
 .page-header__avatar {
-  position: absolute;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page-header__avatar:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.page-header__avatar:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.page-header__avatar:focus-visible {
+  outline: 2px solid #7B7BFF;
+  outline-offset: 2px;
 }
 
 .page-header__avatar-img {
