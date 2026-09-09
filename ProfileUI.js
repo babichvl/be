@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// PROFILEUI.JS — UI компонент профиля
+// PROFILEUI.JS — UI профиля + селектор роли (объединено)
 // ═══════════════════════════════════════════════════════════
 
 var ProfileUI = (function() {
@@ -9,6 +9,28 @@ var ProfileUI = (function() {
   // ─── Создаём HTML структуру ────────────────────────────────────
   function createProfileHTML() {
     var html = `
+      <!-- Role Selector -->
+      <div class="role-selector-overlay" id="role-selector-overlay"></div>
+      <div class="role-selector-panel" id="role-selector-panel">
+        <div class="role-selector-card">
+          <h1 class="role-selector-title">Выберите вашу роль</h1>
+          <p class="role-selector-subtitle">Это определит, какие функции вам будут доступны</p>
+          <div class="role-selector-buttons">
+            <button id="role-btn-trainer" class="role-selector-btn role-selector-btn--trainer">
+              <div class="role-selector-btn__icon">👨‍🏫</div>
+              <div class="role-selector-btn__title">Я тренер</div>
+              <div class="role-selector-btn__desc">Управляю расписанием и клиентами</div>
+            </button>
+            <button id="role-btn-client" class="role-selector-btn role-selector-btn--client">
+              <div class="role-selector-btn__icon">💪</div>
+              <div class="role-selector-btn__title">Я клиент</div>
+              <div class="role-selector-btn__desc">Смотрю расписание тренировок</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Panel -->
       <div class="profile-overlay" id="profile-overlay"></div>
       <div class="profile-panel" id="profile-panel">
         <div class="profile-panel__handle"></div>
@@ -30,13 +52,96 @@ var ProfileUI = (function() {
   // ─── Инициализация DOM ─────────────────────────────────────────
   function initDOM() {
     var container = document.body;
-    var existing = document.getElementById('profile-overlay');
+    var existing = document.getElementById('role-selector-overlay');
     
     if (!existing) {
       var fragment = document.createElement('div');
       fragment.innerHTML = createProfileHTML();
       container.appendChild(fragment.firstElementChild);
       container.appendChild(fragment.firstElementChild);
+      container.appendChild(fragment.firstElementChild);
+    }
+  }
+
+  // ─── Показать/скрыть селектор роли ────────────────────────────
+  function showRoleSelector() {
+    var overlay = document.getElementById('role-selector-overlay');
+    var panel = document.getElementById('role-selector-panel');
+    
+    if (overlay && panel) {
+      overlay.classList.add('active');
+      panel.classList.add('active');
+      console.log('[ProfileUI] Role selector shown');
+    }
+  }
+
+  function hideRoleSelector() {
+    var overlay = document.getElementById('role-selector-overlay');
+    var panel = document.getElementById('role-selector-panel');
+    
+    if (overlay && panel) {
+      overlay.classList.remove('active');
+      panel.classList.remove('active');
+      console.log('[ProfileUI] Role selector hidden');
+    }
+  }
+
+  // ─── Сохранить роль в БД ──────────────────────────────────────
+  function saveRole(userTgId, role, callback) {
+    if (!window.sb) {
+      console.error('[ProfileUI] Supabase не инициализирован');
+      if (callback) callback(null);
+      return;
+    }
+
+    console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
+
+    window.sb
+      .from('users')
+      .update({ role: role })
+      .eq('telegram_id', userTgId)
+      .then(function(res) {
+        if (res.error) {
+          console.error('[ProfileUI] Ошибка сохранения роли:', res.error);
+          if (callback) callback(null);
+          return;
+        }
+
+        console.log('[ProfileUI] ✅ Роль успешно сохранена:', role);
+        hideRoleSelector();
+        
+        // Загружаем профиль после сохранения роли
+        if (window.ProfileStore) {
+          ProfileStore.init(userTgId);
+        }
+        
+        if (callback) callback(role);
+      })
+      .catch(function(err) {
+        console.error('[ProfileUI] Критическая ошибка сохранения роли:', err);
+        if (callback) callback(null);
+      });
+  }
+
+  // ─── Биндим события селектора роли ────────────────────────────
+  function bindRoleSelectorEvents(userTgId) {
+    var trainerBtn = document.getElementById('role-btn-trainer');
+    var clientBtn = document.getElementById('role-btn-client');
+
+    if (trainerBtn) {
+      trainerBtn.onclick = function() {
+        saveRole(userTgId, 'trainer', function() {
+          // После сохранения профиль загружается через ProfileStore
+        });
+      };
+    }
+
+    if (clientBtn) {
+      clientBtn.onclick = function() {
+        saveRole(userTgId, 'client', function() {
+          // После сохранения профиль загружается через ProfileStore
+        });
+      };
     }
   }
 
@@ -67,7 +172,7 @@ var ProfileUI = (function() {
               : initials
             }
           </div>
-          <div class="profile-card__status-badge ${profile.isOnline ? '' : 'offline'}"></div>
+          <div class="profile-card__status ${profile.isOnline ? '' : 'offline'}"></div>
         </div>
         <div class="profile-card__info">
           <div class="profile-card__name">${escapeHtml(profile.displayName || 'Тренер')}</div>
@@ -108,13 +213,13 @@ var ProfileUI = (function() {
               <div class="profile-item__value">${escapeHtml(profile.phone)}</div>
             </div>
           ` : ''}
-          ${profile.isPro ? `
+          ${profile.price ? `
             <div class="profile-item">
               <div class="profile-item__label">
-                <span class="profile-item__icon">⭐</span>
-                <span>Статус</span>
+                <span class="profile-item__icon">💰</span>
+                <span>Цена</span>
               </div>
-              <div class="profile-item__value">Pro</div>
+              <div class="profile-item__value">${escapeHtml(profile.price)}</div>
             </div>
           ` : ''}
         </div>
@@ -146,14 +251,14 @@ var ProfileUI = (function() {
               <span class="profile-item__icon">ℹ️</span>
               <span>О приложении</span>
             </div>
-            <span class="profile-item__icon">›</span>
+            <span class="profile-item__arrow">›</span>
           </div>
           <div class="profile-item">
             <div class="profile-item__label">
               <span class="profile-item__icon">⚙️</span>
               <span>Настройки</span>
             </div>
-            <span class="profile-item__icon">›</span>
+            <span class="profile-item__arrow">›</span>
           </div>
         </div>
       </div>
@@ -177,32 +282,13 @@ var ProfileUI = (function() {
               : initials
             }
           </div>
-          <div class="profile-card__status-badge ${profile.isOnline ? '' : 'offline'}"></div>
+          <div class="profile-card__status ${profile.isOnline ? '' : 'offline'}"></div>
         </div>
         <div class="profile-card__info">
           <div class="profile-card__name">${escapeHtml(profile.name || 'Клиент')}</div>
           <div class="profile-card__role">Клиент</div>
         </div>
       </div>
-
-      <!-- Trainer Info (если есть) -->
-      ${profile.trainerId ? `
-        <div class="profile-trainer-card">
-          <div class="profile-trainer-card__avatar">?</div>
-          <div class="profile-trainer-card__info">
-            <div class="profile-trainer-card__name">Мой тренер</div>
-            <div class="profile-trainer-card__label">Связь активна</div>
-          </div>
-          <div class="profile-trainer-card__chevron">›</div>
-        </div>
-      ` : `
-        <div class="profile-trainer-card">
-          <div class="profile-trainer-card__info">
-            <div class="profile-trainer-card__name">У вас ещё нет тренера</div>
-            <div class="profile-trainer-card__label">Пригласите его по коду</div>
-          </div>
-        </div>
-      `}
 
       <!-- Account Section -->
       <div class="profile-section">
@@ -215,15 +301,6 @@ var ProfileUI = (function() {
                 <span>Телефон</span>
               </div>
               <div class="profile-item__value">${escapeHtml(profile.phone)}</div>
-            </div>
-          ` : ''}
-          ${profile.birthDate ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">🎂</span>
-                <span>Дата рождения</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.birthDate)}</div>
             </div>
           ` : ''}
         </div>
@@ -255,14 +332,7 @@ var ProfileUI = (function() {
               <span class="profile-item__icon">ℹ️</span>
               <span>О приложении</span>
             </div>
-            <span class="profile-item__icon">›</span>
-          </div>
-          <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">⚙️</span>
-              <span>Настройки</span>
-            </div>
-            <span class="profile-item__icon">›</span>
+            <span class="profile-item__arrow">›</span>
           </div>
         </div>
       </div>
@@ -285,6 +355,11 @@ var ProfileUI = (function() {
 
     if (!profile) {
       content.innerHTML = '<div class="profile-empty">Загружаю профиль...</div>';
+      return;
+    }
+
+    if (profile.role === null) {
+      content.innerHTML = '<div class="profile-empty">Роль не установлена...</div>';
       return;
     }
 
@@ -312,7 +387,6 @@ var ProfileUI = (function() {
         this.classList.toggle('active');
         var isEnabled = this.classList.contains('active');
         console.log('[ProfileUI] Notifications toggled:', isEnabled);
-        // TODO: Сохранить в БД через ProfileStore
       });
     }
 
@@ -321,7 +395,6 @@ var ProfileUI = (function() {
       logoutBtn.addEventListener('click', function() {
         if (confirm('Вы уверены?')) {
           console.log('[ProfileUI] Logout clicked');
-          // TODO: Реализовать выход
         }
       });
     }
@@ -339,7 +412,6 @@ var ProfileUI = (function() {
       overlay.classList.add('active');
       panel.classList.add('active');
       
-      // Рендерим текущий профиль если он загружен
       if (currentProfile) {
         render(currentProfile);
       } else {
@@ -367,21 +439,34 @@ var ProfileUI = (function() {
 
   // ─── Закрыть при клике на overlay ──────────────────────────────
   function setupOverlayClick() {
-    var overlay = document.getElementById('profile-overlay');
-    if (overlay) {
-      overlay.addEventListener('click', close);
+    var profileOverlay = document.getElementById('profile-overlay');
+    if (profileOverlay) {
+      profileOverlay.addEventListener('click', close);
+    }
+
+    var roleSelectorOverlay = document.getElementById('role-selector-overlay');
+    if (roleSelectorOverlay) {
+      roleSelectorOverlay.addEventListener('click', function(e) {
+        if (e.target === roleSelectorOverlay) {
+          // Не закрываем селектор при клике на фон
+          console.log('[ProfileUI] Role selector should stay open');
+        }
+      });
     }
   }
 
-// ─── Инициализация ────────────────────────────────────────────
+  // ─── Инициализация ────────────────────────────────────────────
   function init(userTgId) {
     console.log('[ProfileUI] init() вызван с userTgId:', userTgId);
 
-    // ВАЖНО: Создаём DOM первым
+    // Создаём DOM первым
     initDOM();
 
-    // Биндим события
+    // Биндим события overlay
     setupOverlayClick();
+
+    // Биндим события селектора роли
+    bindRoleSelectorEvents(userTgId);
 
     // Биндим клик по аватару в хэдере
     var avatarBtn = document.querySelector('.page-header__avatar');
@@ -396,8 +481,18 @@ var ProfileUI = (function() {
       ProfileStore.subscribe(function(profile) {
         console.log('[ProfileUI] Получили профиль из Store:', profile);
         currentProfile = profile;
-        if (isOpen) {
-          render(profile);
+        
+        // Если роль не установлена — показываем селектор
+        if (profile && profile.role === null) {
+          console.log('[ProfileUI] Роль не установлена, показываю селектор');
+          showRoleSelector();
+        } else if (profile && profile.role) {
+          // Роль установлена — скрываем селектор
+          console.log('[ProfileUI] Роль установлена:', profile.role);
+          hideRoleSelector();
+          if (isOpen) {
+            render(profile);
+          }
         }
       });
       
@@ -413,7 +508,6 @@ var ProfileUI = (function() {
 
     console.log('[ProfileUI] ✅ Инициализирован');
   }
-
 
   // ─── API ───────────────────────────────────────────────────────
   return {
