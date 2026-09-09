@@ -182,7 +182,7 @@ function initDOM() {
     ${ratingHTML}
     ${bioHTML}
   </div>
-  <button class="profile-card__pro-btn">PRO+</button>
+  <button class="profile-card__pro-btn">PRO</button>
 </div>
 
       <!-- Account Section -->
