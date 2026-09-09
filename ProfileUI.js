@@ -437,6 +437,13 @@ function initDOM() {
     if (backBtn) {
       backBtn.addEventListener('click', close);
     }
+      // ─── Биндим клик на поля статистики ───
+  var statItems = document.querySelectorAll('.profile-card__stat-item');
+  statItems.forEach(function(item) {
+    item.addEventListener('click', function() {
+      openStatsModal(currentProfile);
+    });
+  });
 
     var notificationToggle = document.getElementById('profile-notifications-toggle');
     if (notificationToggle) {
@@ -530,6 +537,7 @@ function initDOM() {
 
     // Биндим события overlay
     setupOverlayClick();
+    setupStatsModalEvents();
 
     // Биндим события селектора роли
     bindRoleSelectorEvents(userTgId);
@@ -582,6 +590,66 @@ function initDOM() {
     console.log('[ProfileUI] ✅ Инициализирован');
   }
 
+  // ─── Открыть модаль редактирования статистики ────
+function openStatsModal(profile) {
+  var overlay = document.getElementById('stats-modal-overlay');
+  var modal = document.getElementById('stats-modal');
+  
+  if (overlay && modal) {
+    // Заполняем поля текущими значениями
+    document.getElementById('stats-input-experience').value = profile.experience || '';
+    document.getElementById('stats-input-specializations').value = profile.specializations || '';
+    document.getElementById('stats-input-rating').value = profile.rating || '';
+    
+    overlay.classList.add('active');
+    modal.classList.add('active');
+    console.log('[ProfileUI] Stats modal opened');
+  }
+}
+
+// ─── Закрыть модаль ────
+function closeStatsModal() {
+  var overlay = document.getElementById('stats-modal-overlay');
+  var modal = document.getElementById('stats-modal');
+  
+  if (overlay && modal) {
+    overlay.classList.remove('active');
+    modal.classList.remove('active');
+    console.log('[ProfileUI] Stats modal closed');
+  }
+}
+
+// ─── Биндим события модали ────
+function setupStatsModalEvents() {
+  var overlay = document.getElementById('stats-modal-overlay');
+  var closeBtn = document.getElementById('stats-modal-close');
+  var cancelBtn = document.getElementById('stats-modal-cancel');
+  var saveBtn = document.getElementById('stats-modal-save');
+
+  if (overlay) {
+    overlay.addEventListener('click', closeStatsModal);
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeStatsModal);
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', closeStatsModal);
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', function() {
+      var experience = document.getElementById('stats-input-experience').value;
+      var specializations = document.getElementById('stats-input-specializations').value;
+      var rating = document.getElementById('stats-input-rating').value;
+
+      console.log('[ProfileUI] Save stats:', { experience, specializations, rating });
+      // Сохранение в БД будет на следующем шаге
+      closeStatsModal();
+    });
+  }
+}
   // ─── API ───────────────────────────────────────────────────────
   return {
     init: init,
