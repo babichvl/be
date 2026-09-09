@@ -170,37 +170,37 @@ function initDOM() {
 
     return `
     
-     <div class="profile-card">
-  <div class="profile-card__avatar">
-    <div class="profile-card__avatar-img">
-      ${profile.photoUrl 
-        ? `<img src="${profile.photoUrl}" alt="${profile.displayName}" style="width: 100%; height: 100%; object-fit: cover;">`
-        : initials
-      }
+<div class="profile-card">
+  <div class="profile-card__top">
+    <div class="profile-card__avatar">
+      <div class="profile-card__avatar-img">
+        ${profile.photoUrl 
+          ? `<img src="${profile.photoUrl}" alt="${profile.displayName}" style="width: 100%; height: 100%; object-fit: cover;">`
+          : initials
+        }
+      </div>
+      <div class="profile-card__status ${profile.isOnline ? '' : 'offline'}"></div>
     </div>
-    <div class="profile-card__status ${profile.isOnline ? '' : 'offline'}"></div>
+    <div class="profile-card__info">
+      <div class="profile-card__name">${escapeHtml(profile.displayName || 'Тренер')}</div>
+      <div class="profile-card__role">Тренер</div>
+    </div>
+    <button class="profile-card__pro-btn">PRO+</button>
   </div>
-  <div class="profile-card__info">
-    <div class="profile-card__name">${escapeHtml(profile.displayName || 'Тренер')}</div>
-    <div class="profile-card__role">Тренер</div>
-    ${ratingHTML}
-    ${bioHTML}
-  </div>
-  <button class="profile-card__pro-btn">PRO</button>
-</div>
- 
-<div class="profile-stats">
-  <div class="profile-stats__item">
-    <div class="profile-stats__value">${profile.experience || '0'} лет</div>
-    <div class="profile-stats__label">Опыт</div>
-  </div>
-  <div class="profile-stats__item">
-    <div class="profile-stats__value">${profile.specializations || '0'} типов</div>
-    <div class="profile-stats__label">Специализация</div>
-  </div>
-  <div class="profile-stats__item">
-    <div class="profile-stats__value">${profile.rating || '0.0'}</div>
-    <div class="profile-stats__label">Рейтинг</div>
+
+  <div class="profile-card__stats">
+    <div class="profile-card__stat-item">
+      <div class="profile-card__stat-value">${profile.experience || '0'} лет</div>
+      <div class="profile-card__stat-label">Опыт</div>
+    </div>
+    <div class="profile-card__stat-item">
+      <div class="profile-card__stat-value">${profile.specializations || '0'} типов</div>
+      <div class="profile-card__stat-label">Специализация</div>
+    </div>
+    <div class="profile-card__stat-item">
+      <div class="profile-card__stat-value">${profile.rating || '0.0'}</div>
+      <div class="profile-card__stat-label">Рейтинг</div>
+    </div>
   </div>
 </div>
 
