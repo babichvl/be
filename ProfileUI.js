@@ -458,38 +458,40 @@ function initDOM() {
     bindEvents();
   }
 
-  // ─── Биндим события в профиле ──────────────────────────────────
-  function bindEvents() {
-    var backBtn = document.getElementById('profile-back-btn');
-    if (backBtn) {
-      backBtn.addEventListener('click', close);
-    }
-      // ─── Биндим клик на поля статистики ───
+// ─── Биндим события в профиле ──────────────────────────────────
+function bindEvents() {
+  var backBtn = document.getElementById('profile-back-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', close);
+  }
+
+  // ─── Биндим клик на каждое поле статистики ───
   var statItems = document.querySelectorAll('.profile-card__stat-item');
-  statItems.forEach(function(item) {
+  statItems.forEach(function(item, index) {
     item.addEventListener('click', function() {
-      openStatsModal(currentProfile);
+      var fields = ['experience', 'specializations', 'rating'];
+      openStatsModal(fields[index], currentProfile);
     });
   });
 
-    var notificationToggle = document.getElementById('profile-notifications-toggle');
-    if (notificationToggle) {
-      notificationToggle.addEventListener('click', function() {
-        this.classList.toggle('active');
-        var isEnabled = this.classList.contains('active');
-        console.log('[ProfileUI] Notifications toggled:', isEnabled);
-      });
-    }
-
-    var logoutBtn = document.getElementById('profile-logout-btn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', function() {
-        if (confirm('Вы уверены?')) {
-          console.log('[ProfileUI] Logout clicked');
-        }
-      });
-    }
+  var notificationToggle = document.getElementById('profile-notifications-toggle');
+  if (notificationToggle) {
+    notificationToggle.addEventListener('click', function() {
+      this.classList.toggle('active');
+      var isEnabled = this.classList.contains('active');
+      console.log('[ProfileUI] Notifications toggled:', isEnabled);
+    });
   }
+
+  var logoutBtn = document.getElementById('profile-logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function() {
+      if (confirm('Вы уверены?')) {
+        console.log('[ProfileUI] Logout clicked');
+      }
+    });
+  }
+}
 
   // ─── Открыть профиль ───────────────────────────────────────
   function open() {
@@ -617,65 +619,71 @@ function initDOM() {
     console.log('[ProfileUI] ✅ Инициализирован');
   }
 
-  // ─── Открыть модаль редактирования статистики ────
-function openStatsModal(profile) {
-  var overlay = document.getElementById('stats-modal-overlay');
-  var modal = document.getElementById('stats-modal');
+// ─── Открыть нужную модаль ────
+function openStatsModal(field, profile) {
+  var modal = document.getElementById(field + '-modal');
+  var overlay = document.getElementById(field + '-modal-overlay');
   
-  if (overlay && modal) {
-    // Заполняем поля текущими значениями
-    document.getElementById('stats-input-experience').value = profile.experience || '';
-    document.getElementById('stats-input-specializations').value = profile.specializations || '';
-    document.getElementById('stats-input-rating').value = profile.rating || '';
+  if (modal && overlay) {
+    // Заполняем значение
+    var input = document.getElementById(field + '-input');
+    if (input) {
+      input.value = profile[field] || '';
+      input.focus();
+    }
     
     overlay.classList.add('active');
     modal.classList.add('active');
-    console.log('[ProfileUI] Stats modal opened');
+    console.log('[ProfileUI] ' + field + ' modal opened');
   }
 }
 
 // ─── Закрыть модаль ────
-function closeStatsModal() {
-  var overlay = document.getElementById('stats-modal-overlay');
-  var modal = document.getElementById('stats-modal');
+function closeStatsModal(field) {
+  var modal = document.getElementById(field + '-modal');
+  var overlay = document.getElementById(field + '-modal-overlay');
   
-  if (overlay && modal) {
+  if (modal && overlay) {
     overlay.classList.remove('active');
     modal.classList.remove('active');
-    console.log('[ProfileUI] Stats modal closed');
   }
 }
 
-// ─── Биндим события модали ────
+// ─── Биндим события всех трёх модалей ────
 function setupStatsModalEvents() {
-  var overlay = document.getElementById('stats-modal-overlay');
-  var closeBtn = document.getElementById('stats-modal-close');
-  var cancelBtn = document.getElementById('stats-modal-cancel');
-  var saveBtn = document.getElementById('stats-modal-save');
+  var fields = ['experience', 'specializations', 'rating'];
+  
+  fields.forEach(function(field) {
+    var overlay = document.getElementById(field + '-modal-overlay');
+    var closeBtn = document.querySelector('[data-modal="' + field + '"]');
+    var cancelBtn = document.querySelector('[data-modal="' + field + '"][class*="cancel"]');
+    var saveBtn = document.querySelector('[data-save="' + field + '"]');
 
-  if (overlay) {
-    overlay.addEventListener('click', closeStatsModal);
-  }
+    if (overlay) {
+      overlay.addEventListener('click', function() {
+        closeStatsModal(field);
+      });
+    }
 
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeStatsModal);
-  }
-
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', closeStatsModal);
-  }
-
-  if (saveBtn) {
-    saveBtn.addEventListener('click', function() {
-      var experience = document.getElementById('stats-input-experience').value;
-      var specializations = document.getElementById('stats-input-specializations').value;
-      var rating = document.getElementById('stats-input-rating').value;
-
-      console.log('[ProfileUI] Save stats:', { experience, specializations, rating });
-      // Сохранение в БД будет на следующем шаге
-      closeStatsModal();
+    // Все кнопки закрытия и отмены
+    document.querySelectorAll('[data-modal="' + field + '"]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        closeStatsModal(field);
+      });
     });
-  }
+
+    // Кнопка сохранения
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function() {
+        var input = document.getElementById(field + '-input');
+        var value = input.value;
+
+        console.log('[ProfileUI] Saving ' + field + ':', value);
+        // На следующем шаге будет сохранение в БД
+        closeStatsModal(field);
+      });
+    }
+  });
 }
   // ─── API ───────────────────────────────────────────────────────
   return {
