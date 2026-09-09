@@ -455,10 +455,36 @@ var ProfileUI = (function() {
     }
   }
 
-  // ─── Инициализация ────────────────────────────────────────────
-  function init(userTgId) {
-    console.log('[ProfileUI] init() вызван с userTgId:', userTgId);
-
+function open() {
+  console.log('[ProfileUI] open() вызвана, isOpen=', isOpen);
+  
+  if (isOpen) {
+    console.log('[ProfileUI] ⚠️ Уже открыта');
+    return;
+  }
+  
+  isOpen = true;
+  var overlay = document.getElementById('profile-overlay');
+  var panel = document.getElementById('profile-panel');
+  
+  console.log('[ProfileUI] overlay найден?', !!overlay);
+  console.log('[ProfileUI] panel найден?', !!panel);
+  
+  if (overlay && panel) {
+    overlay.classList.add('active');
+    panel.classList.add('active');
+    
+    if (currentProfile) {
+      render(currentProfile);
+    } else {
+      render(null);
+    }
+    
+    console.log('[ProfileUI] ✅ Profile opened successfully');
+  } else {
+    console.error('[ProfileUI] ❌ overlay или panel не найдены!');
+  }
+}
     // Создаём DOM первым
     initDOM();
 
