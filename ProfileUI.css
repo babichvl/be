@@ -137,7 +137,7 @@
   color: #1a1a1a;
   cursor: pointer;
   flex-shrink: 0;
-  align-self: flex-start;
+  margin-left: auto;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: var(--shadow-sm);
 }
