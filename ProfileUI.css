@@ -127,6 +127,28 @@
   z-index: 1000;
 }
 
+.profile-card__pro-btn {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-card__pro-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.profile-card__pro-btn:active {
+  transform: translateY(0);
+}
 .profile-overlay.active {
   opacity: 1;
   visibility: visible;
