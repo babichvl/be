@@ -514,8 +514,8 @@ var ProfileUI = (function() {
     init: init,
     openModal: open,  // ← Было openModal: openModal
     closeModal: close,
-    updateProfile: updateProfile,
-    editProfile: editProfile
+    //updateProfile: updateProfile,
+    //editProfile: editProfile
   };
 })();
 window.ProfileUI = ProfileUI;
