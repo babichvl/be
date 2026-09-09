@@ -256,7 +256,6 @@ async function loadProfile(userTgId) {
     
     if (!roleData) {
       console.warn('[ProfileStore] ❌ determineRole вернула null');
-      loading = false;
       profile = null;
       notify(profile);
       return;
@@ -266,7 +265,6 @@ async function loadProfile(userTgId) {
 
     if (!roleData.role) {
       console.log('[ProfileStore] ⚠️ Роль не установлена — вернём пустой профиль');
-      loading = false;
       profile = { userId: roleData.userId, role: null };
       notify(profile);
       return;
@@ -283,7 +281,6 @@ async function loadProfile(userTgId) {
 
     if (!userData) {
       console.warn('[ProfileStore] ⚠️ userData пуста — возможно, это новый пользователь');
-      loading = false;
       profile = { 
         userId: roleData.userId, 
         role: roleData.role,
@@ -293,46 +290,7 @@ async function loadProfile(userTgId) {
       return;
     }
 
-    profile = userData;
-    console.log('[ProfileStore] ✅✅✅ ПРОФИЛЬ ГОТОВ:', profile);
-    notify(profile);
-
-  } catch (e) {
-    console.error('[ProfileStore] ❌❌❌ КРИТИЧЕСКАЯ ОШИБКА:', e.message);
-    console.error('[ProfileStore] ⚠️ Supabase полностью недоступен, использую mock');
-    
-    // ─── Create mock profile для критических ошибок ─────────────────
-function createMockProfile(userTgId) {
-  console.log('[ProfileStore] ⚠️ КРИТИЧЕСКАЯ ОШИБКА: Supabase не доступен. Использую mock для:', userTgId);
-  
-  return {
-    role: 'trainer',
-    userId: 'mock-error-' + userTgId,
-    trainerId: 'mock-trainer-' + userTgId,
-    displayName: 'Демо Тренер (Нет соединения)',
-    specialty: 'Демонстрация',
-    experience: 'Демо режим',
-    bio: '⚠️ Приложение работает в демо-режиме. Соединение с сервером потеряно.',
-    price: 'Demo',
-    phone: '+7 (000) 000-00-00',
-    photoUrl: null,
-    rating: 5.0,
-    reviewCount: 0,
-    isOnline: false,
-    lastSeen: null,
-    isPro: false,
-    notificationsEnabled: false,
-    isMockProfile: true
-  };
-}
-    profile = createMockProfile(userTgId);
-    notify(profile);
-    loading = false;
-  }
-  
-  loading = false;
-  console.log('[ProfileStore] ===== loadProfile() КОНЕЦ =====');
-  // Загружаем общие данные из users
+    // Загружаем общие данные из users
     var usersRes = await window.sb
       .from('users')
       .select('photo_url, is_pro, notifications_enabled')
@@ -345,25 +303,41 @@ function createMockProfile(userTgId) {
       userData.notificationsEnabled = usersRes.data.notifications_enabled;
       console.log('[ProfileStore] ✅ Дополнены данные из users');
     }
-}
 
     profile = userData;
     console.log('[ProfileStore] ✅✅✅ ПРОФИЛЬ ГОТОВ:', profile);
-    console.log('[ProfileStore] ===== ВЫЗЫВАЮ notify() =====');
-    notify(profile);
-    console.log('[ProfileStore] ===== notify() ЗАВЕРШЁН =====');
-
-  } 
-    catch (e) {
-    console.error('[ProfileStore] ❌❌❌ ОШИБКА:', e.message);
-    loading = false;
-    profile = null;
     notify(profile);
 
-   finally {
+  } catch (e) {
+    console.error('[ProfileStore] ❌❌❌ КРИТИЧЕСКАЯ ОШИБКА:', e.message);
+    console.error('[ProfileStore] ⚠️ Supabase полностью недоступен, использую mock');
+    
+    profile = {
+      role: 'trainer',
+      userId: 'mock-error-' + userTgId,
+      trainerId: 'mock-trainer-' + userTgId,
+      displayName: 'Демо Тренер (Нет соединения)',
+      specialty: 'Демонстрация',
+      experience: 'Демо режим',
+      bio: '⚠️ Приложение работает в демо-режиме. Соединение с сервером потеряно.',
+      price: 'Demo',
+      phone: '+7 (000) 000-00-00',
+      photoUrl: null,
+      rating: 5.0,
+      reviewCount: 0,
+      isOnline: false,
+      lastSeen: null,
+      isPro: false,
+      notificationsEnabled: false,
+      isMockProfile: true
+    };
+    
+    notify(profile);
+  } finally {
     loading = false;
     console.log('[ProfileStore] ===== loadProfile() КОНЕЦ =====');
-  }}
+  }
+}
 
   // ─── API ───────────────────────────────────────────────────
   return {
