@@ -125,39 +125,44 @@ var ProfileUI = (function() {
 
 // ─── Универсальная функция для сохранения полей профиля ───
 async function saveProfileField(userTgId, fieldName, fieldValue) {
+  console.log('[ProfileUI] === saveProfileField ВЫЗВАНА ===');
+  console.log('[ProfileUI] userTgId:', userTgId);
+  console.log('[ProfileUI] typeof userTgId:', typeof userTgId);
+  console.log('[ProfileUI] currentProfile:', currentProfile);
+  console.log('[ProfileUI] currentProfile.userTgId:', currentProfile?.userTgId);
+  console.log('[ProfileUI] fieldName:', fieldName);
+  console.log('[ProfileUI] fieldValue:', fieldValue);
+  
   if (!window.sb) {
     console.error('[ProfileUI] Supabase не инициализирован');
     return;
   }
 
-  console.log('[ProfileUI] Отправляю', fieldName, '=', fieldValue);
-
   try {
     var updateData = {};
     
-    // Парсим значение в зависимости от типа поля
     if (fieldName === 'experience') {
-      // Приводим к числу
       var numValue = parseInt(fieldValue);
+      console.log('[ProfileUI] experience: fieldValue =', fieldValue, '→ numValue =', numValue);
       if (isNaN(numValue) || numValue < 0) {
         console.warn('[ProfileUI] Невалидное значение для experience:', fieldValue, 'используем 0');
         numValue = 0;
       }
       updateData['experience'] = numValue;
     } else if (fieldName === 'rating') {
-      // Приводим к числу с точкой
       var numValue = parseFloat(fieldValue);
+      console.log('[ProfileUI] rating: fieldValue =', fieldValue, '→ numValue =', numValue);
       if (isNaN(numValue) || numValue < 0 || numValue > 5) {
         console.warn('[ProfileUI] Невалидное значение для rating:', fieldValue, 'используем 0');
         numValue = 0;
       }
       updateData['rating'] = numValue;
     } else {
-      // Для остальных полей (текст)
       updateData[fieldName] = String(fieldValue || '');
     }
 
     console.log('[ProfileUI] Финальные данные:', updateData);
+    console.log('[ProfileUI] parseInt(userTgId) =', parseInt(userTgId));
 
     var updateRes = await window.sb
       .from('trainers')
@@ -172,7 +177,6 @@ async function saveProfileField(userTgId, fieldName, fieldValue) {
 
     console.log('[ProfileUI] ✅ Данные сохранены');
 
-    // Обновляем локальный профиль
     if (currentProfile) {
       Object.keys(updateData).forEach(function(key) {
         currentProfile[key] = updateData[key];
