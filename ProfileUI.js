@@ -836,24 +836,43 @@ function setupStatsModalEvents() {
     var saveBtn = document.querySelector('[data-save="' + field + '"]');
     if (saveBtn) {
       saveBtn.addEventListener('click', function() {
+        console.log('[ProfileUI] Saving', field);
+        
         if (field === 'experience') {
-          // Сохранение опыта с 2 полями
           var yearsInput = document.getElementById('experience-years-input');
           var descriptionInput = document.getElementById('experience-description-input');
           
+          console.log('[ProfileUI] yearsInput найден?', !!yearsInput);
+          console.log('[ProfileUI] descriptionInput найден?', !!descriptionInput);
+          
+          if (!yearsInput || !descriptionInput) {
+            console.error('[ProfileUI] Поля не найдены!');
+            return;
+          }
+          
           var experienceData = {
             years: parseInt(yearsInput.value) || 0,
-            description: descriptionInput.value
+            description: descriptionInput.value || ''
           };
           
           console.log('[ProfileUI] Saving experience:', experienceData);
+          
           // Здесь будет отправка в БД через Supabase
+          // saveExperience(currentProfile.userTgId, experienceData);
           
         } else {
-          // Для остальных полей
           var input = document.getElementById(field + '-input');
-          var value = input.value;
+          
+          if (!input) {
+            console.error('[ProfileUI] Input для', field, 'не найден!');
+            return;
+          }
+          
+          var value = input.value || '';
           console.log('[ProfileUI] Saving ' + field + ':', value);
+          
+          // Здесь будет отправка в БД через Supabase
+          // saveField(field, value);
         }
         
         closeStatsModal(field);
