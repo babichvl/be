@@ -267,7 +267,7 @@ function initDOM() {
 </div>
 
 
-// ─── АККАУНТ ──────────────────
+<!-- ─── АККАУНТ ─────────────────── -->
       <!-- Account Section -->
       <div class="profile-section">
         <div class="profile-section__title">Аккаунт</div>
@@ -303,7 +303,7 @@ function initDOM() {
         </div>
       </div>
       
-   // ─── УВЕДОМЛЕНИЯ ──────────────────   
+   <!-- ─── УВЕДОМЛЕНИЯ ─────────────────── -->
    
       <!-- Notification Section -->
       <div class="profile-section">
@@ -322,7 +322,7 @@ function initDOM() {
         </div>
       </div>
 
-// ─── ДРУГОЕ ──────────────────
+<!-- ─── ДРУГОЕ ─────────────────── -->
 
       <!-- Other Section -->
       <div class="profile-section">
