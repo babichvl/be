@@ -157,7 +157,7 @@ var ProfileUI = (function() {
   }
 
 // ─── Сохраняет выбранную роль в Supabase ───
-function saveRole(userTgId, role, callback) {
+async function saveRole(userTgId, role, callback) {
   if (!window.sb) {
     console.error('[ProfileUI] Supabase не инициализирован');
     if (callback) callback(null);
@@ -166,68 +166,67 @@ function saveRole(userTgId, role, callback) {
 
   console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
 
-  window.sb
-    .from('users')
-    .update({ role: role })
-    .eq('telegram_id', userTgId)
-    .then(function(updateRes) {
-      if (updateRes.error) {
-        console.error('[ProfileUI] Ошибка обновления роли:', updateRes.error);
-        if (callback) callback(null);
-        return;
-      }
+  try {
+    // 1️⃣ Обновляем роль в users
+    var updateRes = await window.sb
+      .from('users')
+      .update({ role: role })
+      .eq('telegram_id', parseInt(userTgId));
 
-      console.log('[ProfileUI] ✅ Роль обновлена');
+    if (updateRes.error) {
+      console.error('[ProfileUI] Ошибка обновления роли:', updateRes.error);
+      if (callback) callback(null);
+      return;
+    }
 
-      // 2️⃣ Получаем UUID пользователя из таблицы users
-      return window.sb
-        .from('users')
-        .select('id')
-        .eq('telegram_id', parseInt(userTgId))
-        .single();
-    })
-    .then(function(userRes) {
-      if (userRes.error || !userRes.data) {
-        console.error('[ProfileUI] ❌ Не удалось получить user_id:', userRes.error);
-        return;
-      }
+    console.log('[ProfileUI] ✅ Роль обновлена');
 
-      var userId = userRes.data.id;
-      console.log('[ProfileUI] ✅ Получен user_id:', userId);
+    // 2️⃣ Получаем user_id
+    var userRes = await window.sb
+      .from('users')
+      .select('id')
+      .eq('telegram_id', parseInt(userTgId))
+      .single();
 
-      // 3️⃣ Создаём запись в trainers или clients с user_id и telegram_id
-      var table = role === 'trainer' ? 'trainers' : 'clients';
-      var insertData = {
+    if (userRes.error || !userRes.data) {
+      console.error('[ProfileUI] Не удалось получить user_id:', userRes.error);
+      if (callback) callback(null);
+      return;
+    }
+
+    var userId = userRes.data.id;
+    console.log('[ProfileUI] ✅ Получен user_id:', userId);
+
+    // 3️⃣ Создаём запись в trainers или clients
+    var table = role === 'trainer' ? 'trainers' : 'clients';
+    var insertRes = await window.sb
+      .from(table)
+      .insert([{
         user_id: userId,
         telegram_id: parseInt(userTgId)
-      };
+      }]);
 
-      return window.sb
-        .from(table)
-        .insert([insertData]);
-    })
-    .then(function(insertRes) {
-      console.log('[ProfileUI] Insert response:', insertRes);
-      
-      if (insertRes.error) {
-        console.error('[ProfileUI] ❌ ОШИБКА ВСТАВКИ:', insertRes.error);
-      } else {
-        console.log('[ProfileUI] ✅ Запись создана');
-      }
+    console.log('[ProfileUI] Insert response:', insertRes);
 
-      hideRoleSelector();
+    if (insertRes.error) {
+      console.error('[ProfileUI] ❌ ОШИБКА ВСТАВКИ:', insertRes.error);
+    } else {
+      console.log('[ProfileUI] ✅ Запись в', table, 'создана');
+    }
 
-      // 4️⃣ Загружаем профиль
-      if (window.ProfileStore) {
-        ProfileStore.init(userTgId);
-      }
-      
-      if (callback) callback(role);
-    })
-    .catch(function(err) {
-      console.error('[ProfileUI] Критическая ошибка:', err);
-      if (callback) callback(null);
-    });
+    hideRoleSelector();
+
+    // 4️⃣ Загружаем профиль
+    if (window.ProfileStore) {
+      ProfileStore.init(userTgId);
+    }
+
+    if (callback) callback(role);
+
+  } catch (err) {
+    console.error('[ProfileUI] Критическая ошибка:', err);
+    if (callback) callback(null);
+  }
 }
 
 // ─── Привязывает события к кнопкам выбора роли (Тренер/Клиент) ───
