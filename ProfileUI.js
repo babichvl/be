@@ -313,6 +313,15 @@ async function saveRole(userTgId, role, userData, callback) {
     }
 
     hideRoleSelector();
+    / Даём БД время на сохранение
+setTimeout(function() {
+  if (window.ProfileStore) {
+    console.log('[ProfileUI] Вызываю ProfileStore.init() после задержки');
+    ProfileStore.init(userTgId);
+  }
+}, 500);
+
+if (callback) callback(role);
 
     // 4️⃣ Перезагружаем профиль с новыми данными
     if (window.ProfileStore) {
