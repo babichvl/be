@@ -166,7 +166,7 @@ function saveRole(userTgId, role, callback) {
 
   console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
 
-  // 1️⃣ Сначала сохраняем роль в users
+  // 1️⃣ Сохраняем роль в users
   window.sb
     .from('users')
     .update({ role: role })
@@ -178,38 +178,24 @@ function saveRole(userTgId, role, callback) {
         return;
       }
 
-      console.log('[ProfileUI] ✅ Роль успешно сохранена:', role);
+      console.log('[ProfileUI] ✅ Роль сохранена:', role);
 
-      // 2️⃣ Теперь создаём запись в trainers или clients
-      if (role === 'trainer') {
-        console.log('[ProfileUI] Создаю запись тренера...');
-        var trainerRes = await window.sb
-          .from('trainers')
-          .insert([{ telegram_id: userTgId }])
-          .select();
-        
-        if (trainerRes.error) {
-          console.error('[ProfileUI] Ошибка создания тренера:', trainerRes.error);
-        } else {
-          console.log('[ProfileUI] ✅ Запись тренера создана');
-        }
-      } else if (role === 'client') {
-        console.log('[ProfileUI] Создаю запись клиента...');
-        var clientRes = await window.sb
-          .from('clients')
-          .insert([{ telegram_id: userTgId }])
-          .select();
-        
-        if (clientRes.error) {
-          console.error('[ProfileUI] Ошибка создания клиента:', clientRes.error);
-        } else {
-          console.log('[ProfileUI] ✅ Запись клиента создана');
-        }
+      // 2️⃣ Создаём запись в trainers или clients
+      var table = role === 'trainer' ? 'trainers' : 'clients';
+      var insertRes = await window.sb
+        .from(table)
+        .insert([{ telegram_id: userTgId }])
+        .select();
+      
+      if (insertRes.error) {
+        console.error('[ProfileUI] Ошибка создания записи:', insertRes.error);
+      } else {
+        console.log('[ProfileUI] ✅ Запись в', table, 'создана');
       }
 
       hideRoleSelector();
-      
-      // 3️⃣ Загружаем профиль
+
+      // 3️⃣ Только ПОСЛЕ создания записи загружаем профиль
       if (window.ProfileStore) {
         ProfileStore.init(userTgId);
       }
