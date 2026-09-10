@@ -782,57 +782,63 @@ function bindEvents() {
   }
 
 // ─── Главная инициализация ProfileUI ───
-  function init(userTgId) {
-    console.log('[ProfileUI] init() вызван с userTgId:', userTgId);
+// ─── Главная инициализация ProfileUI ───
+function init(userTgId) {
+  console.log('[ProfileUI] init() вызван с userTgId:', userTgId);
 
-    initDOM();
-    setupOverlayClick();
-    setupStatsModalEvents();
-    bindRoleSelectorEvents(userTgId);
+  initDOM();
+  setupOverlayClick();
+  setupStatsModalEvents();
+  
+  // Получаем РЕАЛЬНЫЙ Telegram ID для ProfileStore
+  var realTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+  console.log('[ProfileUI] Реальный Telegram ID:', realTgId);
+  
+  bindRoleSelectorEvents(realTgId);
 
-    var avatarBtns = document.querySelectorAll('.page-header__avatar');
-    console.log('[ProfileUI] 🔍 Найдено кнопок аватара:', avatarBtns.length);
-    
-    avatarBtns.forEach(function(btn, index) {
-      console.log('[ProfileUI] 🔗 Привязываю клик к кнопке #' + index);
-      btn.addEventListener('click', function(e) {
-        console.log('[ProfileUI] 🎯 КЛИК ПО АВАТАРУ!');
-        e.preventDefault();
-        open();
-      });
+  var avatarBtns = document.querySelectorAll('.page-header__avatar');
+  console.log('[ProfileUI] 🔍 Найдено кнопок аватара:', avatarBtns.length);
+  
+  avatarBtns.forEach(function(btn, index) {
+    console.log('[ProfileUI] 🔗 Привязываю клик к кнопке #' + index);
+    btn.addEventListener('click', function(e) {
+      console.log('[ProfileUI] 🎯 КЛИК ПО АВАТАРУ!');
+      e.preventDefault();
+      open();
     });
+  });
 
-    if (window.ProfileStore) {
-      console.log('[ProfileUI] Подписываемся на ProfileStore');
+  if (window.ProfileStore) {
+    console.log('[ProfileUI] Подписываемся на ProfileStore');
+    
+    ProfileStore.subscribe(function(profile) {
+      console.log('[ProfileUI] Получили профиль из Store:', profile);
+      currentProfile = profile;
       
-      ProfileStore.subscribe(function(profile) {
-        console.log('[ProfileUI] Получили профиль из Store:', profile);
-        currentProfile = profile;
-        
-        if (profile && profile.role === null) {
-          console.log('[ProfileUI] Роль не установлена, показываю селектор');
-          showRoleSelector();
-        } else if (profile && profile.role) {
-          console.log('[ProfileUI] Роль установлена:', profile.role);
-          hideRoleSelector();
-          if (isOpen) {
-            render(profile);
-          }
+      if (profile && profile.role === null) {
+        console.log('[ProfileUI] Роль не установлена, показываю селектор');
+        showRoleSelector();
+      } else if (profile && profile.role) {
+        console.log('[ProfileUI] Роль установлена:', profile.role);
+        hideRoleSelector();
+        if (isOpen) {
+          render(profile);
         }
-      });
-      
-      if (userTgId) {
-        console.log('[ProfileUI] Вызываю ProfileStore.init(' + userTgId + ')');
-        ProfileStore.init(userTgId);
-      } else {
-        console.warn('[ProfileUI] ⚠️ userTgId не передан!');
       }
+    });
+    
+    if (realTgId) {
+      console.log('[ProfileUI] Вызываю ProfileStore.init(' + realTgId + ')');
+      ProfileStore.init(realTgId);
     } else {
-      console.error('[ProfileUI] ❌ ProfileStore НЕ найден!');
+      console.warn('[ProfileUI] ⚠️ Реальный Telegram ID не найден!');
     }
-
-    console.log('[ProfileUI] ✅ Инициализирован');
+  } else {
+    console.error('[ProfileUI] ❌ ProfileStore НЕ найден!');
   }
+
+  console.log('[ProfileUI] ✅ Инициализирован');
+}
 
 // ─── Открывает модаль редактирования статистики ───
 function openStatsModal(field, profile) {
