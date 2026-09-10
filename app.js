@@ -694,11 +694,13 @@ function initStores() {
         console.log('[app.js] ✅ TriggersUI инициализирован');
       }
 
-      // ✅ ИНИЦИАЛИЗИРУЕМ PROFILEUI С userTgId
-      if (window.ProfileUI && userTgId) {
-        console.log('[app.js] Инициализирую ProfileUI с userTgId:', userTgId);
-        ProfileUI.init(userTgId);
-        console.log('[app.js] ✅ ProfileUI инициализирован');
+
+// ✅ ИНИЦИАЛИЗИРУЕМ PROFILEUI (даже если userTgId не определён)
+if (window.ProfileUI) {
+  console.log('[app.js] Инициализирую ProfileUI с userTgId:', userTgId);
+  ProfileUI.init(userTgId);
+  console.log('[app.js] ✅ ProfileUI инициализирован');
+}
       }
 
       if (window.CalendarScheduler) {
