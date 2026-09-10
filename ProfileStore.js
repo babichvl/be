@@ -50,7 +50,7 @@ async function determineRole(userTgId) {
     console.warn('[ProfileStore] ⚠️ Supabase не инициализирован, возвращаю mock');
     return {
       userId: 'mock-' + userTgId,
-      role: 'trainer',
+      role: null,
       isRealUser: false
     };
   }
@@ -70,7 +70,7 @@ async function determineRole(userTgId) {
       console.log('[ProfileStore] Возвращаю mock с mock-id');
       return {
         userId: 'mock-' + userTgId,
-        role: 'trainer',
+       role: null,
         isRealUser: false
       };
     }
@@ -97,7 +97,7 @@ async function determineRole(userTgId) {
     console.log('[ProfileStore] Возвращаю mock');
     return {
       userId: 'mock-' + userTgId,
-      role: 'trainer',
+      role: null,
       isRealUser: false
     };
   }
