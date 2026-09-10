@@ -50,25 +50,33 @@ var ProfileUI = (function() {
       </div>
 
 <!-- ─── Experience Modal — Модаль редактирования опыта ───── -->
-      <div class="stats-modal-overlay" id="experience-modal-overlay"></div>
-      <div class="stats-modal" id="experience-modal">
-        <div class="stats-modal__header">
-          <button class="stats-modal__close" data-modal="experience">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
-          </button>
-          <h2 class="stats-modal__title">Опыт</h2>
-          <div style="width: 24px;"></div>
-        </div>
-        <div class="stats-modal__content">
-          <input type="text" class="stats-modal__input stats-modal__input--large" id="experience-input" placeholder="0">
-        </div>
-        <div class="stats-modal__footer">
-          <button class="stats-modal__btn stats-modal__btn--cancel" data-modal="experience">Отменить</button>
-          <button class="stats-modal__btn stats-modal__btn--save" data-save="experience">Сохранить</button>
-        </div>
-      </div>
+<!-- ─── Experience Modal — Модаль редактирования опыта с 2 полями ───── -->
+<div class="stats-modal-overlay" id="experience-modal-overlay"></div>
+<div class="stats-modal" id="experience-modal">
+  <div class="stats-modal__header">
+    <button class="stats-modal__close" data-modal="experience">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    <h2 class="stats-modal__title" id="experience-modal-title">Опыт</h2>
+    <div style="width: 24px;"></div>
+  </div>
+  <div class="stats-modal__content">
+    <div class="stats-modal__field">
+      <label class="stats-modal__label">Количество лет</label>
+      <input type="number" class="stats-modal__input" id="experience-years-input" placeholder="0" min="0" max="100">
+    </div>
+    <div class="stats-modal__field">
+      <label class="stats-modal__label">Описание опыта</label>
+      <textarea class="stats-modal__textarea" id="experience-description-input" placeholder="Расскажите о вашем опыте работы..."></textarea>
+    </div>
+  </div>
+  <div class="stats-modal__footer">
+    <button class="stats-modal__btn stats-modal__btn--cancel" data-modal="experience">Отменить</button>
+    <button class="stats-modal__btn stats-modal__btn--save" data-save="experience">Сохранить</button>
+  </div>
+</div>
 
       <!-- ─── Specializations Modal — Модаль редактирования специализации ───── -->
       <div class="stats-modal-overlay" id="specializations-modal-overlay"></div>
