@@ -663,12 +663,10 @@ function render(profile) {
   if (!profile.displayName && window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name) {
     profile.displayName = window.Telegram.WebApp.initDataUnsafe.user.first_name;
     
-    // Используем РЕАЛЬНЫЙ Telegram ID для сохранения
-    var realTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-    
-    if (profile.role === 'trainer' && realTgId) {
-      console.log('[ProfileUI] Сохраняю display_name с реальным TG ID:', realTgId);
-      saveProfileField(realTgId, 'display_name', profile.displayName);
+    // Используем telegramId из профиля для сохранения
+    if (profile.role === 'trainer' && profile.telegramId) {
+      console.log('[ProfileUI] Сохраняю display_name с TG ID:', profile.telegramId);
+      saveProfileField(profile.telegramId, 'display_name', profile.displayName);
     }
   }
 
