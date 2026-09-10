@@ -250,7 +250,7 @@ async function saveRole(userTgId, role, userData, callback) {
       .upsert([{ 
         telegram_id: parseInt(userTgId),
         role: role,
-        full_name: userData ? userData.first_name + (userData.last_name ? ' ' + userData.last_name : '') : null
+        first_name: userData ? userData.first_name + (userData.last_name ? ' ' + userData.last_name : '') : null
       }], { onConflict: 'telegram_id' });
 
     if (upsertRes.error) {
