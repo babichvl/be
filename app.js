@@ -18,6 +18,12 @@ var sb = null;
 function initSupabase() {
   console.log('[app.js] Попытка инициализации Supabase...');
   
+  // Проверяем, инициализирован ли уже
+  if (window.sb) {
+    console.log('[app.js] ⚠️ Supabase уже инициализирован');
+    return true;
+  }
+  
   if (window.supabase && window.supabase.createClient) {
     try {
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
