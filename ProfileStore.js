@@ -43,7 +43,7 @@ async function determineRole(userTgId) {
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не инициализирован, возвращаю mock');
     return {
-      userTgId: 'mock-' + userTgId,  // mock ID, но явно отмечено как mock
+      userId: 'mock-' + userTgId,  // mock ID, но явно отмечено как mock
       role: 'trainer',
       isRealUser: false
     };
@@ -63,7 +63,7 @@ async function determineRole(userTgId) {
       console.warn('[ProfileStore] ⚠️ Ошибка или пользователь не найден:', userRes.error.message);
       console.log('[ProfileStore] Возвращаю mock с mock-id');
       return {
-        userTgId: 'mock-' + userTgId,  // mock UUID
+        userId: 'mock-' + userTgId,  // mock UUID
         role: 'trainer',
         isRealUser: false
       };
@@ -82,7 +82,7 @@ async function determineRole(userTgId) {
     
     // ✅ ПРАВИЛЬНО: Возвращаем реальный UUID из БД
     return {
-      userTgId: userRes.data.id,  // ← UUID из users.id
+      userId: userRes.data.id,  // ← UUID из users.id
       role: userRes.data.role,
       isRealUser: true
     };
@@ -90,7 +90,7 @@ async function determineRole(userTgId) {
     console.error('[ProfileStore] ❌ Exception в determineRole:', e.message);
     console.log('[ProfileStore] Возвращаю mock');
     return {
-      userTgId: 'mock-' + userTgId,
+      userId: 'mock-' + userTgId,
       role: 'trainer',
       isRealUser: false
     };
@@ -156,7 +156,7 @@ async function loadTrainerProfile(userTgId) {
 
     return {
       role: 'trainer',
-      userTgId: userTgId,
+      userId: userTgId,
       trainerId: trainer.id,
       displayName: trainer.display_name,
       specialty: trainer.specialty,
@@ -222,7 +222,7 @@ async function loadClientProfile(userTgId) {
 
     return {
       role: 'client',
-      userTgId: userTgId,
+      userId: userTgId,
       clientId: client.id,
       name: client.name,
       trainerId: client.trainer_id,
