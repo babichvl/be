@@ -819,13 +819,6 @@
     padding: var(--sp-20);
   }
 
-  .profile-card__avatar {
-    width: 56px;
-    height: 56px;
-    flex-shrink: 0;
-    position: relative;
-  }
-
   .profile-card__name {
     font-size: 17px;
   }
