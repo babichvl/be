@@ -270,14 +270,14 @@ async function saveRole(userTgId, role, callback) {
       return;
     }
 
-    var userId = userRes.data.id;
-    console.log('[ProfileUI] ✅ Получен user_id:', userId);
+    var userTgId = userRes.data.id;
+    console.log('[ProfileUI] ✅ Получен user_id:', userTgId);
 
     var table = role === 'trainer' ? 'trainers' : 'clients';
     var insertRes = await window.sb
       .from(table)
       .insert([{
-        user_id: userId,
+        userTgId: userTgId,
         telegram_id: parseInt(userTgId)
       }]);
 
