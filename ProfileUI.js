@@ -157,41 +157,70 @@ var ProfileUI = (function() {
   }
 
 // ─── Сохраняет выбранную роль в Supabase ───
-  function saveRole(userTgId, role, callback) {
-    if (!window.sb) {
-      console.error('[ProfileUI] Supabase не инициализирован');
-      if (callback) callback(null);
-      return;
-    }
-
-    console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
-
-    window.sb
-      .from('users')
-      .update({ role: role })
-      .eq('telegram_id', userTgId)
-      .then(function(res) {
-        if (res.error) {
-          console.error('[ProfileUI] Ошибка сохранения роли:', res.error);
-          if (callback) callback(null);
-          return;
-        }
-
-        console.log('[ProfileUI] ✅ Роль успешно сохранена:', role);
-        hideRoleSelector();
-        
-        // Загружаем профиль после сохранения роли
-        if (window.ProfileStore) {
-          ProfileStore.init(userTgId);
-        }
-        
-        if (callback) callback(role);
-      })
-      .catch(function(err) {
-        console.error('[ProfileUI] Критическая ошибка сохранения роли:', err);
-        if (callback) callback(null);
-      });
+function saveRole(userTgId, role, callback) {
+  if (!window.sb) {
+    console.error('[ProfileUI] Supabase не инициализирован');
+    if (callback) callback(null);
+    return;
   }
+
+  console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
+
+  // 1️⃣ Сначала сохраняем роль в users
+  window.sb
+    .from('users')
+    .update({ role: role })
+    .eq('telegram_id', userTgId)
+    .then(async function(res) {
+      if (res.error) {
+        console.error('[ProfileUI] Ошибка сохранения роли:', res.error);
+        if (callback) callback(null);
+        return;
+      }
+
+      console.log('[ProfileUI] ✅ Роль успешно сохранена:', role);
+
+      // 2️⃣ Теперь создаём запись в trainers или clients
+      if (role === 'trainer') {
+        console.log('[ProfileUI] Создаю запись тренера...');
+        var trainerRes = await window.sb
+          .from('trainers')
+          .insert([{ telegram_id: userTgId }])
+          .select();
+        
+        if (trainerRes.error) {
+          console.error('[ProfileUI] Ошибка создания тренера:', trainerRes.error);
+        } else {
+          console.log('[ProfileUI] ✅ Запись тренера создана');
+        }
+      } else if (role === 'client') {
+        console.log('[ProfileUI] Создаю запись клиента...');
+        var clientRes = await window.sb
+          .from('clients')
+          .insert([{ telegram_id: userTgId }])
+          .select();
+        
+        if (clientRes.error) {
+          console.error('[ProfileUI] Ошибка создания клиента:', clientRes.error);
+        } else {
+          console.log('[ProfileUI] ✅ Запись клиента создана');
+        }
+      }
+
+      hideRoleSelector();
+      
+      // 3️⃣ Загружаем профиль
+      if (window.ProfileStore) {
+        ProfileStore.init(userTgId);
+      }
+      
+      if (callback) callback(role);
+    })
+    .catch(function(err) {
+      console.error('[ProfileUI] Критическая ошибка:', err);
+      if (callback) callback(null);
+    });
+}
 
 // ─── Привязывает события к кнопкам выбора роли (Тренер/Клиент) ───
   function bindRoleSelectorEvents(userTgId) {
