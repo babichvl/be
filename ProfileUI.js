@@ -167,19 +167,21 @@ async function saveRole(userTgId, role, callback) {
   console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
 
   try {
-    // 1️⃣ Обновляем роль в users
-    var updateRes = await window.sb
+    // 1️⃣ UPSERT вместо UPDATE — создаст запись, если её нет
+    var upsertRes = await window.sb
       .from('users')
-      .update({ role: role })
-      .eq('telegram_id', parseInt(userTgId));
+      .upsert([{ 
+        telegram_id: parseInt(userTgId),
+        role: role 
+      }], { onConflict: 'telegram_id' });
 
-    if (updateRes.error) {
-      console.error('[ProfileUI] Ошибка обновления роли:', updateRes.error);
+    if (upsertRes.error) {
+      console.error('[ProfileUI] Ошибка upsert:', upsertRes.error);
       if (callback) callback(null);
       return;
     }
 
-    console.log('[ProfileUI] ✅ Роль обновлена');
+    console.log('[ProfileUI] ✅ Запись в users создана/обновлена');
 
     // 2️⃣ Получаем user_id
     var userRes = await window.sb
@@ -206,8 +208,6 @@ async function saveRole(userTgId, role, callback) {
         telegram_id: parseInt(userTgId)
       }]);
 
-    console.log('[ProfileUI] Insert response:', insertRes);
-
     if (insertRes.error) {
       console.error('[ProfileUI] ❌ ОШИБКА ВСТАВКИ:', insertRes.error);
     } else {
@@ -216,7 +216,6 @@ async function saveRole(userTgId, role, callback) {
 
     hideRoleSelector();
 
-    // 4️⃣ Загружаем профиль
     if (window.ProfileStore) {
       ProfileStore.init(userTgId);
     }
