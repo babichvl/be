@@ -43,7 +43,7 @@ async function determineRole(userTgId) {
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не инициализирован, возвращаю mock');
     return {
-      userId: 'mock-' + userTgId,  // mock ID, но явно отмечено как mock
+      userTgId: 'mock-' + userTgId,  // mock ID, но явно отмечено как mock
       role: 'trainer',
       isRealUser: false
     };
@@ -63,7 +63,7 @@ async function determineRole(userTgId) {
       console.warn('[ProfileStore] ⚠️ Ошибка или пользователь не найден:', userRes.error.message);
       console.log('[ProfileStore] Возвращаю mock с mock-id');
       return {
-        userId: 'mock-' + userTgId,  // mock UUID
+        userTgId: 'mock-' + userTgId,  // mock UUID
         role: 'trainer',
         isRealUser: false
       };
@@ -72,7 +72,7 @@ async function determineRole(userTgId) {
     if (!userRes.data) {
       console.warn('[ProfileStore] ⚠️ userRes.data пуста');
       return {
-        userId: 'mock-' + userTgId,
+        userTgId: 'mock-' + userTgId,
         role: 'trainer',
         isRealUser: false
       };
@@ -82,7 +82,7 @@ async function determineRole(userTgId) {
     
     // ✅ ПРАВИЛЬНО: Возвращаем реальный UUID из БД
     return {
-      userId: userRes.data.id,  // ← UUID из users.id
+      userTgId: userRes.data.id,  // ← UUID из users.id
       role: userRes.data.role,
       isRealUser: true
     };
@@ -90,15 +90,15 @@ async function determineRole(userTgId) {
     console.error('[ProfileStore] ❌ Exception в determineRole:', e.message);
     console.log('[ProfileStore] Возвращаю mock');
     return {
-      userId: 'mock-' + userTgId,
+      userTgId: 'mock-' + userTgId,
       role: 'trainer',
       isRealUser: false
     };
   }
 }
 // ─── Загрузить данные тренера ──────────────────────────────
-async function loadTrainerProfile(userId) {
-  console.log('[ProfileStore] loadTrainerProfile() для user_id:', userId);
+async function loadTrainerProfile(userTgId) {
+  console.log('[ProfileStore] loadTrainerProfile() для user_id:', userTgId);
   
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не доступен');
@@ -106,12 +106,12 @@ async function loadTrainerProfile(userId) {
   }
 
   try {
-    console.log('[ProfileStore] Ищу тренера по user_id:', userId);
+    console.log('[ProfileStore] Ищу тренера по user_id:', userTgId);
     
     var trainerRes = await window.sb
       .from('trainers')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', userTgId)
       .single();
 
     if (trainerRes.error) {
@@ -131,7 +131,7 @@ async function loadTrainerProfile(userId) {
     var reviewsRes = await window.sb
       .from('trainer_reviews')
       .select('rating')
-      .eq('telegram_id', userId)
+      .eq('telegram_id', userTgId)
 
     var avgRating = 0;
     if (!reviewsRes.error && reviewsRes.data && reviewsRes.data.length > 0) {
@@ -144,7 +144,7 @@ async function loadTrainerProfile(userId) {
     var statusRes = await window.sb
       .from('user_status')
       .select('is_online, last_seen')
-      .eq('user_id', userId)
+      .eq('user_id', userTgId)
       .single();
 
     var isOnline = false;
@@ -156,7 +156,7 @@ async function loadTrainerProfile(userId) {
 
     return {
       role: 'trainer',
-      userId: userId,
+      userTgId: userTgId,
       trainerId: trainer.id,
       displayName: trainer.display_name,
       specialty: trainer.specialty,
@@ -179,8 +179,8 @@ async function loadTrainerProfile(userId) {
 }
 
 // ─── Загрузить данные клиента ──────────────────────────────
-async function loadClientProfile(userId) {
-  console.log('[ProfileStore] loadClientProfile() для user_id:', userId);
+async function loadClientProfile(userTgId) {
+  console.log('[ProfileStore] loadClientProfile() для user_id:', userTgId);
   
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не доступен');
@@ -191,7 +191,7 @@ async function loadClientProfile(userId) {
     var clientRes = await window.sb
       .from('clients')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', userTgId)
       .single();
 
     if (clientRes.error) {
@@ -210,7 +210,7 @@ async function loadClientProfile(userId) {
     var statusRes = await window.sb
       .from('user_status')
       .select('is_online, last_seen')
-      .eq('user_id', userId)
+      .eq('user_id', userTgId)
       .single();
 
     var isOnline = false;
@@ -222,7 +222,7 @@ async function loadClientProfile(userId) {
 
     return {
       role: 'client',
-      userId: userId,
+      userTgId: userTgId,
       clientId: client.id,
       name: client.name,
       trainerId: client.trainer_id,
@@ -265,7 +265,7 @@ async function loadProfile(userTgId) {
 
     if (!roleData.role) {
       console.log('[ProfileStore] ⚠️ Роль не установлена — вернём пустой профиль');
-      profile = { userId: roleData.userId, role: null };
+      profile = { userTgId: roleData.userTgId, role: null };
       notify(profile);
       return;
     }
@@ -273,16 +273,16 @@ async function loadProfile(userTgId) {
     var userData = null;
     if (roleData.role === 'trainer') {
       console.log('[ProfileStore] Загружаю тренера...');
-      userData = await loadTrainerProfile(roleData.userId);
+      userData = await loadTrainerProfile(roleData.userTgId);
     } else if (roleData.role === 'client') {
       console.log('[ProfileStore] Загружаю клиента...');
-      userData = await loadClientProfile(roleData.userId);
+      userData = await loadClientProfile(roleData.userTgId);
     }
 
     if (!userData) {
       console.warn('[ProfileStore] ⚠️ userData пуста — возможно, это новый пользователь');
       profile = { 
-        userId: roleData.userId, 
+        userTgId: roleData.userTgId, 
         role: roleData.role,
         isIncomplete: true
       };
@@ -294,7 +294,7 @@ async function loadProfile(userTgId) {
     var usersRes = await window.sb
       .from('users')
       .select('photo_url, is_pro, notifications_enabled')
-      .eq('id', roleData.userId)
+      .eq('id', roleData.userTgId)
       .single();
 
     if (!usersRes.error && usersRes.data) {
@@ -314,7 +314,7 @@ async function loadProfile(userTgId) {
     
     profile = {
       role: 'trainer',
-      userId: 'mock-error-' + userTgId,
+      userTgId: 'mock-error-' + userTgId,
       trainerId: 'mock-trainer-' + userTgId,
       displayName: 'Демо Тренер (Нет соединения)',
       specialty: 'Демонстрация',
