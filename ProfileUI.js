@@ -603,7 +603,6 @@ function setupStatsModalEvents() {
   fields.forEach(function(field) {
     var overlay = document.getElementById(field + '-modal-overlay');
     var closeBtn = document.querySelector('[data-modal="' + field + '"]');
-    var cancelBtn = document.querySelector('[data-modal="' + field + '"][class*="cancel"]');
     var saveBtn = document.querySelector('[data-save="' + field + '"]');
 
     if (overlay) {
