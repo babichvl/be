@@ -118,21 +118,19 @@ var ProfileUI = (function() {
 // ─── Добавляет HTML структуру в DOM один раз при инициализации ───
   function initDOM() {
     var container = document.body;
-    // Проверяем, не уже ли добавлена структура
     var existing = document.getElementById('role-selector-overlay');
     
     if (!existing) {
       var tempDiv = document.createElement('div');
       tempDiv.innerHTML = createProfileHTML();
       
-      // Перемещаем все элементы из временного контейнера в body
       while (tempDiv.firstElementChild) {
         container.appendChild(tempDiv.firstElementChild);
       }
     }
   }
 
-// ─── Показывает селектор выбора роли (добавляет класс active) ───
+// ─── Показывает селектор выбора роли ───
   function showRoleSelector() {
     var overlay = document.getElementById('role-selector-overlay');
     var panel = document.getElementById('role-selector-panel');
@@ -144,7 +142,7 @@ var ProfileUI = (function() {
     }
   }
 
-// ─── Скрывает селектор выбора роли (удаляет класс active) ───
+// ─── Скрывает селектор выбора роли ───
   function hideRoleSelector() {
     var overlay = document.getElementById('role-selector-overlay');
     var panel = document.getElementById('role-selector-panel');
@@ -167,7 +165,6 @@ async function saveRole(userTgId, role, callback) {
   console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
 
   try {
-    // 1️⃣ UPSERT вместо UPDATE — создаст запись, если её нет
     var upsertRes = await window.sb
       .from('users')
       .upsert([{ 
@@ -183,7 +180,6 @@ async function saveRole(userTgId, role, callback) {
 
     console.log('[ProfileUI] ✅ Запись в users создана/обновлена');
 
-    // 2️⃣ Получаем user_id
     var userRes = await window.sb
       .from('users')
       .select('id')
@@ -199,7 +195,6 @@ async function saveRole(userTgId, role, callback) {
     var userId = userRes.data.id;
     console.log('[ProfileUI] ✅ Получен user_id:', userId);
 
-    // 3️⃣ Создаём запись в trainers или clients
     var table = role === 'trainer' ? 'trainers' : 'clients';
     var insertRes = await window.sb
       .from(table)
@@ -228,7 +223,7 @@ async function saveRole(userTgId, role, callback) {
   }
 }
 
-// ─── Привязывает события к кнопкам выбора роли (Тренер/Клиент) ───
+// ─── Привязывает события к кнопкам выбора роли ───
   function bindRoleSelectorEvents(userTgId) {
     var trainerBtn = document.getElementById('role-btn-trainer');
     var clientBtn = document.getElementById('role-btn-client');
@@ -257,7 +252,6 @@ async function saveRole(userTgId, role, callback) {
       : 'T';
 
     return `
-    
 <div class="profile-card">
   <div class="profile-card__top">
     <div class="profile-card__avatar">
@@ -270,7 +264,7 @@ async function saveRole(userTgId, role, callback) {
       <div class="profile-card__status ${profile.isOnline ? '' : 'offline'}"></div>
     </div>
     <div class="profile-card__info">
-      <div class="profile-card__name">${escapeHtml(profile.displayName || 'Тренер')}</div>
+      <div class="profile-card__name" data-profile-name>${escapeHtml(profile.displayName || 'Тренер')}</div>
       <div class="profile-card__role">Тренер</div>
     </div>
     <button class="profile-card__pro-btn">PRO+</button>
@@ -372,14 +366,12 @@ async function saveRole(userTgId, role, callback) {
     `;
   }
 
-// ─── Обновить элемент с именем тренера ───
 // ─── Установить редактор имени ───
 function setupDisplayNameEditor(userTgId, displayName) {
   var nameElement = document.querySelector('[data-profile-name]');
   
   if (!nameElement) return;
 
-  // Получаем username из Telegram если нет displayName
   var currentName = displayName;
   if (!currentName || currentName === 'null') {
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
@@ -454,95 +446,11 @@ function exitEditMode(nameElement, displayName) {
   nameElement.textContent = displayName;
   nameElement.style.opacity = '1';
   nameElement.style.cursor = 'pointer';
+  nameElement.title = 'Нажмите для редактирования';
 }
 
 // ─── Сохранить имя ───
 async function saveDisplayName(userTgId, displayName) {
-  if (!window.sb) return;
-
-  try {
-    var updateRes = await window.sb
-      .from('trainers')
-      .update({ display_name: displayName })
-      .eq('telegram_id', parseInt(userTgId));
-
-    if (updateRes.error) {
-      console.error('[ProfileUI] Ошибка при сохранении:', updateRes.error);
-    }
-  } catch (err) {
-    console.error('[ProfileUI] Ошибка:', err);
-  }
-}
-
-// ─── Режим редактирования ───
-function enterEditMode(nameElement, userTgId, currentName) {
-  console.log('[ProfileUI] Режим редактирования включен');
-
-  // Создаём input
-  var input = document.createElement('input');
-  input.type = 'text';
-  input.value = currentName;
-  input.className = 'name-edit-input';
-  input.style.cssText = `
-    font-size: 24px;
-    font-weight: 600;
-    padding: 8px;
-    border: 2px solid #007AFF;
-    border-radius: 6px;
-    font-family: inherit;
-    width: 200px;
-  `;
-
-  // Заменяем текст на input
-  nameElement.textContent = '';
-  nameElement.appendChild(input);
-  input.focus();
-  input.select();
-
-  // Функция сохранения
-  function saveChanges() {
-    var newName = input.value.trim();
-    
-    if (!newName) {
-      exitEditMode(nameElement, currentName);
-      return;
-    }
-
-    console.log('[ProfileUI] Сохраняю имя:', newName);
-    
-    // Отправляем на сервер
-    saveDisplayName(userTgId, newName);
-    currentName = newName;
-    exitEditMode(nameElement, newName);
-  }
-
-  // Enter — сохранить
-  input.onkeydown = function(e) {
-    if (e.key === 'Enter') {
-      saveChanges();
-    } else if (e.key === 'Escape') {
-      exitEditMode(nameElement, currentName);
-    }
-  };
-
-  // Blur — сохранить
-  input.onblur = function() {
-    saveChanges();
-  };
-}
-
-// ─── Выход из режима редактирования ───
-function exitEditMode(nameElement, displayName) {
-  console.log('[ProfileUI] Выход из режима редактирования');
-  
-  nameElement.textContent = displayName;
-  nameElement.style.opacity = '1';
-  nameElement.style.cursor = 'pointer';
-  nameElement.title = 'Нажмите для редактирования';
-}
-
-// ─── Обновлённая функция сохранения ───
-async function saveDisplayName(userTgId, displayName) {
   if (!window.sb) {
     console.error('[ProfileUI] Supabase не инициализирован');
     return;
@@ -558,7 +466,6 @@ async function saveDisplayName(userTgId, displayName) {
 
     if (updateRes.error) {
       console.error('[ProfileUI] Ошибка при сохранении:', updateRes.error);
-      alert('Ошибка при сохранении');
       return;
     }
 
@@ -566,51 +473,9 @@ async function saveDisplayName(userTgId, displayName) {
 
   } catch (err) {
     console.error('[ProfileUI] Ошибка:', err);
-    alert('Ошибка. Попробуйте позже.');
   }
 }
 
-// ─── Сохранить имя в БД ───
-async function saveDisplayName(userTgId, displayName) {
-  if (!window.sb) {
-    console.error('[ProfileUI] Supabase не инициализирован');
-    return;
-  }
-
-  console.log('[ProfileUI] Сохраняю displayName:', displayName);
-
-  try {
-    // Обновляем trainers таблицу
-    var updateRes = await window.sb
-      .from('trainers')
-      .update({ display_name: displayName })
-      .eq('telegram_id', parseInt(userTgId));
-
-    if (updateRes.error) {
-      console.error('[ProfileUI] Ошибка при сохранении:', updateRes.error);
-      alert('Ошибка при сохранении. Попробуйте позже.');
-      return;
-    }
-
-    console.log('[ProfileUI] ✅ displayName сохранён');
-
-    // Скрываем форму
-    var container = document.querySelector('.onboarding-container');
-    if (container) {
-      container.remove();
-    }
-
-    // Перезагружаем профиль
-    if (window.ProfileStore) {
-      ProfileStore.init(userTgId);
-    }
-
-  } catch (err) {
-    console.error('[ProfileUI] Критическая ошибка:', err);
-    alert('Ошибка. Попробуйте позже.');
-  }
-}
-  
 // ─── Генерирует HTML карточки профиля для клиента ───
   function renderClientProfile(profile) {
     var initials = profile.name 
@@ -643,7 +508,7 @@ async function saveDisplayName(userTgId, displayName) {
     return div.innerHTML;
   }
 
-// ─── Отображает профиль в панель (выбирает шаблон по роли) ───
+// ─── Отображает профиль в панель ───
   function render(profile) {
     var content = document.getElementById('profile-content');
     if (!content) return;
@@ -658,26 +523,26 @@ async function saveDisplayName(userTgId, displayName) {
       return;
     }
 
-    // Выбираем шаблон в зависимости от роли
     var html = profile.role === 'trainer' 
       ? renderTrainerProfile(profile)
       : renderClientProfile(profile);
 
     content.innerHTML = html;
-
-    // Привязываем события к новым элементам
     bindEvents();
   }
 
 // ─── Привязывает события к элементам внутри профиля ───
 function bindEvents() {
-  // Кнопка назад для закрытия профиля
   var backBtn = document.getElementById('profile-back-btn');
   if (backBtn) {
     backBtn.addEventListener('click', close);
   }
 
-  // Клик по каждому значению статистики открывает модаль
+  // Установить редактор имени если это тренер
+  if (currentProfile && currentProfile.role === 'trainer') {
+    setupDisplayNameEditor(currentProfile.userTgId, currentProfile.displayName);
+  }
+
   var statItems = document.querySelectorAll('.profile-card__stat-item');
   statItems.forEach(function(item, index) {
     item.addEventListener('click', function() {
@@ -686,7 +551,6 @@ function bindEvents() {
     });
   });
 
-  // Toggle для включения/отключения уведомлений
   var notificationToggle = document.getElementById('profile-notifications-toggle');
   if (notificationToggle) {
     notificationToggle.addEventListener('click', function() {
@@ -706,7 +570,7 @@ function bindEvents() {
   }
 }
 
-// ─── Открывает панель профиля (показывает с анимацией) ───
+// ─── Открывает панель профиля ───
   function open() {
     console.log('[ProfileUI] open() вызвана, isOpen=', isOpen);
     
@@ -738,7 +602,7 @@ function bindEvents() {
     }
   }
 
-// ─── Закрывает панель профиля (скрывает с анимацией) ───
+// ─── Закрывает панель профиля ───
   function close() {
     if (!isOpen) return;
     
@@ -755,13 +619,11 @@ function bindEvents() {
 
 // ─── Привязывает клик на overlay для закрытия панелей ───
   function setupOverlayClick() {
-    // Профиль закрывается при клике на overlay
     var profileOverlay = document.getElementById('profile-overlay');
     if (profileOverlay) {
       profileOverlay.addEventListener('click', close);
     }
 
-    // Role selector НЕ закрывается при клике - остаётся открыт
     var roleSelectorOverlay = document.getElementById('role-selector-overlay');
     if (roleSelectorOverlay) {
       roleSelectorOverlay.addEventListener('click', function(e) {
@@ -776,17 +638,11 @@ function bindEvents() {
   function init(userTgId) {
     console.log('[ProfileUI] init() вызван с userTgId:', userTgId);
 
-    // Создаём DOM первым
     initDOM();
-
-    // Привязываем события overlay
     setupOverlayClick();
     setupStatsModalEvents();
-
-    // Привязываем события селектора роли
     bindRoleSelectorEvents(userTgId);
 
-    // Привязываем клик к кнопке аватара (открывает профиль)
     var avatarBtns = document.querySelectorAll('.page-header__avatar');
     console.log('[ProfileUI] 🔍 Найдено кнопок аватара:', avatarBtns.length);
     
@@ -799,7 +655,6 @@ function bindEvents() {
       });
     });
 
-    // Подписываемся на обновления профиля из ProfileStore
     if (window.ProfileStore) {
       console.log('[ProfileUI] Подписываемся на ProfileStore');
       
@@ -807,12 +662,10 @@ function bindEvents() {
         console.log('[ProfileUI] Получили профиль из Store:', profile);
         currentProfile = profile;
         
-        // Если роль не установлена — показываем селектор
         if (profile && profile.role === null) {
           console.log('[ProfileUI] Роль не установлена, показываю селектор');
           showRoleSelector();
         } else if (profile && profile.role) {
-          // Роль установлена — скрываем селектор
           console.log('[ProfileUI] Роль установлена:', profile.role);
           hideRoleSelector();
           if (isOpen) {
@@ -840,7 +693,6 @@ function openStatsModal(field, profile) {
   var overlay = document.getElementById(field + '-modal-overlay');
   
   if (modal && overlay) {
-    // Заполняем текущее значение из профиля
     var input = document.getElementById(field + '-input');
     if (input) {
       input.value = profile[field] || '';
@@ -864,28 +716,25 @@ function closeStatsModal(field) {
   }
 }
 
-// ─── Привязывает события ко всем трём модалям (опыт, специализация, рейтинг) ───
+// ─── Привязывает события ко всем трём модалям ───
 function setupStatsModalEvents() {
   var fields = ['experience', 'specializations', 'rating'];
   
   fields.forEach(function(field) {
     var overlay = document.getElementById(field + '-modal-overlay');
     
-    // Клик на overlay закрывает модаль
     if (overlay) {
       overlay.addEventListener('click', function() {
         closeStatsModal(field);
       });
     }
 
-    // Все кнопки закрытия (крест и отмена) закрывают модаль
     document.querySelectorAll('[data-modal="' + field + '"]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         closeStatsModal(field);
       });
     });
 
-    // Кнопка сохранения берёт значение и закрывает модаль
     var saveBtn = document.querySelector('[data-save="' + field + '"]');
     if (saveBtn) {
       saveBtn.addEventListener('click', function() {
@@ -893,7 +742,6 @@ function setupStatsModalEvents() {
         var value = input.value;
 
         console.log('[ProfileUI] Saving ' + field + ':', value);
-        // На следующем шаге будет сохранение в БД через Supabase
         closeStatsModal(field);
       });
     }
