@@ -645,10 +645,13 @@ function renderScheduleWorkouts() {
 }
 
 // ─── Инициализация хранилищ ────────────────────────
+var attempt = 0;
+var maxAttempts = 50;
+
 function initStores() {
-  var attempt = 0;
-  var maxAttempts = 50;
+  checkAndInit();
 }
+
 function checkAndInit() {
   attempt++;
   
@@ -694,7 +697,6 @@ function checkAndInit() {
       console.log('[app.js] ✅ TriggersUI инициализирован');
     }
 
-    // ✅ ИНИЦИАЛИЗИРУЕМ PROFILEUI (даже если userTgId не определён)
     if (window.ProfileUI) {
       console.log('[app.js] Инициализирую ProfileUI с userTgId:', userTgId);
       ProfileUI.init(userTgId);
