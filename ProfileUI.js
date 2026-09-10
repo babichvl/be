@@ -123,7 +123,6 @@ var ProfileUI = (function() {
     return html;
   }
 
-// ─── Универсальная функция для сохранения полей профиля Опыт/Специализация ───
 // ─── Универсальная функция для сохранения полей профиля ───
 async function saveProfileField(userTgId, fieldName, fieldValue) {
   if (!window.sb) {
@@ -136,16 +135,29 @@ async function saveProfileField(userTgId, fieldName, fieldValue) {
   try {
     var updateData = {};
     
-    // Специальная обработка для объекта опыта
-    if (fieldName === 'experience' && typeof fieldValue === 'object' && fieldValue.years !== undefined) {
-      updateData['experience'] = parseInt(fieldValue.years) || 0;
-      updateData['experience_description'] = fieldValue.description || '';
-      console.log('[ProfileUI] Обновляю experience и experience_description');
+    // Парсим значение в зависимости от типа поля
+    if (fieldName === 'experience') {
+      // Приводим к числу
+      var numValue = parseInt(fieldValue);
+      if (isNaN(numValue) || numValue < 0) {
+        console.warn('[ProfileUI] Невалидное значение для experience:', fieldValue, 'используем 0');
+        numValue = 0;
+      }
+      updateData['experience'] = numValue;
+    } else if (fieldName === 'rating') {
+      // Приводим к числу с точкой
+      var numValue = parseFloat(fieldValue);
+      if (isNaN(numValue) || numValue < 0 || numValue > 5) {
+        console.warn('[ProfileUI] Невалидное значение для rating:', fieldValue, 'используем 0');
+        numValue = 0;
+      }
+      updateData['rating'] = numValue;
     } else {
-      updateData[fieldName] = fieldValue;
+      // Для остальных полей (текст)
+      updateData[fieldName] = String(fieldValue || '');
     }
 
-    console.log('[ProfileUI] Данные для отправки:', updateData);
+    console.log('[ProfileUI] Финальные данные:', updateData);
 
     var updateRes = await window.sb
       .from('trainers')
@@ -162,12 +174,9 @@ async function saveProfileField(userTgId, fieldName, fieldValue) {
 
     // Обновляем локальный профиль
     if (currentProfile) {
-      if (fieldName === 'experience' && typeof fieldValue === 'object') {
-        currentProfile.experience = parseInt(fieldValue.years) || 0;
-        currentProfile.experienceDescription = fieldValue.description || '';
-      } else {
-        currentProfile[fieldName] = fieldValue;
-      }
+      Object.keys(updateData).forEach(function(key) {
+        currentProfile[key] = updateData[key];
+      });
       
       if (isOpen) {
         render(currentProfile);
