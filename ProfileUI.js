@@ -313,7 +313,7 @@ async function saveRole(userTgId, role, userData, callback) {
     }
 
     hideRoleSelector();
-    / Даём БД время на сохранение
+    // Даём БД время на сохранение
 setTimeout(function() {
   if (window.ProfileStore) {
     console.log('[ProfileUI] Вызываю ProfileStore.init() после задержки');
