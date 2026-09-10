@@ -115,7 +115,6 @@ async function loadTrainerProfile(userTgId) {
   try {
     console.log('[ProfileStore] Ищу тренера по telegram_id:', userTgId);
     
-    // ⚠️ ИСПРАВЛЕНО: было .eq('user_id', userTgId)
     var trainerRes = await window.sb
       .from('trainers')
       .select('*')
@@ -166,7 +165,7 @@ async function loadTrainerProfile(userTgId) {
 
     return {
       role: 'trainer',
-      userTgId: userTgId,
+      telegramId: userTgId,
       trainerId: trainer.id,
       displayName: trainer.display_name,
       specialty: trainer.specialty,
@@ -198,7 +197,8 @@ async function loadClientProfile(userTgId) {
   }
 
   try {
-    // ⚠️ ИСПРАВЛЕНО: было .eq('user_id', userTgId)
+    console.log('[ProfileStore] Ищу клиента по telegram_id:', userTgId);
+    
     var clientRes = await window.sb
       .from('clients')
       .select('*')
@@ -234,7 +234,7 @@ async function loadClientProfile(userTgId) {
 
     return {
       role: 'client',
-      userTgId: userTgId,
+      telegramId: userTgId,
       clientId: client.id,
       name: client.name,
       trainerId: client.trainer_id,
