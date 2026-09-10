@@ -267,48 +267,7 @@ function initDOM() {
 </div>
 
 
-      <!-- Account Section -->
-      <div class="profile-section">
-        <div class="profile-section__title">Аккаунт</div>
-        <div class="profile-section__items">
-          ${profile.specialty ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">🎯</span>
-                <span>Специализация</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.specialty)}</div>
-            </div>
-          ` : ''}
-          ${profile.experience ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">💪</span>
-                <span>Опыт</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.experience)}</div>
-            </div>
-          ` : ''}
-          ${profile.phone ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">📱</span>
-                <span>Телефон</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.phone)}</div>
-            </div>
-          ` : ''}
-          ${profile.price ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">💰</span>
-                <span>Цена</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.price)}</div>
-            </div>
-          ` : ''}
-        </div>
-      </div>
+// ─── УТОЧНИТЬ? ──────────────────
 
       <!-- Notification Section -->
       <div class="profile-section">
