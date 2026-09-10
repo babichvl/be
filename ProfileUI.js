@@ -373,6 +373,7 @@ async function saveRole(userTgId, role, callback) {
   }
 
 // ─── Обновить элемент с именем тренера ───
+// ─── Установить редактор имени ───
 function setupDisplayNameEditor(userTgId, displayName) {
   var nameElement = document.querySelector('[data-profile-name]');
   
@@ -393,17 +394,84 @@ function setupDisplayNameEditor(userTgId, displayName) {
     currentName = 'Тренер';
   }
 
-  // Показываем имя с указателем "редактируемо"
   nameElement.textContent = currentName;
   nameElement.style.cursor = 'pointer';
   nameElement.style.opacity = '0.8';
   nameElement.title = 'Нажмите для редактирования';
 
-  // Клик на имя — переход в режим редактирования
   nameElement.onclick = function(e) {
     e.stopPropagation();
     enterEditMode(nameElement, userTgId, currentName);
   };
+}
+
+// ─── Режим редактирования ───
+function enterEditMode(nameElement, userTgId, currentName) {
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = currentName;
+  input.style.cssText = `
+    font-size: 24px;
+    font-weight: 600;
+    padding: 8px;
+    border: 2px solid #007AFF;
+    border-radius: 6px;
+    font-family: inherit;
+    width: 200px;
+  `;
+
+  nameElement.textContent = '';
+  nameElement.appendChild(input);
+  input.focus();
+  input.select();
+
+  function saveChanges() {
+    var newName = input.value.trim();
+    if (!newName) {
+      exitEditMode(nameElement, currentName);
+      return;
+    }
+    saveDisplayName(userTgId, newName);
+    currentName = newName;
+    exitEditMode(nameElement, newName);
+  }
+
+  input.onkeydown = function(e) {
+    if (e.key === 'Enter') {
+      saveChanges();
+    } else if (e.key === 'Escape') {
+      exitEditMode(nameElement, currentName);
+    }
+  };
+
+  input.onblur = function() {
+    saveChanges();
+  };
+}
+
+// ─── Выход из редактирования ───
+function exitEditMode(nameElement, displayName) {
+  nameElement.textContent = displayName;
+  nameElement.style.opacity = '1';
+  nameElement.style.cursor = 'pointer';
+}
+
+// ─── Сохранить имя ───
+async function saveDisplayName(userTgId, displayName) {
+  if (!window.sb) return;
+
+  try {
+    var updateRes = await window.sb
+      .from('trainers')
+      .update({ display_name: displayName })
+      .eq('telegram_id', parseInt(userTgId));
+
+    if (updateRes.error) {
+      console.error('[ProfileUI] Ошибка при сохранении:', updateRes.error);
+    }
+  } catch (err) {
+    console.error('[ProfileUI] Ошибка:', err);
+  }
 }
 
 // ─── Режим редактирования ───
