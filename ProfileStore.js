@@ -131,7 +131,7 @@ async function loadTrainerProfile(userId) {
     var reviewsRes = await window.sb
       .from('trainer_reviews')
       .select('rating')
-      .eq('trainer_tg_id', trainer.id);
+      .eq('telegram_id', userId)
 
     var avgRating = 0;
     if (!reviewsRes.error && reviewsRes.data && reviewsRes.data.length > 0) {
