@@ -87,7 +87,6 @@ function loadUser() {
   } catch (e) {
     userTgId = urlId ? Number(urlId) : null;
   }
-  if (!userTgId) userTgId = 786441589;
   console.log('[app.js] User ID:', userTgId);
 }
 loadUser();
