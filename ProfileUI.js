@@ -2,14 +2,17 @@
 // PROFILEUI.JS — UI профиля + селектор роли (объединено)
 // ═══════════════════════════════════════════════════════════
 
+// ─── IIFE (Immediately Invoked Function Expression) для инкапсуляции ───
 var ProfileUI = (function() {
+  // Флаг открыта ли панель профиля
   var isOpen = false;
+  // Текущий профиль пользователя
   var currentProfile = null;
 
-// ─── Создаём HTML структуру ────────────────────────────────────
+// ─── Генерирует полную HTML структуру селектора роли и профиля ───
   function createProfileHTML() {
     var html = `
-      <!-- Role Selector -->
+      <!-- ─── Role Selector — Панель выбора роли при первом входе ───── -->
       <div class="role-selector-overlay" id="role-selector-overlay"></div>
       <div class="role-selector-panel" id="role-selector-panel">
         <div class="role-selector-card">
@@ -30,7 +33,7 @@ var ProfileUI = (function() {
         </div>
       </div>
 
-      <!-- Profile Panel -->
+      <!-- ─── Profile Panel — Основная панель профиля, выезжает с низу ───── -->
       <div class="profile-overlay" id="profile-overlay"></div>
       <div class="profile-panel" id="profile-panel">
         <div class="profile-panel__handle"></div>
@@ -46,7 +49,7 @@ var ProfileUI = (function() {
         </div>
       </div>
 
-<!-- Edit Experience Modal -->
+<!-- ─── Experience Modal — Модаль редактирования опыта ───── -->
       <div class="stats-modal-overlay" id="experience-modal-overlay"></div>
       <div class="stats-modal" id="experience-modal">
         <div class="stats-modal__header">
@@ -67,7 +70,7 @@ var ProfileUI = (function() {
         </div>
       </div>
 
-      <!-- Edit Specializations Modal -->
+      <!-- ─── Specializations Modal — Модаль редактирования специализации ───── -->
       <div class="stats-modal-overlay" id="specializations-modal-overlay"></div>
       <div class="stats-modal" id="specializations-modal">
         <div class="stats-modal__header">
@@ -88,7 +91,7 @@ var ProfileUI = (function() {
         </div>
       </div>
 
-      <!-- Edit Rating Modal -->
+      <!-- ─── Rating Modal — Модаль редактирования рейтинга ───── -->
       <div class="stats-modal-overlay" id="rating-modal-overlay"></div>
       <div class="stats-modal" id="rating-modal">
         <div class="stats-modal__header">
@@ -111,23 +114,25 @@ var ProfileUI = (function() {
     `;
     return html;
   }
-  // ─── Инициализация DOM ─────────────────────────────────────────
-function initDOM() {
-  var container = document.body;
-  var existing = document.getElementById('role-selector-overlay');
-  
-  if (!existing) {
-    var tempDiv = document.createElement('div');
-    tempDiv.innerHTML = createProfileHTML();
+
+// ─── Добавляет HTML структуру в DOM один раз при инициализации ───
+  function initDOM() {
+    var container = document.body;
+    // Проверяем, не уже ли добавлена структура
+    var existing = document.getElementById('role-selector-overlay');
     
-    // Перемещаем все дети
-    while (tempDiv.firstElementChild) {
-      container.appendChild(tempDiv.firstElementChild);
+    if (!existing) {
+      var tempDiv = document.createElement('div');
+      tempDiv.innerHTML = createProfileHTML();
+      
+      // Перемещаем все элементы из временного контейнера в body
+      while (tempDiv.firstElementChild) {
+        container.appendChild(tempDiv.firstElementChild);
+      }
     }
   }
-}
 
-  // ─── Показать/скрыть селектор роли ────────────────────────────
+// ─── Показывает селектор выбора роли (добавляет класс active) ───
   function showRoleSelector() {
     var overlay = document.getElementById('role-selector-overlay');
     var panel = document.getElementById('role-selector-panel');
@@ -139,6 +144,7 @@ function initDOM() {
     }
   }
 
+// ─── Скрывает селектор выбора роли (удаляет класс active) ───
   function hideRoleSelector() {
     var overlay = document.getElementById('role-selector-overlay');
     var panel = document.getElementById('role-selector-panel');
@@ -150,7 +156,7 @@ function initDOM() {
     }
   }
 
-  // ─── Сохранить роль в БД ──────────────────────────────────────
+// ─── Сохраняет выбранную роль в Supabase ───
   function saveRole(userTgId, role, callback) {
     if (!window.sb) {
       console.error('[ProfileUI] Supabase не инициализирован');
@@ -187,7 +193,7 @@ function initDOM() {
       });
   }
 
-  // ─── Биндим события селектора роли ────────────────────────────
+// ─── Привязывает события к кнопкам выбора роли (Тренер/Клиент) ───
   function bindRoleSelectorEvents(userTgId) {
     var trainerBtn = document.getElementById('role-btn-trainer');
     var clientBtn = document.getElementById('role-btn-client');
@@ -209,26 +215,11 @@ function initDOM() {
     }
   }
 
-  // ─── Генерация HTML карточки профиля (тренер) ──────────────────
+// ─── Генерирует HTML карточки профиля для тренера ───
   function renderTrainerProfile(profile) {
     var initials = profile.displayName 
       ? profile.displayName.split(' ').map(n => n[0]).join('') 
       : 'T';
-    
-    // ─── УТОЧНИТЬ? ──────────────────
-    
-    //var ratingHTML = profile.rating 
-    //  ? `<div class="profile-card__rating">
-    //       <span class="profile-card__rating-star">★</span>
-    //       <span>${profile.rating.toFixed(1)}</span>
-    //       <span class="profile-card__rating-count">(отзывы)</span>
-    //     </div>`
-    //  : '';
-
-   // ─── УТОЧНИТЬ? ──────────────────
-   // var bioHTML = profile.bio
-   //   ? `<div class="profile-card__bio">${escapeHtml(profile.bio)}</div>`
-   //   : '';
 
     return `
     
@@ -265,7 +256,6 @@ function initDOM() {
     </div>
   </div>
 </div>
-
 
 <!-- ─── АККАУНТ ─────────────────── -->
       <!-- Account Section -->
@@ -347,7 +337,7 @@ function initDOM() {
     `;
   }
 
-  // ─── Генерация HTML карточки профиля (клиент) ──────────────────
+// ─── Генерирует HTML карточки профиля для клиента ───
   function renderClientProfile(profile) {
     var initials = profile.name 
       ? profile.name.split(' ').map(n => n[0]).join('') 
@@ -372,14 +362,14 @@ function initDOM() {
     `;
   }
 
-  // ─── Escape HTML ───────────────────────────────────────────────
+// ─── Экранирует HTML специальные символы для безопасности ───
   function escapeHtml(text) {
     var div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
-  // ─── Рендер профиля ────────────────────────────────────────────
+// ─── Отображает профиль в панель (выбирает шаблон по роли) ───
   function render(profile) {
     var content = document.getElementById('profile-content');
     if (!content) return;
@@ -401,18 +391,19 @@ function initDOM() {
 
     content.innerHTML = html;
 
-    // Биндим события
+    // Привязываем события к новым элементам
     bindEvents();
   }
 
-// ─── Биндим события в профиле ──────────────────────────────────
+// ─── Привязывает события к элементам внутри профиля ───
 function bindEvents() {
+  // Кнопка назад для закрытия профиля
   var backBtn = document.getElementById('profile-back-btn');
   if (backBtn) {
     backBtn.addEventListener('click', close);
   }
 
-  // ─── Биндим клик на каждое поле статистики ───
+  // Клик по каждому значению статистики открывает модаль
   var statItems = document.querySelectorAll('.profile-card__stat-item');
   statItems.forEach(function(item, index) {
     item.addEventListener('click', function() {
@@ -421,6 +412,7 @@ function bindEvents() {
     });
   });
 
+  // Toggle для включения/отключения уведомлений
   var notificationToggle = document.getElementById('profile-notifications-toggle');
   if (notificationToggle) {
     notificationToggle.addEventListener('click', function() {
@@ -440,7 +432,7 @@ function bindEvents() {
   }
 }
 
-  // ─── Открыть профиль ───────────────────────────────────────
+// ─── Открывает панель профиля (показывает с анимацией) ───
   function open() {
     console.log('[ProfileUI] open() вызвана, isOpen=', isOpen);
     
@@ -472,7 +464,7 @@ function bindEvents() {
     }
   }
 
-  // ─── Закрыть профиль ───────────────────────────────────────────
+// ─── Закрывает панель профиля (скрывает с анимацией) ───
   function close() {
     if (!isOpen) return;
     
@@ -487,13 +479,15 @@ function bindEvents() {
     }
   }
 
-  // ─── Закрыть при клике на overlay ──────────────────────────────
+// ─── Привязывает клик на overlay для закрытия панелей ───
   function setupOverlayClick() {
+    // Профиль закрывается при клике на overlay
     var profileOverlay = document.getElementById('profile-overlay');
     if (profileOverlay) {
       profileOverlay.addEventListener('click', close);
     }
 
+    // Role selector НЕ закрывается при клике - остаётся открыт
     var roleSelectorOverlay = document.getElementById('role-selector-overlay');
     if (roleSelectorOverlay) {
       roleSelectorOverlay.addEventListener('click', function(e) {
@@ -504,21 +498,21 @@ function bindEvents() {
     }
   }
 
-  // ─── Инициализация ────────────────────────────────────────────
+// ─── Главная инициализация ProfileUI ───
   function init(userTgId) {
     console.log('[ProfileUI] init() вызван с userTgId:', userTgId);
 
     // Создаём DOM первым
     initDOM();
 
-    // Биндим события overlay
+    // Привязываем события overlay
     setupOverlayClick();
     setupStatsModalEvents();
 
-    // Биндим события селектора роли
+    // Привязываем события селектора роли
     bindRoleSelectorEvents(userTgId);
 
-    // ✅ Привязываем ко ВСЕМ кнопкам аватара
+    // Привязываем клик к кнопке аватара (открывает профиль)
     var avatarBtns = document.querySelectorAll('.page-header__avatar');
     console.log('[ProfileUI] 🔍 Найдено кнопок аватара:', avatarBtns.length);
     
@@ -531,7 +525,7 @@ function bindEvents() {
       });
     });
 
-    // Подписываемся на ProfileStore
+    // Подписываемся на обновления профиля из ProfileStore
     if (window.ProfileStore) {
       console.log('[ProfileUI] Подписываемся на ProfileStore');
       
@@ -566,13 +560,13 @@ function bindEvents() {
     console.log('[ProfileUI] ✅ Инициализирован');
   }
 
-// ─── Открыть нужную модаль ────
+// ─── Открывает модаль редактирования статистики ───
 function openStatsModal(field, profile) {
   var modal = document.getElementById(field + '-modal');
   var overlay = document.getElementById(field + '-modal-overlay');
   
   if (modal && overlay) {
-    // Заполняем значение
+    // Заполняем текущее значение из профиля
     var input = document.getElementById(field + '-input');
     if (input) {
       input.value = profile[field] || '';
@@ -585,7 +579,7 @@ function openStatsModal(field, profile) {
   }
 }
 
-// ─── Закрыть модаль ────
+// ─── Закрывает модаль редактирования статистики ───
 function closeStatsModal(field) {
   var modal = document.getElementById(field + '-modal');
   var overlay = document.getElementById(field + '-modal-overlay');
@@ -596,47 +590,50 @@ function closeStatsModal(field) {
   }
 }
 
-// ─── Биндим события всех трёх модалей ────
+// ─── Привязывает события ко всем трём модалям (опыт, специализация, рейтинг) ───
 function setupStatsModalEvents() {
   var fields = ['experience', 'specializations', 'rating'];
   
   fields.forEach(function(field) {
     var overlay = document.getElementById(field + '-modal-overlay');
-    var closeBtn = document.querySelector('[data-modal="' + field + '"]');
-    var saveBtn = document.querySelector('[data-save="' + field + '"]');
-
+    
+    // Клик на overlay закрывает модаль
     if (overlay) {
       overlay.addEventListener('click', function() {
         closeStatsModal(field);
       });
     }
 
-    // Все кнопки закрытия и отмены
+    // Все кнопки закрытия (крест и отмена) закрывают модаль
     document.querySelectorAll('[data-modal="' + field + '"]').forEach(function(btn) {
       btn.addEventListener('click', function() {
         closeStatsModal(field);
       });
     });
 
-    // Кнопка сохранения
+    // Кнопка сохранения берёт значение и закрывает модаль
+    var saveBtn = document.querySelector('[data-save="' + field + '"]');
     if (saveBtn) {
       saveBtn.addEventListener('click', function() {
         var input = document.getElementById(field + '-input');
         var value = input.value;
 
         console.log('[ProfileUI] Saving ' + field + ':', value);
-        // На следующем шаге будет сохранение в БД
+        // На следующем шаге будет сохранение в БД через Supabase
         closeStatsModal(field);
       });
     }
   });
 }
-  // ─── API ───────────────────────────────────────────────────────
+
+// ─── Экспортируем публичный API ───
   return {
     init: init,
     openModal: open,
     closeModal: close
   };
 })();
+
+// ─── Добавляем на window для доступа из других скриптов ───
 window.ProfileUI = ProfileUI;
 console.log('[ProfileUI] ✅ Загружен');
