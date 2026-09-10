@@ -648,7 +648,7 @@ function renderScheduleWorkouts() {
 function initStores() {
   var attempt = 0;
   var maxAttempts = 50;
-
+}
 function checkAndInit() {
   attempt++;
   
@@ -732,7 +732,7 @@ function checkAndInit() {
 }
 
   checkAndInit();
-}
+
 
 setTimeout(initStores, 200);
 buildHomeCalendar();
