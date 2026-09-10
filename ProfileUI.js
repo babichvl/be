@@ -267,8 +267,44 @@ function initDOM() {
 </div>
 
 
-// ─── УТОЧНИТЬ? ──────────────────
-
+// ─── АККАУНТ ──────────────────
+      <!-- Account Section -->
+      <div class="profile-section">
+        <div class="profile-section__title">Аккаунт</div>
+        <div class="profile-section__items">
+          <div class="profile-item">
+            <div class="profile-item__label">
+              <span class="profile-item__icon">👤</span>
+              <span class="profile-item__link">Персональная страница</span>
+            </div>
+            <span class="profile-item__arrow">›</span>
+          </div>
+          <div class="profile-item">
+            <div class="profile-item__label">
+              <span class="profile-item__icon">🏪</span>
+              <span class="profile-item__link">Маркетплейс</span>
+            </div>
+            <span class="profile-item__arrow">›</span>
+          </div>
+          <div class="profile-item">
+            <div class="profile-item__label">
+              <span class="profile-item__icon">🏆</span>
+              <span class="profile-item__link">Челленджи</span>
+            </div>
+            <span class="profile-item__arrow">›</span>
+          </div>
+          <div class="profile-item">
+            <div class="profile-item__label">
+              <span class="profile-item__icon">🤝</span>
+              <span class="profile-item__link">Партнёрская программа</span>
+            </div>
+            <span class="profile-item__arrow">›</span>
+          </div>
+        </div>
+      </div>
+      
+   // ─── УВЕДОМЛЕНИЯ ──────────────────   
+   
       <!-- Notification Section -->
       <div class="profile-section">
         <div class="profile-section__title">Уведомления</div>
@@ -285,6 +321,8 @@ function initDOM() {
           </div>
         </div>
       </div>
+
+// ─── ДРУГОЕ ──────────────────
 
       <!-- Other Section -->
       <div class="profile-section">
@@ -306,7 +344,6 @@ function initDOM() {
           </div>
         </div>
       </div>
-
     `;
   }
 
@@ -332,55 +369,6 @@ function initDOM() {
           <div class="profile-card__role">Клиент</div>
         </div>
       </div>
-
-      <!-- Account Section -->
-      <div class="profile-section">
-        <div class="profile-section__title">Аккаунт</div>
-        <div class="profile-section__items">
-          ${profile.phone ? `
-            <div class="profile-item">
-              <div class="profile-item__label">
-                <span class="profile-item__icon">📱</span>
-                <span>Телефон</span>
-              </div>
-              <div class="profile-item__value">${escapeHtml(profile.phone)}</div>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-
-      <!-- Notification Section -->
-      <div class="profile-section">
-        <div class="profile-section__title">Уведомления</div>
-        <div class="profile-section__items">
-          <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">🔔</span>
-              <span>Push-уведомления</span>
-            </div>
-            <button class="profile-item__toggle ${profile.notificationsEnabled ? 'active' : ''}" 
-                    id="profile-notifications-toggle"
-                    data-enabled="${profile.notificationsEnabled ? 'true' : 'false'}">
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Other Section -->
-      <div class="profile-section">
-        <div class="profile-section__title">Другое</div>
-        <div class="profile-section__items">
-          <div class="profile-item">
-            <div class="profile-item__label">
-              <span class="profile-item__icon">ℹ️</span>
-              <span>О приложении</span>
-            </div>
-            <span class="profile-item__arrow">›</span>
-          </div>
-        </div>
-      </div>
-
-      <button class="profile-action-btn danger" id="profile-logout-btn">Выход</button>
     `;
   }
 
