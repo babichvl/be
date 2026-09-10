@@ -306,10 +306,18 @@ async function saveRole(userTgId, role, userData, callback) {
       .from(table)
       .insert([insertData]);
 
+    // ← Добавь эти alert'ы для отладки на мобильном
+    alert('📝 Попытка вставить в ' + table);
+    alert('Данные: ' + JSON.stringify(insertData));
+    
     if (insertRes.error) {
       console.error('[ProfileUI] ❌ ОШИБКА ВСТАВКИ:', insertRes.error);
+      alert('❌ ОШИБКА ВСТАВКИ:\n' + JSON.stringify(insertRes.error));
+      if (callback) callback(null);
+      return;
     } else {
       console.log('[ProfileUI] ✅ Запись в', table, 'создана:', insertRes.data);
+      alert('✅ Успешно сохранено в ' + table);
     }
 
     hideRoleSelector();
