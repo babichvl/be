@@ -372,6 +372,104 @@ async function saveRole(userTgId, role, callback) {
     `;
   }
 
+  // ─── Показать первый онбординг (заполнение имени) ───
+function showOnboardingForm(userTgId) {
+  console.log('[ProfileUI] showOnboardingForm() — показываю форму заполнения профиля');
+  
+  // Получаем username из Telegram Mini App
+  var username = 'Тренер';  // дефолт
+  if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+    var user = window.Telegram.WebApp.initDataUnsafe.user;
+    if (user && user.username) {
+      username = user.username;
+      console.log('[ProfileUI] ✅ Получен username из Telegram:', username);
+    }
+  }
+
+  var html = `
+    <div class="onboarding-container">
+      <div class="onboarding-panel">
+        <h2>Завершите профиль</h2>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+          Как мы вас будем называть?
+        </p>
+        
+        <div class="form-group">
+          <label for="displayNameInput">Как вас зовут?</label>
+          <input 
+            type="text" 
+            id="displayNameInput" 
+            class="input-field"
+            value="${username}"
+            placeholder="Введите имя или никнейм"
+          />
+        </div>
+
+        <button id="onboardingSaveBtn" class="button button-primary">
+          Готово
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+
+  // Обработчик кнопки
+  document.getElementById('onboardingSaveBtn').onclick = function() {
+    var displayName = document.getElementById('displayNameInput').value.trim();
+    
+    if (!displayName) {
+      alert('Пожалуйста, введите имя');
+      return;
+    }
+
+    saveDisplayName(userTgId, displayName);
+  };
+
+  console.log('[ProfileUI] ✅ Форма показана');
+}
+
+// ─── Сохранить имя в БД ───
+async function saveDisplayName(userTgId, displayName) {
+  if (!window.sb) {
+    console.error('[ProfileUI] Supabase не инициализирован');
+    return;
+  }
+
+  console.log('[ProfileUI] Сохраняю displayName:', displayName);
+
+  try {
+    // Обновляем trainers таблицу
+    var updateRes = await window.sb
+      .from('trainers')
+      .update({ display_name: displayName })
+      .eq('telegram_id', parseInt(userTgId));
+
+    if (updateRes.error) {
+      console.error('[ProfileUI] Ошибка при сохранении:', updateRes.error);
+      alert('Ошибка при сохранении. Попробуйте позже.');
+      return;
+    }
+
+    console.log('[ProfileUI] ✅ displayName сохранён');
+
+    // Скрываем форму
+    var container = document.querySelector('.onboarding-container');
+    if (container) {
+      container.remove();
+    }
+
+    // Перезагружаем профиль
+    if (window.ProfileStore) {
+      ProfileStore.init(userTgId);
+    }
+
+  } catch (err) {
+    console.error('[ProfileUI] Критическая ошибка:', err);
+    alert('Ошибка. Попробуйте позже.');
+  }
+}
+  
 // ─── Генерирует HTML карточки профиля для клиента ───
   function renderClientProfile(profile) {
     var initials = profile.name 
