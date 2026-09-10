@@ -697,11 +697,22 @@ function checkAndInit() {
       console.log('[app.js] ✅ TriggersUI инициализирован');
     }
 
-    if (window.ProfileUI) {
-      console.log('[app.js] Инициализирую ProfileUI с userTgId:', userTgId);
-      ProfileUI.init(userTgId);
-      console.log('[app.js] ✅ ProfileUI инициализирован');
-    }
+// Получаем реальный Telegram ID
+var userTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+
+// Fallback для тестирования вне Telegram
+if (!userTgId) {
+  userTgId = Math.floor(Math.random() * 1000000000);
+  console.log('[app.js] ⚠️ Mock TG ID для тестирования:', userTgId);
+}
+
+console.log('[app.js] userTgId для инициализации:', userTgId);
+
+if (window.ProfileUI) {
+  console.log('[app.js] Инициализирую ProfileUI с userTgId:', userTgId);
+  ProfileUI.init(userTgId);
+  console.log('[app.js] ✅ ProfileUI инициализирован');
+}
 
     if (window.CalendarScheduler) {
       CalendarScheduler.init('calendar-scheduler', today);
