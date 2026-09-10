@@ -758,10 +758,43 @@ function openStatsModal(field, profile) {
   var overlay = document.getElementById(field + '-modal-overlay');
   
   if (modal && overlay) {
-    var input = document.getElementById(field + '-input');
-    if (input) {
-      input.value = profile[field] || '';
-      input.focus();
+    // Специальная обработка для Experience
+    if (field === 'experience') {
+      var yearsInput = document.getElementById('experience-years-input');
+      var descriptionInput = document.getElementById('experience-description-input');
+      var titleElement = document.getElementById('experience-modal-title');
+      
+      // Заполняем текущие значения (если они есть)
+      // Предполагаем, что в profile.experience может быть объект {years: 5, description: "..."}
+      // или просто число
+      if (profile.experience) {
+        if (typeof profile.experience === 'object') {
+          yearsInput.value = profile.experience.years || '';
+          descriptionInput.value = profile.experience.description || '';
+        } else {
+          yearsInput.value = profile.experience || '';
+          descriptionInput.value = '';
+        }
+      }
+      
+      // Обновляем заголовок при вводе лет
+      yearsInput.addEventListener('input', function() {
+        var years = this.value || '0';
+        titleElement.textContent = years + ' лет';
+      });
+      
+      if (yearsInput.value) {
+        titleElement.textContent = yearsInput.value + ' лет';
+      }
+      
+      yearsInput.focus();
+    } else {
+      // Для остальных модалей (specializations, rating)
+      var input = document.getElementById(field + '-input');
+      if (input) {
+        input.value = profile[field] || '';
+        input.focus();
+      }
     }
     
     overlay.classList.add('active');
@@ -803,10 +836,26 @@ function setupStatsModalEvents() {
     var saveBtn = document.querySelector('[data-save="' + field + '"]');
     if (saveBtn) {
       saveBtn.addEventListener('click', function() {
-        var input = document.getElementById(field + '-input');
-        var value = input.value;
-
-        console.log('[ProfileUI] Saving ' + field + ':', value);
+        if (field === 'experience') {
+          // Сохранение опыта с 2 полями
+          var yearsInput = document.getElementById('experience-years-input');
+          var descriptionInput = document.getElementById('experience-description-input');
+          
+          var experienceData = {
+            years: parseInt(yearsInput.value) || 0,
+            description: descriptionInput.value
+          };
+          
+          console.log('[ProfileUI] Saving experience:', experienceData);
+          // Здесь будет отправка в БД через Supabase
+          
+        } else {
+          // Для остальных полей
+          var input = document.getElementById(field + '-input');
+          var value = input.value;
+          console.log('[ProfileUI] Saving ' + field + ':', value);
+        }
+        
         closeStatsModal(field);
       });
     }
