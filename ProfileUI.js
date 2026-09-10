@@ -899,48 +899,61 @@ function setupStatsModalEvents() {
       });
     });
 
-var saveBtn = document.querySelector('[data-save="' + field + '"]');
-if (saveBtn) {
-  saveBtn.addEventListener('click', function() {
-    console.log('[ProfileUI] Saving', field);
-    
-    if (field === 'experience') {
-      var yearsInput = document.getElementById('experience-years-input');
-      var descriptionInput = document.getElementById('experience-description-input');
-      
-      if (!yearsInput || !descriptionInput) {
-        console.error('[ProfileUI] Поля не найдены!');
-        return;
-      }
-      
-      var experienceData = {
-        years: parseInt(yearsInput.value) || 0,
-        description: descriptionInput.value || ''
-      };
-      
-      if (currentProfile) {
-        saveProfileField(currentProfile.userTgId, 'experience_data', experienceData);
-      }
-      
-    } else {
-      // Для specializations, rating и остальных
-      var input = document.getElementById(field + '-input');
-      
-      if (!input) {
-        console.error('[ProfileUI] Input для', field, 'не найден!');
-        return;
-      }
-      
-      var value = input.value || '';
-      
-      if (currentProfile) {
-        saveProfileField(currentProfile.userTgId, field, value);
-      }
+    var saveBtn = document.querySelector('[data-save="' + field + '"]');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function() {
+        if (field === 'experience') {
+          var yearsInput = document.getElementById('experience-years-input');
+          var descriptionInput = document.getElementById('experience-description-input');
+          
+          if (!yearsInput || !descriptionInput) return;
+          
+          var yearsValue = yearsInput.value.trim();
+          var descriptionValue = descriptionInput.value.trim();
+          
+          // Валидация
+          if (!yearsValue) {
+            alert('Введите количество лет');
+            return;
+          }
+          
+          var yearsNum = parseInt(yearsValue);
+          if (isNaN(yearsNum)) {
+            alert('Количество лет должно быть числом');
+            return;
+          }
+          
+          if (yearsNum < 0 || yearsNum > 100) {
+            alert('Количество лет должно быть от 0 до 100');
+            return;
+          }
+          
+          console.log('[ProfileUI] Сохраняю experience:', {years: yearsNum, description: descriptionValue});
+          
+          if (currentProfile) {
+            saveProfileField(currentProfile.userTgId, 'experience', yearsNum);
+            saveProfileField(currentProfile.userTgId, 'experience_description', descriptionValue);
+          }
+          
+        } else {
+          var input = document.getElementById(field + '-input');
+          if (!input) return;
+          
+          var value = input.value.trim();
+          
+          if (!value) {
+            alert('Поле не может быть пустым');
+            return;
+          }
+          
+          if (currentProfile) {
+            saveProfileField(currentProfile.userTgId, field, value);
+          }
+        }
+        
+        closeStatsModal(field);
+      });
     }
-    
-    closeStatsModal(field);
-  });
-}
   });
 }
 
