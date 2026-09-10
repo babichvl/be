@@ -644,6 +644,7 @@ async function saveDisplayName(userTgId, displayName) {
   }
 
 // ─── Отображает профиль в панель ───
+// ─── Отображает профиль в панель ───
 function render(profile) {
   var content = document.getElementById('profile-content');
   if (!content) return;
@@ -662,9 +663,12 @@ function render(profile) {
   if (!profile.displayName && window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name) {
     profile.displayName = window.Telegram.WebApp.initDataUnsafe.user.first_name;
     
-    // Сохраняем в БД
-    if (profile.role === 'trainer' && profile.userTgId) {
-      saveProfileField(profile.userTgId, 'display_name', profile.displayName);
+    // Используем РЕАЛЬНЫЙ Telegram ID для сохранения
+    var realTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+    
+    if (profile.role === 'trainer' && realTgId) {
+      console.log('[ProfileUI] Сохраняю display_name с реальным TG ID:', realTgId);
+      saveProfileField(realTgId, 'display_name', profile.displayName);
     }
   }
 
