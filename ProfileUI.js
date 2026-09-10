@@ -124,6 +124,7 @@ var ProfileUI = (function() {
   }
 
 // ─── Универсальная функция для сохранения полей профиля Опыт/Специализация ───
+// ─── Универсальная функция для сохранения полей профиля ───
 async function saveProfileField(userTgId, fieldName, fieldValue) {
   if (!window.sb) {
     console.error('[ProfileUI] Supabase не инициализирован');
@@ -134,7 +135,17 @@ async function saveProfileField(userTgId, fieldName, fieldValue) {
 
   try {
     var updateData = {};
-    updateData[fieldName] = fieldValue;
+    
+    // Специальная обработка для объекта опыта
+    if (fieldName === 'experience' && typeof fieldValue === 'object' && fieldValue.years !== undefined) {
+      updateData['experience'] = parseInt(fieldValue.years) || 0;
+      updateData['experience_description'] = fieldValue.description || '';
+      console.log('[ProfileUI] Обновляю experience и experience_description');
+    } else {
+      updateData[fieldName] = fieldValue;
+    }
+
+    console.log('[ProfileUI] Данные для отправки:', updateData);
 
     var updateRes = await window.sb
       .from('trainers')
@@ -147,11 +158,16 @@ async function saveProfileField(userTgId, fieldName, fieldValue) {
       return;
     }
 
-    console.log('[ProfileUI] ✅', fieldName, 'сохранён');
+    console.log('[ProfileUI] ✅ Данные сохранены');
 
     // Обновляем локальный профиль
     if (currentProfile) {
-      currentProfile[fieldName] = fieldValue;
+      if (fieldName === 'experience' && typeof fieldValue === 'object') {
+        currentProfile.experience = parseInt(fieldValue.years) || 0;
+        currentProfile.experienceDescription = fieldValue.description || '';
+      } else {
+        currentProfile[fieldName] = fieldValue;
+      }
       
       if (isOpen) {
         render(currentProfile);
