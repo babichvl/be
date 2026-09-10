@@ -649,89 +649,87 @@ function initStores() {
   var attempt = 0;
   var maxAttempts = 50;
 
-  function checkAndInit() {
-    attempt++;
-    
-    console.log('[app.js] Попытка инициализации ' + attempt + '/' + maxAttempts);
-    console.log('[app.js] Проверка:', {
-      'window.sb': !!window.sb,
-      'WorkoutsStore': !!window.WorkoutsStore,
-      'ClientsStore': !!window.ClientsStore,
-      'TriggersStore': !!window.TriggersStore,
-      'ProfileUI': !!window.ProfileUI
-    });
+function checkAndInit() {
+  attempt++;
+  
+  console.log('[app.js] Попытка инициализации ' + attempt + '/' + maxAttempts);
+  console.log('[app.js] Проверка:', {
+    'window.sb': !!window.sb,
+    'WorkoutsStore': !!window.WorkoutsStore,
+    'ClientsStore': !!window.ClientsStore,
+    'TriggersStore': !!window.TriggersStore,
+    'ProfileUI': !!window.ProfileUI
+  });
 
-    if (window.sb && window.WorkoutsStore && window.ClientsStore && window.TriggersStore && window.ProfileUI) {
-      console.log('[app.js] ✅ ВСЕ ЗАВИСИМОСТИ ГОТОВЫ!');
+  if (window.sb && window.WorkoutsStore && window.ClientsStore && window.TriggersStore && window.ProfileUI) {
+    console.log('[app.js] ✅ ВСЕ ЗАВИСИМОСТИ ГОТОВЫ!');
+    
+    if (userTgId && window.WorkoutsStore) {
+      WorkoutsStore.subscribe(function(workouts) {
+        allWorkouts = applyLocalCache(workouts);
+        renderHomeWorkouts();
+        renderScheduleWorkouts();
+      });
+      WorkoutsStore.init(userTgId);
+      console.log('[app.js] ✅ WorkoutsStore инициализирован');
+    }
+
+    if (userTgId && window.ClientsStore) {
+      ClientsStore.init(userTgId);
+      console.log('[app.js] ✅ ClientsStore инициализирован');
+    }
+
+    if (userTgId && window.TriggersStore) {
+      TriggersStore.init(userTgId);
+      console.log('[app.js] ✅ TriggersStore инициализирован');
+    }
+
+    if (window.ClientsUI) {
+      ClientsUI.init();
+      console.log('[app.js] ✅ ClientsUI инициализирован');
+    }
+
+    if (window.TriggersUI) {
+      TriggersUI.init();
+      console.log('[app.js] ✅ TriggersUI инициализирован');
+    }
+
+    // ✅ ИНИЦИАЛИЗИРУЕМ PROFILEUI (даже если userTgId не определён)
+    if (window.ProfileUI) {
+      console.log('[app.js] Инициализирую ProfileUI с userTgId:', userTgId);
+      ProfileUI.init(userTgId);
+      console.log('[app.js] ✅ ProfileUI инициализирован');
+    }
+
+    if (window.CalendarScheduler) {
+      CalendarScheduler.init('calendar-scheduler', today);
       
       if (userTgId && window.WorkoutsStore) {
         WorkoutsStore.subscribe(function(workouts) {
           allWorkouts = applyLocalCache(workouts);
           renderHomeWorkouts();
           renderScheduleWorkouts();
+          CalendarScheduler.updateWorkouts(allWorkouts);
         });
-        WorkoutsStore.init(userTgId);
-        console.log('[app.js] ✅ WorkoutsStore инициализирован');
       }
-
-      if (userTgId && window.ClientsStore) {
-        ClientsStore.init(userTgId);
-        console.log('[app.js] ✅ ClientsStore инициализирован');
-      }
-
-      if (userTgId && window.TriggersStore) {
-        TriggersStore.init(userTgId);
-        console.log('[app.js] ✅ TriggersStore инициализирован');
-      }
-
-      if (window.ClientsUI) {
-        ClientsUI.init();
-        console.log('[app.js] ✅ ClientsUI инициализирован');
-      }
-
-      if (window.TriggersUI) {
-        TriggersUI.init();
-        console.log('[app.js] ✅ TriggersUI инициализирован');
-      }
-
-
-// ✅ ИНИЦИАЛИЗИРУЕМ PROFILEUI (даже если userTgId не определён)
-if (window.ProfileUI) {
-  console.log('[app.js] Инициализирую ProfileUI с userTgId:', userTgId);
-  ProfileUI.init(userTgId);
-  console.log('[app.js] ✅ ProfileUI инициализирован');
-}
-      }
-
-      if (window.CalendarScheduler) {
-        CalendarScheduler.init('calendar-scheduler', today);
-        
-        if (userTgId && window.WorkoutsStore) {
-          WorkoutsStore.subscribe(function(workouts) {
-            allWorkouts = applyLocalCache(workouts);
-            renderHomeWorkouts();
-            renderScheduleWorkouts();
-            CalendarScheduler.updateWorkouts(allWorkouts);
-          });
-        }
-        console.log('[app.js] ✅ CalendarScheduler инициализирован');
-      }
-
-      if (window.WorkoutModal) {
-        WorkoutModal.init();
-        console.log('[app.js] ✅ WorkoutModal инициализирован');
-      }
-
-      console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ПОЛНОСТЬЮ ИНИЦИАЛИЗИРОВАНО');
-      return;
+      console.log('[app.js] ✅ CalendarScheduler инициализирован');
     }
 
-    if (attempt < maxAttempts) {
-      setTimeout(checkAndInit, 100);
-    } else {
-      console.error('[app.js] ❌ ОШИБКА: Не удалось загрузить все зависимости!');
+    if (window.WorkoutModal) {
+      WorkoutModal.init();
+      console.log('[app.js] ✅ WorkoutModal инициализирован');
     }
+
+    console.log('[app.js] ✅✅✅ ПРИЛОЖЕНИЕ ПОЛНОСТЬЮ ИНИЦИАЛИЗИРОВАНО');
+    return;
   }
+
+  if (attempt < maxAttempts) {
+    setTimeout(checkAndInit, 100);
+  } else {
+    console.error('[app.js] ❌ ОШИБКА: Не удалось загрузить все зависимости!');
+  }
+}
 
   checkAndInit();
 }
