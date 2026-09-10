@@ -372,61 +372,134 @@ async function saveRole(userTgId, role, callback) {
     `;
   }
 
-  // ─── Показать первый онбординг (заполнение имени) ───
-function showOnboardingForm(userTgId) {
-  console.log('[ProfileUI] showOnboardingForm() — показываю форму заполнения профиля');
+// ─── Обновить элемент с именем тренера ───
+function setupDisplayNameEditor(userTgId, displayName) {
+  var nameElement = document.querySelector('[data-profile-name]');
   
-  // Получаем username из Telegram Mini App
-  var username = 'Тренер';  // дефолт
-  if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-    var user = window.Telegram.WebApp.initDataUnsafe.user;
-    if (user && user.username) {
-      username = user.username;
-      console.log('[ProfileUI] ✅ Получен username из Telegram:', username);
+  if (!nameElement) return;
+
+  // Получаем username из Telegram если нет displayName
+  var currentName = displayName;
+  if (!currentName || currentName === 'null') {
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+      var user = window.Telegram.WebApp.initDataUnsafe.user;
+      if (user && user.username) {
+        currentName = user.username;
+      }
     }
   }
 
-  var html = `
-    <div class="onboarding-container">
-      <div class="onboarding-panel">
-        <h2>Завершите профиль</h2>
-        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-          Как мы вас будем называть?
-        </p>
-        
-        <div class="form-group">
-          <label for="displayNameInput">Как вас зовут?</label>
-          <input 
-            type="text" 
-            id="displayNameInput" 
-            class="input-field"
-            value="${username}"
-            placeholder="Введите имя или никнейм"
-          />
-        </div>
+  if (!currentName) {
+    currentName = 'Тренер';
+  }
 
-        <button id="onboardingSaveBtn" class="button button-primary">
-          Готово
-        </button>
-      </div>
-    </div>
+  // Показываем имя с указателем "редактируемо"
+  nameElement.textContent = currentName;
+  nameElement.style.cursor = 'pointer';
+  nameElement.style.opacity = '0.8';
+  nameElement.title = 'Нажмите для редактирования';
+
+  // Клик на имя — переход в режим редактирования
+  nameElement.onclick = function(e) {
+    e.stopPropagation();
+    enterEditMode(nameElement, userTgId, currentName);
+  };
+}
+
+// ─── Режим редактирования ───
+function enterEditMode(nameElement, userTgId, currentName) {
+  console.log('[ProfileUI] Режим редактирования включен');
+
+  // Создаём input
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = currentName;
+  input.className = 'name-edit-input';
+  input.style.cssText = `
+    font-size: 24px;
+    font-weight: 600;
+    padding: 8px;
+    border: 2px solid #007AFF;
+    border-radius: 6px;
+    font-family: inherit;
+    width: 200px;
   `;
 
-  document.body.insertAdjacentHTML('beforeend', html);
+  // Заменяем текст на input
+  nameElement.textContent = '';
+  nameElement.appendChild(input);
+  input.focus();
+  input.select();
 
-  // Обработчик кнопки
-  document.getElementById('onboardingSaveBtn').onclick = function() {
-    var displayName = document.getElementById('displayNameInput').value.trim();
+  // Функция сохранения
+  function saveChanges() {
+    var newName = input.value.trim();
     
-    if (!displayName) {
-      alert('Пожалуйста, введите имя');
+    if (!newName) {
+      exitEditMode(nameElement, currentName);
       return;
     }
 
-    saveDisplayName(userTgId, displayName);
+    console.log('[ProfileUI] Сохраняю имя:', newName);
+    
+    // Отправляем на сервер
+    saveDisplayName(userTgId, newName);
+    currentName = newName;
+    exitEditMode(nameElement, newName);
+  }
+
+  // Enter — сохранить
+  input.onkeydown = function(e) {
+    if (e.key === 'Enter') {
+      saveChanges();
+    } else if (e.key === 'Escape') {
+      exitEditMode(nameElement, currentName);
+    }
   };
 
-  console.log('[ProfileUI] ✅ Форма показана');
+  // Blur — сохранить
+  input.onblur = function() {
+    saveChanges();
+  };
+}
+
+// ─── Выход из режима редактирования ───
+function exitEditMode(nameElement, displayName) {
+  console.log('[ProfileUI] Выход из режима редактирования');
+  
+  nameElement.textContent = displayName;
+  nameElement.style.opacity = '1';
+  nameElement.style.cursor = 'pointer';
+  nameElement.title = 'Нажмите для редактирования';
+}
+
+// ─── Обновлённая функция сохранения ───
+async function saveDisplayName(userTgId, displayName) {
+  if (!window.sb) {
+    console.error('[ProfileUI] Supabase не инициализирован');
+    return;
+  }
+
+  console.log('[ProfileUI] Сохраняю displayName:', displayName);
+
+  try {
+    var updateRes = await window.sb
+      .from('trainers')
+      .update({ display_name: displayName })
+      .eq('telegram_id', parseInt(userTgId));
+
+    if (updateRes.error) {
+      console.error('[ProfileUI] Ошибка при сохранении:', updateRes.error);
+      alert('Ошибка при сохранении');
+      return;
+    }
+
+    console.log('[ProfileUI] ✅ displayName сохранён');
+
+  } catch (err) {
+    console.error('[ProfileUI] Ошибка:', err);
+    alert('Ошибка. Попробуйте позже.');
+  }
 }
 
 // ─── Сохранить имя в БД ───
