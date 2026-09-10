@@ -166,36 +166,39 @@ function saveRole(userTgId, role, callback) {
 
   console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
 
-  // 1️⃣ Сохраняем роль в users
+  // 1️⃣ Обновляем роль в users
   window.sb
     .from('users')
     .update({ role: role })
     .eq('telegram_id', userTgId)
-    .then(async function(res) {
-      if (res.error) {
-        console.error('[ProfileUI] Ошибка сохранения роли:', res.error);
+    .then(function(updateRes) {
+      if (updateRes.error) {
+        console.error('[ProfileUI] Ошибка обновления роли:', updateRes.error);
         if (callback) callback(null);
         return;
       }
 
-      console.log('[ProfileUI] ✅ Роль сохранена:', role);
+      console.log('[ProfileUI] ✅ Роль обновлена');
 
       // 2️⃣ Создаём запись в trainers или clients
       var table = role === 'trainer' ? 'trainers' : 'clients';
-      var insertRes = await window.sb
+      return window.sb
         .from(table)
-        .insert([{ telegram_id: userTgId }])
-        .select();
+        .insert([{ telegram_id: parseInt(userTgId) }]);
+    })
+    .then(function(insertRes) {
+      console.log('[ProfileUI] Insert response:', insertRes);
       
       if (insertRes.error) {
-        console.error('[ProfileUI] Ошибка создания записи:', insertRes.error);
+        console.error('[ProfileUI] ❌ ОШИБКА ВСТАВКИ:', insertRes.error);
+        // Даже при ошибке скрываем селектор и загружаем профиль
       } else {
-        console.log('[ProfileUI] ✅ Запись в', table, 'создана');
+        console.log('[ProfileUI] ✅ Запись создана');
       }
 
       hideRoleSelector();
 
-      // 3️⃣ Только ПОСЛЕ создания записи загружаем профиль
+      // 3️⃣ Загружаем профиль
       if (window.ProfileStore) {
         ProfileStore.init(userTgId);
       }
