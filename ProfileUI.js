@@ -337,12 +337,15 @@ if (callback) callback(role);
 }
 
 // ─── Привязывает события к кнопкам выбора роли ───
-// ─── Привязывает события к кнопкам выбора роли ───
 function bindRoleSelectorEvents(userTgId) {
+  console.log('[ProfileUI] bindRoleSelectorEvents() вызвана с userTgId:', userTgId);
+  
   var trainerBtn = document.getElementById('role-btn-trainer');
   var clientBtn = document.getElementById('role-btn-client');
 
-  // Получаем данные пользователя из Telegram
+  console.log('[ProfileUI] trainerBtn:', trainerBtn);
+  console.log('[ProfileUI] clientBtn:', clientBtn);
+
   var userData = null;
   if (window.tg && tg.initData) {
     try {
@@ -359,6 +362,7 @@ function bindRoleSelectorEvents(userTgId) {
 
   if (trainerBtn) {
     trainerBtn.onclick = function() {
+      console.log('[ProfileUI] ✅ КЛИК НА ТРЕНЕР');
       saveRole(userTgId, 'trainer', userData, function() {
         console.log('[ProfileUI] Роль тренер сохранена');
       });
@@ -367,6 +371,7 @@ function bindRoleSelectorEvents(userTgId) {
 
   if (clientBtn) {
     clientBtn.onclick = function() {
+      console.log('[ProfileUI] ✅ КЛИК НА КЛИЕНТ');
       saveRole(userTgId, 'client', userData, function() {
         console.log('[ProfileUI] Роль клиент сохранена');
       });
