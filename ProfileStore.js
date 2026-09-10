@@ -2,11 +2,16 @@
 // PROFILESTORE.JS — Управление профилем тренера/клиента
 // ═══════════════════════════════════════════════════════════
 
+// ─── IIFE (Immediately Invoked Function Expression) для инкапсуляции ───
 var ProfileStore = (function() {
+  // Кэш текущего профиля пользователя
   var profile = null;
+  // Флаг загружается ли сейчас профиль
   var loading = false;
+  // Массив callback функций подписчиков на изменения профиля
   var subscribers = [];
 
+  // ─── Оповещает всех подписчиков о новых данных профиля ───
   function notify(data) {
     console.log('[ProfileStore] notify() вызван с данными:', data);
     console.log('[ProfileStore] Всего подписчиков:', subscribers.length);
@@ -17,12 +22,13 @@ var ProfileStore = (function() {
     console.log('[ProfileStore] ✅ Все callback вызваны');
   }
 
-  // ─── Подписка на изменения ─────────────────────────────────
+  // ─── Подписывает функцию на обновления профиля ───
   function subscribe(callback) {
     console.log('[ProfileStore] subscribe() — добавляю callback');
     console.log('[ProfileStore] Текущий профиль:', profile ? 'ЕСТЬ' : 'null');
     subscribers.push(callback);
     console.log('[ProfileStore] Всего подписчиков теперь:', subscribers.length);
+    // Если профиль уже есть, вызывает callback сразу
     if (profile) {
       console.log('[ProfileStore] Профиль уже есть, вызываю callback прямо сейчас');
       callback(profile);
@@ -31,19 +37,19 @@ var ProfileStore = (function() {
     }
   }
 
-  // ─── Получить текущий профиль ─────────────────────────────
+  // ─── Возвращает текущий кэшированный профиль ───
   function getProfile() {
     return profile;
   }
 
-// ─── Определить роль пользователя ─────────────────────
+// ─── Определяет роль пользователя из таблицы users ───
 async function determineRole(userTgId) {
   console.log('[ProfileStore] determineRole() вызван для TG ID:', userTgId);
   
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не инициализирован, возвращаю mock');
     return {
-      userId: 'mock-' + userTgId,  // mock ID, но явно отмечено как mock
+      userId: 'mock-' + userTgId,
       role: 'trainer',
       isRealUser: false
     };
@@ -63,7 +69,7 @@ async function determineRole(userTgId) {
       console.warn('[ProfileStore] ⚠️ Ошибка или пользователь не найден:', userRes.error.message);
       console.log('[ProfileStore] Возвращаю mock с mock-id');
       return {
-        userId: 'mock-' + userTgId,  // mock UUID
+        userId: 'mock-' + userTgId,
         role: 'trainer',
         isRealUser: false
       };
@@ -72,7 +78,7 @@ async function determineRole(userTgId) {
     if (!userRes.data) {
       console.warn('[ProfileStore] ⚠️ userRes.data пуста');
       return {
-        userTgId: 'mock-' + userTgId,
+        userId: 'mock-' + userTgId,
         role: 'trainer',
         isRealUser: false
       };
@@ -80,9 +86,9 @@ async function determineRole(userTgId) {
 
     console.log('[ProfileStore] ✅ Пользователь найден, ID:', userRes.data.id, 'Роль:', userRes.data.role);
     
-    // ✅ ПРАВИЛЬНО: Возвращаем реальный UUID из БД
+    // ✅ Возвращаем реальный UUID из БД
     return {
-      userId: userRes.data.id,  // ← UUID из users.id
+      userId: userRes.data.id,
       role: userRes.data.role,
       isRealUser: true
     };
@@ -96,42 +102,45 @@ async function determineRole(userTgId) {
     };
   }
 }
-// ─── Загрузить данные тренера ──────────────────────────────
+
+// ─── Загружает данные тренера из таблицы trainers ───
 async function loadTrainerProfile(userTgId) {
-  console.log('[ProfileStore] loadTrainerProfile() для user_id:', userTgId);
+  console.log('[ProfileStore] loadTrainerProfile() для TG ID:', userTgId);
   
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не доступен');
-    return null;  // ← ВОЗВРАЩАЕМ NULL, НЕ MOCK
+    return null;
   }
 
   try {
-    console.log('[ProfileStore] Ищу тренера по user_id:', userTgId);
+    console.log('[ProfileStore] Ищу тренера по telegram_id:', userTgId);
     
+    // ⚠️ ИСПРАВЛЕНО: было .eq('user_id', userTgId)
     var trainerRes = await window.sb
       .from('trainers')
       .select('*')
-      .eq('user_id', userTgId)
+      .eq('telegram_id', userTgId)
       .single();
 
     if (trainerRes.error) {
       console.warn('[ProfileStore] ⚠️ Тренер не найден:', trainerRes.error.message);
       console.log('[ProfileStore] ⚠️ Возвращаю NULL — нужен первичный выбор роли');
-      return null;  // ← NULL, А НЕ MOCK!
+      return null;
     }
 
     if (!trainerRes.data) {
       console.warn('[ProfileStore] ⚠️ trainerRes.data пуста');
-      return null;  // ← NULL
+      return null;
     }
 
     var trainer = trainerRes.data;
     console.log('[ProfileStore] ✅ Тренер загружен:', trainer.display_name);
 
+    // Загружаем рецензии для расчёта среднего рейтинга
     var reviewsRes = await window.sb
       .from('trainer_reviews')
       .select('rating')
-      .eq('telegram_id', userTgId)
+      .eq('trainer_tg_id', trainer.id);
 
     var avgRating = 0;
     if (!reviewsRes.error && reviewsRes.data && reviewsRes.data.length > 0) {
@@ -141,6 +150,7 @@ async function loadTrainerProfile(userTgId) {
       avgRating = (sum / reviewsRes.data.length).toFixed(1);
     }
 
+    // Загружаем статус онлайн
     var statusRes = await window.sb
       .from('user_status')
       .select('is_online, last_seen')
@@ -174,39 +184,41 @@ async function loadTrainerProfile(userTgId) {
   } catch (e) {
     console.error('[ProfileStore] ❌ Exception в loadTrainerProfile:', e.message);
     console.log('[ProfileStore] Возвращаю NULL');
-    return null;  // ← NULL
+    return null;
   }
 }
 
-// ─── Загрузить данные клиента ──────────────────────────────
+// ─── Загружает данные клиента из таблицы clients ───
 async function loadClientProfile(userTgId) {
-  console.log('[ProfileStore] loadClientProfile() для user_id:', userTgId);
+  console.log('[ProfileStore] loadClientProfile() для TG ID:', userTgId);
   
   if (!window.sb) {
     console.warn('[ProfileStore] ⚠️ Supabase не доступен');
-    return null;  // ← NULL
+    return null;
   }
 
   try {
+    // ⚠️ ИСПРАВЛЕНО: было .eq('user_id', userTgId)
     var clientRes = await window.sb
       .from('clients')
       .select('*')
-      .eq('user_id', userTgId)
+      .eq('telegram_id', userTgId)
       .single();
 
     if (clientRes.error) {
       console.warn('[ProfileStore] ❌ Клиент не найден:', clientRes.error.message);
-      return null;  // ← NULL ВМЕСТО ОШИБКИ
+      return null;
     }
 
     if (!clientRes.data) {
       console.warn('[ProfileStore] ⚠️ Данные клиента пусты');
-      return null;  // ← NULL
+      return null;
     }
 
     var client = clientRes.data;
     console.log('[ProfileStore] ✅ Клиент загружен:', client.name);
 
+    // Загружаем статус онлайн
     var statusRes = await window.sb
       .from('user_status')
       .select('is_online, last_seen')
@@ -236,11 +248,11 @@ async function loadClientProfile(userTgId) {
     };
   } catch (e) {
     console.error('[ProfileStore] ❌ Ошибка loadClientProfile:', e.message);
-    return null;  // ← NULL
+    return null;
   }
 }
 
-// ─── Главная функция загрузки профиля ──────────────────────
+// ─── Главная функция загрузки профиля (оркестратор) ───
 async function loadProfile(userTgId) {
   console.log('[ProfileStore] ===== loadProfile() НАЧАЛО для TG ID:', userTgId, '=====');
   
@@ -252,6 +264,7 @@ async function loadProfile(userTgId) {
   loading = true;
 
   try {
+    // 1️⃣ Определяем роль пользователя
     var roleData = await determineRole(userTgId);
     
     if (!roleData) {
@@ -263,26 +276,28 @@ async function loadProfile(userTgId) {
 
     console.log('[ProfileStore] Роль:', roleData.role);
 
+    // 2️⃣ Если роль не установлена — вернём пустой профиль (покажется селектор роли)
     if (!roleData.role) {
       console.log('[ProfileStore] ⚠️ Роль не установлена — вернём пустой профиль');
-      profile = { userTgId: roleData.userTgId, role: null };
+      profile = { userTgId: roleData.userId, role: null };
       notify(profile);
       return;
     }
 
+    // 3️⃣ Загружаем специфические данные по роли
     var userData = null;
     if (roleData.role === 'trainer') {
       console.log('[ProfileStore] Загружаю тренера...');
-      userData = await loadTrainerProfile(roleData.userTgId);
+      userData = await loadTrainerProfile(userTgId);
     } else if (roleData.role === 'client') {
       console.log('[ProfileStore] Загружаю клиента...');
-      userData = await loadClientProfile(roleData.userTgId);
+      userData = await loadClientProfile(userTgId);
     }
 
     if (!userData) {
       console.warn('[ProfileStore] ⚠️ userData пуста — возможно, это новый пользователь');
       profile = { 
-        userTgId: roleData.userTgId, 
+        userTgId: roleData.userId, 
         role: roleData.role,
         isIncomplete: true
       };
@@ -290,11 +305,11 @@ async function loadProfile(userTgId) {
       return;
     }
 
-    // Загружаем общие данные из users
+    // 4️⃣ Дополняем общие данные из таблицы users
     var usersRes = await window.sb
       .from('users')
       .select('photo_url, is_pro, notifications_enabled')
-      .eq('id', roleData.userTgId)
+      .eq('id', roleData.userId)
       .single();
 
     if (!usersRes.error && usersRes.data) {
@@ -339,7 +354,7 @@ async function loadProfile(userTgId) {
   }
 }
 
-  // ─── API ───────────────────────────────────────────────────
+  // ─── Публичный API ───
   return {
     init: function(userTgId) {
       console.log('[ProfileStore] init() вызван с userTgId:', userTgId);
