@@ -367,18 +367,52 @@ async function saveRole(userTgId, role, callback) {
   }
 
 // ─── Установить редактор имени ───
+// ─── Установить редактор имени ───
 function setupDisplayNameEditor(userTgId, displayName) {
   var nameElement = document.querySelector('[data-profile-name]');
   
-  if (!nameElement) return;
+  if (!nameElement) {
+    console.log('[ProfileUI] ⚠️ [data-profile-name] не найден');
+    return;
+  }
 
   var currentName = displayName;
+  console.log('[ProfileUI] setupDisplayNameEditor: displayName из профиля =', displayName);
+
+  // Если нет имени в БД, пытаемся получить username из Telegram
   if (!currentName || currentName === 'null') {
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-      var user = window.Telegram.WebApp.initDataUnsafe.user;
-      if (user && user.username) {
-        currentName = user.username;
+    console.log('[ProfileUI] displayName пуст, ищу username в Telegram...');
+    
+    if (window.Telegram && window.Telegram.WebApp) {
+      console.log('[ProfileUI] Telegram.WebApp найден');
+      
+      if (window.Telegram.WebApp.initDataUnsafe) {
+        var user = window.Telegram.WebApp.initDataUnsafe.user;
+        console.log('[ProfileUI] Telegram user =', user);
+        
+        if (user) {
+          // Приоритет: first_name + last_name, потом username, потом ID
+          if (user.first_name) {
+            currentName = user.first_name;
+            if (user.last_name) {
+              currentName += ' ' + user.last_name;
+            }
+            console.log('[ProfileUI] ✅ Использую имя из Telegram:', currentName);
+          } else if (user.username) {
+            currentName = user.username;
+            console.log('[ProfileUI] ✅ Использую username из Telegram:', currentName);
+          } else if (user.id) {
+            currentName = 'Тренер #' + user.id;
+            console.log('[ProfileUI] ✅ Использую ID из Telegram:', currentName);
+          }
+        } else {
+          console.log('[ProfileUI] ⚠️ user в initDataUnsafe не найден');
+        }
+      } else {
+        console.log('[ProfileUI] ⚠️ initDataUnsafe не доступен');
       }
+    } else {
+      console.log('[ProfileUI] ⚠️ Telegram.WebApp не найден');
     }
   }
 
@@ -386,6 +420,7 @@ function setupDisplayNameEditor(userTgId, displayName) {
     currentName = 'Тренер';
   }
 
+  console.log('[ProfileUI] Финальное имя для отображения:', currentName);
   nameElement.textContent = currentName;
   nameElement.style.cursor = 'pointer';
   nameElement.style.opacity = '0.8';
