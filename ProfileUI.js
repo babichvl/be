@@ -848,7 +848,16 @@ function init(userTgId) {
   // Получаем РЕАЛЬНЫЙ Telegram ID для ProfileStore
   var realTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   console.log('[ProfileUI] Реальный Telegram ID:', realTgId);
-  
+
+// Если открываем вне Telegram, используем mock ID
+if (!realTgId) {
+  realTgId = Math.floor(Math.random() * 1000000000);
+  console.log('[ProfileUI] ⚠️ Mock TG ID для тестирования:', realTgId);
+}
+
+console.log('[ProfileUI] Реальный Telegram ID:', realTgId);
+
+bindRoleSelectorEvents(realTgId);
   bindRoleSelectorEvents(realTgId);
 
   var avatarBtns = document.querySelectorAll('.page-header__avatar');
