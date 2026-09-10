@@ -123,6 +123,47 @@ var ProfileUI = (function() {
     return html;
   }
 
+// ─── Универсальная функция для сохранения полей профиля Опыт/Специализация ───
+async function saveProfileField(userTgId, fieldName, fieldValue) {
+  if (!window.sb) {
+    console.error('[ProfileUI] Supabase не инициализирован');
+    return;
+  }
+
+  console.log('[ProfileUI] Отправляю', fieldName, '=', fieldValue);
+
+  try {
+    var updateData = {};
+    updateData[fieldName] = fieldValue;
+
+    var updateRes = await window.sb
+      .from('trainers')
+      .update(updateData)
+      .eq('telegram_id', parseInt(userTgId));
+
+    if (updateRes.error) {
+      console.error('[ProfileUI] Ошибка при сохранении:', updateRes.error);
+      alert('Ошибка при сохранении');
+      return;
+    }
+
+    console.log('[ProfileUI] ✅', fieldName, 'сохранён');
+
+    // Обновляем локальный профиль
+    if (currentProfile) {
+      currentProfile[fieldName] = fieldValue;
+      
+      if (isOpen) {
+        render(currentProfile);
+      }
+    }
+
+  } catch (err) {
+    console.error('[ProfileUI] Ошибка:', err);
+    alert('Ошибка. Попробуйте позже.');
+  }
+}
+  
 // ─── Добавляет HTML структуру в DOM один раз при инициализации ───
   function initDOM() {
     var container = document.body;
@@ -833,51 +874,48 @@ function setupStatsModalEvents() {
       });
     });
 
-    var saveBtn = document.querySelector('[data-save="' + field + '"]');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function() {
-        console.log('[ProfileUI] Saving', field);
-        
-        if (field === 'experience') {
-          var yearsInput = document.getElementById('experience-years-input');
-          var descriptionInput = document.getElementById('experience-description-input');
-          
-          console.log('[ProfileUI] yearsInput найден?', !!yearsInput);
-          console.log('[ProfileUI] descriptionInput найден?', !!descriptionInput);
-          
-          if (!yearsInput || !descriptionInput) {
-            console.error('[ProfileUI] Поля не найдены!');
-            return;
-          }
-          
-          var experienceData = {
-            years: parseInt(yearsInput.value) || 0,
-            description: descriptionInput.value || ''
-          };
-          
-          console.log('[ProfileUI] Saving experience:', experienceData);
-          
-          // Здесь будет отправка в БД через Supabase
-          // saveExperience(currentProfile.userTgId, experienceData);
-          
-        } else {
-          var input = document.getElementById(field + '-input');
-          
-          if (!input) {
-            console.error('[ProfileUI] Input для', field, 'не найден!');
-            return;
-          }
-          
-          var value = input.value || '';
-          console.log('[ProfileUI] Saving ' + field + ':', value);
-          
-          // Здесь будет отправка в БД через Supabase
-          // saveField(field, value);
-        }
-        
-        closeStatsModal(field);
-      });
+var saveBtn = document.querySelector('[data-save="' + field + '"]');
+if (saveBtn) {
+  saveBtn.addEventListener('click', function() {
+    console.log('[ProfileUI] Saving', field);
+    
+    if (field === 'experience') {
+      var yearsInput = document.getElementById('experience-years-input');
+      var descriptionInput = document.getElementById('experience-description-input');
+      
+      if (!yearsInput || !descriptionInput) {
+        console.error('[ProfileUI] Поля не найдены!');
+        return;
+      }
+      
+      var experienceData = {
+        years: parseInt(yearsInput.value) || 0,
+        description: descriptionInput.value || ''
+      };
+      
+      if (currentProfile) {
+        saveProfileField(currentProfile.userTgId, 'experience_data', experienceData);
+      }
+      
+    } else {
+      // Для specializations, rating и остальных
+      var input = document.getElementById(field + '-input');
+      
+      if (!input) {
+        console.error('[ProfileUI] Input для', field, 'не найден!');
+        return;
+      }
+      
+      var value = input.value || '';
+      
+      if (currentProfile) {
+        saveProfileField(currentProfile.userTgId, field, value);
+      }
     }
+    
+    closeStatsModal(field);
+  });
+}
   });
 }
 
