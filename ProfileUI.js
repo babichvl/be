@@ -644,27 +644,32 @@ async function saveDisplayName(userTgId, displayName) {
   }
 
 // ─── Отображает профиль в панель ───
-  function render(profile) {
-    var content = document.getElementById('profile-content');
-    if (!content) return;
+function render(profile) {
+  var content = document.getElementById('profile-content');
+  if (!content) return;
 
-    if (!profile) {
-      content.innerHTML = '<div class="profile-empty">Загружаю профиль...</div>';
-      return;
-    }
-
-    if (profile.role === null) {
-      content.innerHTML = '<div class="profile-empty">Роль не установлена...</div>';
-      return;
-    }
-
-    var html = profile.role === 'trainer' 
-      ? renderTrainerProfile(profile)
-      : renderClientProfile(profile);
-
-    content.innerHTML = html;
-    bindEvents();
+  if (!profile) {
+    content.innerHTML = '<div class="profile-empty">Загружаю профиль...</div>';
+    return;
   }
+
+  if (profile.role === null) {
+    content.innerHTML = '<div class="profile-empty">Роль не установлена...</div>';
+    return;
+  }
+
+  // ← Добавь вот эту часть:
+  if (!profile.displayName && window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name) {
+    profile.displayName = window.Telegram.WebApp.initDataUnsafe.user.first_name;
+  }
+
+  var html = profile.role === 'trainer' 
+    ? renderTrainerProfile(profile)
+    : renderClientProfile(profile);
+
+  content.innerHTML = html;
+  bindEvents();
+}
 
 // ─── Привязывает события к элементам внутри профиля ───
 function bindEvents() {
