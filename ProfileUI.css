@@ -207,7 +207,7 @@
 /* Большое текстовое поле в модали */
 .stats-modal__input--large {
   max-height: calc(100vh - 60px);
-  min-height: 100vh;
+  min-height: 100px;
   font-size: 18px;
   padding: 16px;
   text-align: left;
