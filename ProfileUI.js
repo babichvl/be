@@ -233,7 +233,7 @@ async function saveProfileField(userTgId, fieldName, fieldValue) {
   }
 
 // ─── Сохраняет выбранную роль в Supabase ───
-async function saveRole(userTgId, role, callback) {
+async function saveRole(userTgId, role, userData, callback) {
   if (!window.sb) {
     console.error('[ProfileUI] Supabase не инициализирован');
     if (callback) callback(null);
@@ -241,23 +241,27 @@ async function saveRole(userTgId, role, callback) {
   }
 
   console.log('[ProfileUI] Сохраняю роль:', role, 'для telegram_id:', userTgId);
+  console.log('[ProfileUI] userData:', userData);
 
   try {
+    // 1️⃣ Сохраняем в users таблицу
     var upsertRes = await window.sb
       .from('users')
       .upsert([{ 
         telegram_id: parseInt(userTgId),
-        role: role 
+        role: role,
+        full_name: userData ? userData.first_name + (userData.last_name ? ' ' + userData.last_name : '') : null
       }], { onConflict: 'telegram_id' });
 
     if (upsertRes.error) {
-      console.error('[ProfileUI] Ошибка upsert:', upsertRes.error);
+      console.error('[ProfileUI] Ошибка upsert в users:', upsertRes.error);
       if (callback) callback(null);
       return;
     }
 
     console.log('[ProfileUI] ✅ Запись в users создана/обновлена');
 
+    // 2️⃣ Получаем UUID пользователя
     var userRes = await window.sb
       .from('users')
       .select('id')
@@ -270,25 +274,47 @@ async function saveRole(userTgId, role, callback) {
       return;
     }
 
-    var userTgId = userRes.data.id;
-    console.log('[ProfileUI] ✅ Получен user_id:', userTgId);
+    var userId = userRes.data.id;
+    console.log('[ProfileUI] ✅ Получен user_id:', userId);
 
+    // 3️⃣ Создаём запись в trainers/clients таблице
     var table = role === 'trainer' ? 'trainers' : 'clients';
+    
+    var insertData = {
+      user_id: userId,  // ← Правильное имя поля (ссылка на users)
+      telegram_id: parseInt(userTgId)  // ← Оригинальный TG ID
+    };
+
+    // Если это тренер, добавляем display_name
+    if (role === 'trainer' && userData) {
+      insertData.display_name = userData.first_name + (userData.last_name ? ' ' + userData.last_name : '');
+      // Остальные поля тренера по умолчанию
+      insertData.specialty = 'Не указано';
+      insertData.experience = 'Не указано';
+      insertData.bio = '';
+      insertData.price = 0;
+      insertData.phone = '';
+    } else if (role === 'client' && userData) {
+      // Если клиент
+      insertData.name = userData.first_name + (userData.last_name ? ' ' + userData.last_name : '');
+      insertData.status = 'active';
+      insertData.phone = '';
+      insertData.trainer_id = null;
+    }
+
     var insertRes = await window.sb
       .from(table)
-      .insert([{
-        userTgId: userTgId,
-        telegram_id: parseInt(userTgId)
-      }]);
+      .insert([insertData]);
 
     if (insertRes.error) {
       console.error('[ProfileUI] ❌ ОШИБКА ВСТАВКИ:', insertRes.error);
     } else {
-      console.log('[ProfileUI] ✅ Запись в', table, 'создана');
+      console.log('[ProfileUI] ✅ Запись в', table, 'создана:', insertRes.data);
     }
 
     hideRoleSelector();
 
+    // 4️⃣ Перезагружаем профиль с новыми данными
     if (window.ProfileStore) {
       ProfileStore.init(userTgId);
     }
@@ -302,26 +328,42 @@ async function saveRole(userTgId, role, callback) {
 }
 
 // ─── Привязывает события к кнопкам выбора роли ───
-  function bindRoleSelectorEvents(userTgId) {
-    var trainerBtn = document.getElementById('role-btn-trainer');
-    var clientBtn = document.getElementById('role-btn-client');
+// ─── Привязывает события к кнопкам выбора роли ───
+function bindRoleSelectorEvents(userTgId) {
+  var trainerBtn = document.getElementById('role-btn-trainer');
+  var clientBtn = document.getElementById('role-btn-client');
 
-    if (trainerBtn) {
-      trainerBtn.onclick = function() {
-        saveRole(userTgId, 'trainer', function() {
-          // После сохранения профиль загружается через ProfileStore
-        });
-      };
-    }
-
-    if (clientBtn) {
-      clientBtn.onclick = function() {
-        saveRole(userTgId, 'client', function() {
-          // После сохранения профиль загружается через ProfileStore
-        });
-      };
+  // Получаем данные пользователя из Telegram
+  var userData = null;
+  if (window.tg && tg.initData) {
+    try {
+      var params = new URLSearchParams(tg.initData);
+      var userJson = params.get('user');
+      if (userJson) {
+        userData = JSON.parse(userJson);
+        console.log('[ProfileUI] userData из Telegram:', userData);
+      }
+    } catch (e) {
+      console.warn('[ProfileUI] Ошибка парсинга userData:', e.message);
     }
   }
+
+  if (trainerBtn) {
+    trainerBtn.onclick = function() {
+      saveRole(userTgId, 'trainer', userData, function() {
+        console.log('[ProfileUI] Роль тренер сохранена');
+      });
+    };
+  }
+
+  if (clientBtn) {
+    clientBtn.onclick = function() {
+      saveRole(userTgId, 'client', userData, function() {
+        console.log('[ProfileUI] Роль клиент сохранена');
+      });
+    };
+  }
+}
 
 // ─── Генерирует HTML карточки профиля для тренера ───
   function renderTrainerProfile(profile) {
