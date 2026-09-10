@@ -658,9 +658,14 @@ function render(profile) {
     return;
   }
 
-  // ← Добавь вот эту часть:
+  // Если display_name пуст, берём из Telegram и сохраняем в БД
   if (!profile.displayName && window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name) {
     profile.displayName = window.Telegram.WebApp.initDataUnsafe.user.first_name;
+    
+    // Сохраняем в БД
+    if (profile.role === 'trainer' && profile.userTgId) {
+      saveProfileField(profile.userTgId, 'display_name', profile.displayName);
+    }
   }
 
   var html = profile.role === 'trainer' 
