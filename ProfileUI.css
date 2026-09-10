@@ -206,10 +206,11 @@
 
 /* Большое текстовое поле в модали */
 .stats-modal__input--large {
+  max-height: calc(100vh - 60px);
+  min-height: 100vh;
   font-size: 18px;
   padding: 16px;
-  min-height: 100px;
-  text-align: center;
+  text-align: left;
 }
 
 /* Полупрозрачный фон под модалью */
