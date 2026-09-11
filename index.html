@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymBro — Приложение для тренеров и клиентов</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>GymBro — Приложение для фитнеса</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <!-- Главная страница приложения -->
+        <!-- Главная страница -->
         <div class="container">
             <header class="header">
                 <div class="logo">
                     <h1>💪 GymBro</h1>
+                    <p class="tagline">Управляй тренировками с умом</p>
                 </div>
             </header>
 
             <main class="main">
                 <section class="hero">
-                    <h2>Добро пожаловать в GymBro</h2>
-                    <p>Платформа для управления тренировками и прогрессом</p>
+                    <h2>Добро пожаловать</h2>
+                    <p>Выбери свою роль, чтобы начать</p>
 
                     <div class="role-selector">
                         <button class="btn btn-primary" id="trainer-btn">
@@ -32,25 +33,31 @@
                 </section>
 
                 <section class="info">
-                    <h3>Для тренеров:</h3>
-                    <ul>
-                        <li>Управление клиентами и расписанием</li>
-                        <li>Создание программ тренировок с ИИ</li>
-                        <li>Автоматические уведомления и триггеры</li>
-                    </ul>
+                    <div class="info-item">
+                        <h3>Для тренеров</h3>
+                        <ul>
+                            <li>Управление клиентами и расписанием</li>
+                            <li>Создание программ тренировок с ИИ</li>
+                            <li>Автоматические уведомления и триггеры</li>
+                        </ul>
+                    </div>
 
-                    <h3>Для клиентов:</h3>
-                    <ul>
-                        <li>Отслеживание прогресса и тренировок</li>
-                        <li>Дневник питания с ИИ-анализом</li>
-                        <li>Система баллов и достижений</li>
-                    </ul>
+                    <div class="info-item">
+                        <h3>Для клиентов</h3>
+                        <ul>
+                            <li>Отслеживание прогресса</li>
+                            <li>Дневник питания с ИИ-анализом</li>
+                            <li>Система баллов и достижений</li>
+                        </ul>
+                    </div>
                 </section>
             </main>
         </div>
     </div>
 
+    <!-- Подключаем Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
+    <!-- Подключаем основной скрипт приложения -->
+    <script src="app.js"></script>
 </body>
 </html>
