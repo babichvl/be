@@ -265,6 +265,95 @@ body {
   }
 }
 
+/* ==================== МОДАЛЬНОЕ ОКНО ==================== */
+
+/**
+ * Модальное окно для выбора роли при первом запуске
+ * Показывается в центре экрана поверх всего контента
+ */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * Полупрозрачный фон модального окна
+ * Блокирует клики на элементы позади
+ */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/**
+ * Контент модального окна
+ * Отображается поверх фона, в центре экрана
+ */
+.modal-content {
+  position: relative;
+  z-index: 1001;
+  background-color: var(--neutral-50);
+  border-radius: var(--radius-lg);
+  padding: calc(var(--spacing-unit) * 8);
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.modal-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: calc(var(--spacing-unit) * 2);
+  color: var(--neutral-900);
+}
+
+.modal-content p {
+  font-size: 0.9375rem;
+  color: var(--neutral-600);
+  margin-bottom: calc(var(--spacing-unit) * 6);
+}
+
+/**
+ * Кнопки внутри модального окна
+ * Расположены вертикально с равномерным расстоянием
+ */
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 3);
+}
+
+/**
+ * Большие кнопки для модального окна
+ * Занимают всю ширину контейнера
+ */
+.btn-large {
+  width: 100%;
+  padding: calc(var(--spacing-unit) * 4) calc(var(--spacing-unit) * 4);
+  font-size: 1.0625rem;
+}
+
+/**
+ * Скрытый класс для модального окна
+ * Используется для скрытия модального окна после выбора роли
+ */
+.modal.hidden {
+  display: none;
+}
+
 /* ==================== УВАЖЕНИЕ К ПРЕДПОЧТЕНИЯМ ==================== */
 
 @media (prefers-reduced-motion: reduce) {
