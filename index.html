@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>GymBro</title>
+
+  <!-- Обязательно ДО наших скриптов, без defer/async -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="app">
+    <h1>GymBro</h1>
+
+    <div id="status" class="status">Загрузка...</div>
+
+    <section id="debug">
+      <h2>Отладка</h2>
+      <p><strong>В Telegram:</strong> <span id="in-tg">?</span></p>
+      <p><strong>initData длина:</strong> <span id="init-length">0</span></p>
+      <p><strong>initData (для тестов):</strong></p>
+      <textarea id="init-raw" readonly rows="4"></textarea>
+    </section>
+
+    <section id="result" hidden>
+      <h2>Ответ /api/auth</h2>
+      <pre id="result-json"></pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
