@@ -9,8 +9,8 @@
  * URL и ключ Supabase
  * Нужно заполнить из вашего проекта: https://supabase.com
  */
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_KEY = 'YOUR_ANON_KEY';
+const SUPABASE_URL = 'https://https://qhvtapqlyajkikgfacdo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
 
 /**
  * Инициализируем клиент Supabase
@@ -115,8 +115,8 @@ function log(message, level = 'info') {
  * @returns {boolean} true если ключи заполнены, false иначе
  */
 function isSupabaseConfigured() {
-  return SUPABASE_URL !== 'https://YOUR_PROJECT.supabase.co' &&
-         SUPABASE_KEY !== 'YOUR_ANON_KEY';
+  return SUPABASE_URL !== 'https://qhvtapqlyajkikgfacdo.supabase.co' &&
+         SUPABASE_KEY !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFodnRhcHFseWFqa2lrZ2ZhY2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxNjM3NjEsImV4cCI6MjEwMzczOTc2MX0.hr8Uiy3hvbhwfJ0At7T0TR8waK4Mt5ylFw-B-qp5Cow';
 }
 
 // ==================== ЖИЗНЕННЫЙ ЦИКЛ ==================== 
