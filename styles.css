@@ -1,0 +1,394 @@
+/* 
+  GymBro Trainer App — специфичные стили для приложения тренера
+*/
+
+.app-trainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--neutral-50);
+}
+
+/* ==================== Вкладки ====================*/
+
+.tabs-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 200ms ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-header {
+  text-align: center;
+  margin-bottom: calc(var(--spacing-unit) * 6);
+}
+
+.tab-header h2 {
+  font-size: 1.5rem;
+  margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.tab-header p {
+  color: var(--neutral-600);
+  font-size: 0.875rem;
+}
+
+/* ==================== Нижняя навигация ====================*/
+
+.navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: calc(var(--spacing-unit) * 2);
+  padding: calc(var(--spacing-unit) * 2);
+  background-color: var(--neutral-100);
+  border-top: 1px solid var(--neutral-200);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: calc(var(--spacing-unit) * 2);
+  border-radius: var(--radius-md);
+  transition: all 120ms ease;
+  color: var(--neutral-600);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn:hover {
+  background-color: var(--neutral-200);
+  color: var(--neutral-900);
+}
+
+.nav-btn.active {
+  background-color: var(--accent-500);
+  color: white;
+}
+
+.add-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--accent-500);
+  color: white;
+  font-size: 2rem;
+  box-shadow: var(--shadow-md);
+  margin-top: calc(var(--spacing-unit) * -4);
+}
+
+.add-btn:hover {
+  background-color: var(--accent-700);
+  transform: scale(1.1);
+}
+
+/* ==================== Карточки тренировок ====================*/
+
+.today-workouts,
+.triggers,
+.clients-section,
+.programs-section {
+  margin-bottom: calc(var(--spacing-unit) * 8);
+}
+
+.today-workouts h3,
+.triggers h3 {
+  font-size: 1.125rem;
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  color: var(--neutral-900);
+}
+
+.workout-card {
+  background-color: white;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-md);
+  padding: calc(var(--spacing-unit) * 4);
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  box-shadow: var(--shadow-sm);
+  transition: all 120ms ease;
+}
+
+.workout-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-500);
+}
+
+.workout-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+.workout-client {
+  font-weight: 600;
+  color: var(--neutral-900);
+}
+
+.workout-type {
+  display: inline-block;
+  background-color: var(--accent-300);
+  color: var(--neutral-900);
+  padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.workout-status {
+  display: inline-block;
+  padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: calc(var(--spacing-unit) * 2);
+}
+
+.status-pending {
+  background-color: var(--neutral-200);
+  color: var(--neutral-900);
+}
+
+.status-completed {
+  background-color: var(--success);
+  color: white;
+}
+
+.status-cancelled {
+  background-color: var(--danger);
+  color: white;
+}
+
+/* ==================== Триггеры ====================*/
+
+.trigger-card {
+  background-color: white;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-md);
+  padding: calc(var(--spacing-unit) * 4);
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trigger-info {
+  flex: 1;
+}
+
+.trigger-title {
+  font-weight: 600;
+  color: var(--neutral-900);
+  margin-bottom: calc(var(--spacing-unit) * 1);
+}
+
+.trigger-client {
+  font-size: 0.875rem;
+  color: var(--neutral-600);
+}
+
+.trigger-actions {
+  display: flex;
+  gap: calc(var(--spacing-unit) * 2);
+}
+
+.trigger-btn {
+  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3);
+  background-color: var(--accent-500);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 120ms ease;
+  min-height: 36px;
+}
+
+.trigger-btn:hover {
+  background-color: var(--accent-700);
+}
+
+/* ==================== ИИ-ассистент ====================*/
+
+.ai-assistant {
+  position: fixed;
+  bottom: 80px;
+  right: calc(var(--spacing-unit) * 4);
+  width: 90%;
+  max-width: 400px;
+  height: 500px;
+  background-color: white;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+  animation: slideUp 200ms ease;
+}
+
+.ai-assistant.hidden {
+  display: none;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.ai-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--spacing-unit) * 4);
+  border-bottom: 1px solid var(--neutral-200);
+}
+
+.ai-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--neutral-900);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--neutral-600);
+}
+
+.ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: calc(var(--spacing-unit) * 4);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 3);
+}
+
+.ai-message {
+  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3);
+  border-radius: var(--radius-md);
+  max-width: 85%;
+  word-wrap: break-word;
+}
+
+.ai-message.user {
+  align-self: flex-end;
+  background-color: var(--accent-500);
+  color: white;
+}
+
+.ai-message.assistant {
+  align-self: flex-start;
+  background-color: var(--neutral-200);
+  color: var(--neutral-900);
+}
+
+.ai-input-area {
+  display: flex;
+  gap: calc(var(--spacing-unit) * 2);
+  padding: calc(var(--spacing-unit) * 3);
+  border-top: 1px solid var(--neutral-200);
+}
+
+#ai-input {
+  flex: 1;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-sm);
+  padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3);
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+}
+
+#ai-input:focus {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 2px var(--accent-300);
+}
+
+.voice-btn,
+.send-btn {
+  background-color: var(--accent-500);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 120ms ease;
+}
+
+.voice-btn:hover,
+.send-btn:hover {
+  background-color: var(--accent-700);
+}
+
+/* ==================== Адаптивность ====================*/
+
+@media (max-width: 600px) {
+  .ai-assistant {
+    width: calc(100% - calc(var(--spacing-unit) * 4));
+    max-width: none;
+    right: calc(var(--spacing-unit) * 2);
+  }
+
+  .navigation {
+    gap: 0;
+  }
+
+  .nav-btn {
+    min-width: 50px;
+    min-height: 50px;
+  }
+
+  .add-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    margin-top: calc(var(--spacing-unit) * -3);
+  }
+}
